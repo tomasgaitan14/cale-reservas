@@ -1,0 +1,60 @@
+/* Tokens del diseño de Cale ("Recepción").
+   Origen: cale-app/docs/DISENO.md (aprobado el 15/10/2026). La misma copia vive en cale-app/web/src/styles/tokens.css
+   y en cale-web/src/styles/tokens.css (acá es la tercera): si cambia un valor, cambiarlo en DISENO.md y en los tres repos.
+   El contraste lo controla tests/contrast.test.ts de cale-web. */
+:root {
+  /* Color */
+  --bg: #f7f4ee;
+  --surface: #ffffff;
+  --text: #15191c;
+  --muted: #575e58;
+  --border: #e7e1d5;
+  /* Verde WhatsApp: botón principal, paso actual y marcas. Nunca como color de texto */
+  --accent: #25d366;
+  --on-accent: #0b1f12;
+  --link: #0a6b3b;
+  --ink: #15191c;
+  --on-ink: #ffffff;
+  --ink-muted: #b4bdb6;
+  --tint: #e2f4e7;
+  --tint-border: #c6e6d0;
+  --callout: #f2faf4;
+  --field-border: #8a857c;
+
+  /* Estados: siempre con ícono y texto, nunca solo color */
+  --ok: #0a6b3b;
+  --ok-bg: #e2f4e7;
+  --pend: #7a4a00;
+  --pend-bg: #fbebcb;
+  --warn: #a32424;
+  --warn-bg: #fce4e1;
+  --act: #25d366;
+  --act-bg: #15191c;
+
+  /* Tipografía (autoalojada con @fontsource-variable) */
+  --font-head: 'Manrope Variable', 'Manrope', system-ui, sans-serif;
+  --font-body: 'DM Sans Variable', 'DM Sans', system-ui, sans-serif;
+  --fw-head: 800;
+  --ls-head: -0.045em;
+  /* Escala en el celular; nada por debajo de 15 px */
+  --fs-h1: 2.625rem; /* 42 */
+  --lh-h1: 1.07;
+  --fs-h1-desktop: 3.875rem; /* 62 */
+  --fs-h1-sm: 1.875rem; /* 30 */
+  --fs-h2: 1.625rem; /* 26 */
+  --fs-h3: 1.3125rem; /* 21 */
+  --fs-lead: 1.1875rem; /* 19 */
+  --fs-base: 1.125rem; /* 18 */
+  --lh-base: 1.55;
+  --fs-small: 0.9375rem; /* 15 */
+
+  /* Formas */
+  --radius: 16px;
+  --radius-btn: 14px;
+  --radius-field: 12px;
+  --radius-sheet: 18px;
+  --btn-h: 3.5rem; /* 56 */
+  --field-h: 3.375rem; /* 54 */
+  --shadow-accent: 0 8px 20px rgb(37 211 102 / 0.25);
+  --shadow-soft: 0 12px 30px rgb(21 25 28 / 0.08);
+}
