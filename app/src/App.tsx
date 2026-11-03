@@ -107,7 +107,7 @@ function NotFound() {
   )
 }
 
-// cale.com.ar/panel es el panel del negocio; cale.com.ar/<negocio> es su página de reservas
+// app.cale.com.ar/panel es el panel del negocio; app.cale.com.ar/<negocio> es su página de reservas
 export function App() {
   const route = parseRoute(window.location.pathname)
   if (route.kind === 'booking') return <BookingPage slug={route.slug} />
