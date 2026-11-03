@@ -8,3 +8,6 @@ dist/
 coverage/
 supabase/.temp/
 supabase/.branches/
+
+# Contexto local del proyecto (estado, decisiones, planes): no se versiona
+CLAUDE.md
