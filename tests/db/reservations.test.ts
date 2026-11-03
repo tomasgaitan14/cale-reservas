@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { book, newBookableBusiness, SAMPLE_CLIENT_NAME, SAMPLE_PHONE, slotsFor, tryBook, type BookableBusiness } from '../support/booking.ts'
+import { appointmentsOf, book, newBookableBusiness, SAMPLE_CLIENT_NAME, SAMPLE_PHONE, slotsFor, tryBook, type BookableBusiness } from '../support/booking.ts'
 import { addDays, argentinaToday, nextDateOnWeekday } from '../support/dates.ts'
 import { CHECK_VIOLATION, INSUFFICIENT_PRIVILEGE } from '../support/pg-errors.ts'
 import { createService } from '../support/services.ts'
@@ -16,24 +16,6 @@ const MAX_NAME_LENGTH = 80
 const MAX_DAYS_AHEAD = 30
 // Argentina está tres horas detrás de UTC todo el año
 const ARGENTINA_UTC_OFFSET_HOURS = 3
-
-// Lo que ve el negocio de sus turnos
-async function appointmentsOf(business: BookableBusiness) {
-  const { data, error } = await business.owner
-    .from('appointments')
-    .select('id, client_name, client_phone, service_name, status, starts_at, ends_at')
-    .order('starts_at')
-  if (error) throw error
-  return data as {
-    id: string
-    client_name: string
-    client_phone: string
-    service_name: string
-    status: string
-    starts_at: string
-    ends_at: string
-  }[]
-}
 
 describe('reservar un turno', () => {
   it('cualquiera, sin sesión, reserva un horario libre y recibe la confirmación', async () => {

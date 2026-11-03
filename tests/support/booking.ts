@@ -66,6 +66,28 @@ export async function book(client: SupabaseClient, request: BookingRequest): Pro
   if (error) throw error
 }
 
+export interface StoredAppointment {
+  id: string
+  client_name: string
+  client_phone: string | null
+  service_name: string
+  status: string
+  source: string
+  consented_at: string | null
+  starts_at: string
+  ends_at: string
+}
+
+// Lo que ve el negocio de sus turnos, del más próximo al más lejano
+export async function appointmentsOf(business: BookableBusiness): Promise<StoredAppointment[]> {
+  const { data, error } = await business.owner
+    .from('appointments')
+    .select('id, client_name, client_phone, service_name, status, source, consented_at, starts_at, ends_at')
+    .order('starts_at')
+  if (error) throw error
+  return data as StoredAppointment[]
+}
+
 // Horarios libres que ve quien reserva ('HH:MM')
 export async function slotsFor(client: SupabaseClient, slug: string, serviceId: string, date: string): Promise<string[]> {
   const { data, error } = await client.rpc('get_available_slots', { p_slug: slug, p_service_id: serviceId, p_date: date })
