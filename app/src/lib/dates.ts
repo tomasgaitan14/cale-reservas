@@ -27,6 +27,14 @@ export function todayInArgentina(now: Date = new Date()): string {
   return todayFormat.format(now)
 }
 
+// Argentina está tres horas detrás de UTC todo el año (no tiene horario de verano)
+const ARGENTINA_UTC_OFFSET = '-03:00'
+
+// Instante (UTC) en que empieza ese día en Argentina: sirve para pedirle a la base los turnos de un rango de días
+export function dayStartInstant(date: string): string {
+  return new Date(`${date}T00:00:00${ARGENTINA_UTC_OFFSET}`).toISOString()
+}
+
 const timeFormat = new Intl.DateTimeFormat('en-GB', { timeZone: TIME_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 
 // Instante guardado en la base (UTC) → día y hora de Argentina

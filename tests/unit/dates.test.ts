@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addDays, bookableDates, formatLongDate, localParts, MAX_DAYS_AHEAD, todayInArgentina, weekdayOf } from '../../app/src/lib/dates.ts'
+import { addDays, bookableDates, dayStartInstant, formatLongDate, localParts, MAX_DAYS_AHEAD, todayInArgentina, weekdayOf } from '../../app/src/lib/dates.ts'
 
 const WEEKDAYS = [1, 2, 3, 4, 5]
 const EVERY_DAY = [0, 1, 2, 3, 4, 5, 6]
@@ -20,6 +20,19 @@ describe('localParts', () => {
     ['2026-12-31T21:15:00Z', { date: '2026-12-31', time: '18:15' }],
   ])('pasa el instante %s a día y hora de Argentina', (instant, expected) => {
     expect(localParts(instant)).toEqual(expected)
+  })
+})
+
+describe('dayStartInstant', () => {
+  it.each([
+    ['2026-11-04', '2026-11-04T03:00:00.000Z'],
+    ['2026-12-31', '2026-12-31T03:00:00.000Z'],
+  ])('el día %s de Argentina empieza a las 03:00 UTC', (date, expected) => {
+    expect(dayStartInstant(date)).toBe(expected)
+  })
+
+  it('el día siguiente empieza donde termina el anterior', () => {
+    expect(dayStartInstant(addDays('2026-11-30', 1))).toBe('2026-12-01T03:00:00.000Z')
   })
 })
 

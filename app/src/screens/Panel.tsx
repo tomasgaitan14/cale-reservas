@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Business } from '../lib/business.ts'
 import { fetchSetupProgress, SetupLoadError, type SetupProgress } from '../lib/setup.ts'
-import { AppointmentsScreen } from './AppointmentsScreen.tsx'
+import { AgendaScreen } from './AgendaScreen.tsx'
 import { HoursScreen } from './HoursScreen.tsx'
 import { PanelHome, type PanelView } from './PanelHome.tsx'
 import { ServicesScreen } from './ServicesScreen.tsx'
@@ -30,7 +30,7 @@ export function Panel({ business }: { business: Business }) {
 
   const goHome = () => setView('home')
 
-  if (view === 'appointments') return <AppointmentsScreen onBack={goHome} />
+  if (view === 'agenda') return <AgendaScreen business={business} onBack={goHome} />
   if (view === 'services') return <ServicesScreen business={business} onBack={goHome} />
   if (view === 'hours') return <HoursScreen business={business} onBack={goHome} />
   return <PanelHome business={business} progress={progress} onOpen={setView} />

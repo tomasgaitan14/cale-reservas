@@ -5,7 +5,7 @@ import type { Business } from '../lib/business.ts'
 import type { SetupProgress } from '../lib/setup.ts'
 import { PAGE_ADDRESS_PREFIX } from '../lib/slug.ts'
 
-export type PanelView = 'services' | 'hours' | 'appointments'
+export type PanelView = 'services' | 'hours' | 'agenda'
 
 // Cuánto se muestra el aviso "Link copiado"
 const COPIED_NOTICE_MS = 2000
@@ -74,7 +74,7 @@ function AppointmentsCard({ progress, onOpen }: { progress: SetupProgress | null
           <CalendarBlank weight="bold" className="size-5" aria-hidden="true" />
         </span>
         <div className="flex flex-col">
-          <p className="font-head text-lg font-extrabold tracking-tight">Tus turnos</p>
+          <p className="font-head text-lg font-extrabold tracking-tight">Tu agenda</p>
           {progress ? (
             <p className="text-base text-muted">{describeUpcoming(progress.upcomingCount)}</p>
           ) : (
@@ -83,7 +83,7 @@ function AppointmentsCard({ progress, onOpen }: { progress: SetupProgress | null
         </div>
       </div>
       <button type="button" className={SECONDARY_BUTTON} onClick={onOpen}>
-        Ver turnos
+        Abrir agenda
       </button>
     </div>
   )
@@ -161,7 +161,7 @@ export function PanelHome({ business, progress, onOpen }: PanelHomeProps) {
         <p className="font-head text-base font-extrabold tracking-tight text-link">Tu panel</p>
         <h1 className="text-[1.875rem] md:text-[2.75rem] md:leading-[1.05]">{business.name}</h1>
         <PageCard business={business} ready={pageReady} />
-        <AppointmentsCard progress={progress} onOpen={() => onOpen('appointments')} />
+        <AppointmentsCard progress={progress} onOpen={() => onOpen('agenda')} />
       </section>
 
       <section className="rise-in flex flex-col" style={{ '--i': 1 } as CSSProperties} aria-labelledby="steps-title">
