@@ -3,7 +3,7 @@
 Reservas de turnos y recordatorios por WhatsApp para negocios con agenda (peluquerías, estéticas, consultorios). Es la parte de producto de
 [Cale](https://cale.com.ar): cada negocio tiene su página de reservas en `cale.com.ar/<negocio>` y su panel en `cale.com.ar/panel`.
 
-**Estado:** en construcción (MVP). Hoy hay la base de datos con sus tests y una primera página (entrar, crear el negocio y un panel inicial). El alcance, el estado y el orden de entrega están en [`CLAUDE.md`](CLAUDE.md).
+**Estado:** en construcción (MVP). Hoy hay la base de datos con sus tests y la página del negocio (entrar, servicios, horarios y turnos) y la página pública de reservas. El alcance, el estado y el orden de entrega están en [`CLAUDE.md`](CLAUDE.md).
 
 ## Cómo funciona (MVP)
 
