@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createBusiness, SAMPLE_WHATSAPP, tryCreateBusiness, uniqueSlug } from '../support/businesses.ts'
+import { INSUFFICIENT_PRIVILEGE } from '../support/pg-errors.ts'
 import { adminClient, anonymousClient, currentUserId, newUserClient } from '../support/users.ts'
 
-// Códigos de error de Postgres que devuelve la API
-const INSUFFICIENT_PRIVILEGE = '42501'
 
 describe('negocios', () => {
   it('un usuario crea un negocio y lo ve en su lista', async () => {

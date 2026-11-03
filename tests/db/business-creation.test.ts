@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createBusiness, randomSlug, SAMPLE_WHATSAPP, tryCreateBusiness, uniqueSlug } from '../support/businesses.ts'
+import { CHECK_VIOLATION, UNIQUE_VIOLATION } from '../support/pg-errors.ts'
 import { adminClient, newUserClient } from '../support/users.ts'
 
-// Códigos de error de Postgres que devuelve la API
-const UNIQUE_VIOLATION = '23505'
-const CHECK_VIOLATION = '23514'
 
 // Límites de las reglas de negocio
 const MIN_SLUG_LENGTH = 3

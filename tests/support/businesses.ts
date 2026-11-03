@@ -29,10 +29,10 @@ export function tryCreateBusiness(client: SupabaseClient, business: NewBusiness)
   return client.rpc('create_business', { p_name: business.name, p_slug: business.slug, p_whatsapp: business.whatsapp })
 }
 
-// Crea un negocio como ese usuario y devuelve su slug
-export async function createBusiness(client: SupabaseClient, name: string, slugBase: string): Promise<{ slug: string }> {
+// Crea un negocio como ese usuario y devuelve su id y su slug
+export async function createBusiness(client: SupabaseClient, name: string, slugBase: string): Promise<{ id: string; slug: string }> {
   const slug = uniqueSlug(slugBase)
-  const { error } = await tryCreateBusiness(client, { name, slug, whatsapp: SAMPLE_WHATSAPP })
+  const { data, error } = await tryCreateBusiness(client, { name, slug, whatsapp: SAMPLE_WHATSAPP })
   if (error) throw error
-  return { slug }
+  return { id: (data as { id: string }).id, slug }
 }
