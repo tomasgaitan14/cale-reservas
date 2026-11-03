@@ -1,5 +1,6 @@
-import { ArrowLeft, CaretDown, CheckCircle, Plus, WarningCircle, X } from '@phosphor-icons/react'
+import { ArrowLeft, CheckCircle, Plus, WarningCircle, X } from '@phosphor-icons/react'
 import { useEffect, useState, type CSSProperties } from 'react'
+import { TimeSelect } from '../components/TimeSelect.tsx'
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../components/ui.ts'
 import type { Business } from '../lib/business.ts'
 import {
@@ -10,7 +11,6 @@ import {
   findDayProblems,
   hasAnyHours,
   nextRange,
-  timeOptions,
   type TimeRange,
   type WeekHours,
 } from '../lib/hours.ts'
@@ -222,46 +222,6 @@ export function HoursScreen({ business, onBack }: HoursScreenProps) {
             </>
           ) : null}
         </section>
-      </div>
-    </div>
-  )
-}
-
-interface TimeSelectProps {
-  id: string
-  label: string
-  role: 'start' | 'end'
-  value: string
-  invalid: boolean
-  onChange: (value: string) => void
-}
-
-// Lista de horas en formato de 24 h: se ve igual en cualquier navegador, a diferencia del selector de hora nativo
-function TimeSelect({ id, label, role, value, invalid, onChange }: TimeSelectProps) {
-  return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-[0.9375rem] font-bold text-muted">
-        {label}
-      </label>
-      <div
-        className={`relative flex w-32 items-center rounded-[12px] border-2 bg-surface transition-colors focus-within:border-ink ${
-          invalid ? 'border-warn' : 'border-field-line'
-        }`}
-      >
-        <select
-          id={id}
-          className="h-[3.375rem] w-full min-w-0 cursor-pointer appearance-none bg-transparent pl-4 pr-9 text-base text-fg focus:outline-none"
-          value={value}
-          aria-invalid={invalid ? true : undefined}
-          onChange={event => onChange(event.target.value)}
-        >
-          {timeOptions(role, value).map(time => (
-            <option key={time} value={time}>
-              {time}
-            </option>
-          ))}
-        </select>
-        <CaretDown weight="bold" className="pointer-events-none absolute right-3 size-4 text-muted" aria-hidden="true" />
       </div>
     </div>
   )
