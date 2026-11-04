@@ -20,7 +20,7 @@ export interface AgendaData {
 }
 
 // Turnos (sin los cancelados) y bloqueos que tocan alguno de los días desde `firstDate` hasta `lastDate`, ambos incluidos
-export async function fetchAgenda(firstDate: string, lastDate: string): Promise<AgendaData> {
+export async function fetchAgenda(businessId: string, firstDate: string, lastDate: string): Promise<AgendaData> {
   const from = dayStartInstant(firstDate)
   const to = dayStartInstant(addDays(lastDate, 1))
 
@@ -28,11 +28,12 @@ export async function fetchAgenda(firstDate: string, lastDate: string): Promise<
     supabase
       .from('appointments')
       .select(APPOINTMENT_COLUMNS)
+      .eq('business_id', businessId)
       .neq('status', CANCELLED)
       .lt('starts_at', to)
       .gt('ends_at', from)
       .order('starts_at'),
-    supabase.from('time_blocks').select(BLOCK_COLUMNS).lt('starts_at', to).gt('ends_at', from).order('starts_at'),
+    supabase.from('time_blocks').select(BLOCK_COLUMNS).eq('business_id', businessId).lt('starts_at', to).gt('ends_at', from).order('starts_at'),
   ])
   if (appointments.error) throw new AgendaLoadError(appointments.error.message)
   if (blocks.error) throw new AgendaLoadError(blocks.error.message)
@@ -63,7 +64,7 @@ export async function createOwnerAppointment(businessId: string, input: OwnerApp
     p_date: input.date,
     p_time: input.time,
     p_client_name: input.name,
-    p_client_phone: input.phone,
+    p_client_phone: input.phone ?? undefined,
     p_reminders: input.reminders,
   })
   return toResult(error)
@@ -97,4 +98,17 @@ export async function deleteTimeBlock(blockId: string): Promise<AgendaResult> {
 export async function cancelAppointment(appointmentId: string): Promise<AgendaResult> {
   const { error } = await supabase.rpc('cancel_appointment', { p_appointment_id: appointmentId })
   return toResult(error)
+}
+
+// Conteos del inicio: cuentan inicios del día en Argentina, sin turnos cancelados.
+export async function fetchDayCounts(businessId: string, today: string): Promise<{ today: number; tomorrow: number }> {
+  async function count(date: string): Promise<number> {
+    const { count, error } = await supabase.from('appointments').select('id', { head: true, count: 'exact' })
+      .eq('business_id', businessId).neq('status', CANCELLED)
+      .gte('starts_at', dayStartInstant(date)).lt('starts_at', dayStartInstant(addDays(date, 1)))
+    if (error) throw new AgendaLoadError(error.message)
+    return count ?? 0
+  }
+  const [todayCount, tomorrowCount] = await Promise.all([count(today), count(addDays(today, 1))])
+  return { today: todayCount, tomorrow: tomorrowCount }
 }

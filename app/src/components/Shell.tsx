@@ -10,8 +10,8 @@ interface ShellProps {
 
 export function Shell({ onSignOut, children }: ShellProps) {
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-[72.5rem] flex-col px-4 md:px-10">
-      <header className="flex items-center justify-between py-5 md:py-7">
+    <div className="natural-shell mx-auto flex min-h-[100dvh] w-full max-w-[72.5rem] flex-col px-4 md:px-10">
+      <header className="natural-shell-header flex items-center justify-between py-5 md:py-7">
         <Brand />
         {onSignOut ? (
           <button type="button" className={SECONDARY_BUTTON} onClick={onSignOut}>

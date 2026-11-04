@@ -8,8 +8,8 @@ export class HoursLoadError extends Error {
   }
 }
 
-export async function fetchHours(): Promise<WeekHours> {
-  const { data, error } = await supabase.from('working_hours').select('day_of_week, start_time, end_time')
+export async function fetchHours(businessId: string): Promise<WeekHours> {
+  const { data, error } = await supabase.from('working_hours').select('day_of_week, start_time, end_time').eq('business_id', businessId)
   if (error) throw new HoursLoadError(error.message)
   return fromRows(data as HoursRow[])
 }
@@ -18,6 +18,9 @@ export type SaveHoursResult = { ok: true } | { ok: false; message: string }
 
 // Guarda la semana completa de una vez: si algún tramo no es válido, no se guarda nada
 export async function saveHours(businessId: string, week: WeekHours): Promise<SaveHoursResult> {
-  const { error } = await supabase.rpc('replace_working_hours', { p_business_id: businessId, p_ranges: toRanges(week) })
+  const { error } = await supabase.rpc('replace_working_hours', {
+    p_business_id: businessId,
+    p_ranges: toRanges(week).map(range => ({ ...range })),
+  })
   return error ? { ok: false, message: describeHoursError(error) } : { ok: true }
 }

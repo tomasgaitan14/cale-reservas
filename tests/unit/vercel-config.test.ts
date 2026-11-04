@@ -52,8 +52,9 @@ describe('rewrites: la app es de una sola página', () => {
 describe('Content-Security-Policy', () => {
   const policy = contentSecurityPolicy()
 
-  it('solo ejecuta scripts propios, sin inline ni eval', () => {
-    expect(policy.get('script-src')).toEqual(["'self'"])
+  it('solo ejecuta scripts propios y Turnstile, sin inline ni eval', () => {
+    expect(policy.get('script-src')).toEqual(["'self'", 'https://challenges.cloudflare.com'])
+    expect(policy.get('frame-src')).toEqual(['https://challenges.cloudflare.com'])
   })
 
   it('no admite estilos inline en hojas ni etiquetas: solo en atributos (los de React)', () => {

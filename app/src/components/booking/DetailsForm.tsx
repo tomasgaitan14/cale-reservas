@@ -1,5 +1,6 @@
+import { LegalLinks } from '../LegalLinks.tsx'
 import { Check, WarningCircle } from '@phosphor-icons/react'
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { INVALID_PHONE_MESSAGE, type BookingFormErrors } from '../../lib/booking-errors.ts'
 import { normalizePhone } from '../../lib/phone.ts'
 import { TextField } from '../TextField.tsx'
@@ -14,17 +15,26 @@ export interface BookingDetails {
   consent: boolean
 }
 
+// Borrador en memoria: el celular conserva lo que la persona escribió hasta enviar.
+export interface BookingDraft {
+  name: string
+  phone: string
+  consent: boolean
+}
+
 interface DetailsFormProps {
+  draft: BookingDraft
+  onDraftChange: (draft: BookingDraft) => void
   errors: BookingFormErrors
+  verification?: ReactNode
+  verificationReady?: boolean
   busy: boolean
   onClearError: (field: keyof BookingFormErrors) => void
   onSubmit: (details: BookingDetails) => void
 }
 
-export function DetailsForm({ errors, busy, onClearError, onSubmit }: DetailsFormProps) {
-  const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [consent, setConsent] = useState(false)
+export function DetailsForm({ draft, onDraftChange, errors, busy, verification, verificationReady = true, onClearError, onSubmit }: DetailsFormProps) {
+  const { name, phone, consent } = draft
   const [phoneError, setPhoneError] = useState<string | null>(null)
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -46,7 +56,7 @@ export function DetailsForm({ errors, busy, onClearError, onSubmit }: DetailsFor
         maxLength={MAX_NAME_LENGTH}
         value={name}
         onChange={event => {
-          setName(event.target.value)
+          onDraftChange({ ...draft, name: event.target.value })
           onClearError('name')
         }}
         error={errors.name}
@@ -62,7 +72,7 @@ export function DetailsForm({ errors, busy, onClearError, onSubmit }: DetailsFor
         hint="Con el código de área, sin el 15. Es para avisarte por WhatsApp."
         value={phone}
         onChange={event => {
-          setPhone(event.target.value)
+          onDraftChange({ ...draft, phone: event.target.value })
           setPhoneError(null)
           onClearError('phone')
         }}
@@ -78,7 +88,7 @@ export function DetailsForm({ errors, busy, onClearError, onSubmit }: DetailsFor
             checked={consent}
             aria-describedby={errors.consent ? 'consent-error' : undefined}
             onChange={event => {
-              setConsent(event.target.checked)
+              onDraftChange({ ...draft, consent: event.target.checked })
               onClearError('consent')
             }}
           />
@@ -100,13 +110,19 @@ export function DetailsForm({ errors, busy, onClearError, onSubmit }: DetailsFor
         ) : null}
       </div>
 
+      <div className="flex flex-col gap-3 text-sm text-muted">
+        <p>El negocio recibe tu nombre, celular y los datos del turno para gestionar tu reserva. Los recordatorios por WhatsApp todavía no están habilitados. Para consultar o corregir tus datos, contactá al negocio o a <a className="underline" href="mailto:cale.turnos@gmail.com">Cale</a>.</p>
+        <LegalLinks />
+      </div>
+
       {errors.general ? (
         <p role="alert" className="rounded-[12px] bg-warn-bg p-3 text-[0.9375rem] font-medium text-warn">
           {errors.general}
         </p>
       ) : null}
 
-      <button type="submit" className={PRIMARY_BUTTON} disabled={busy}>
+      {verification}
+      <button type="submit" className={PRIMARY_BUTTON} disabled={busy || !verificationReady}>
         {busy ? 'Reservando…' : 'Reservar turno'}
       </button>
     </form>

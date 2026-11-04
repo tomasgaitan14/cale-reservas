@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { cleanSlugInput, MAX_SLUG_LENGTH, PAGE_ADDRESS_PREFIX, slugify } from '../../app/src/lib/slug.ts'
 
 describe('PAGE_ADDRESS_PREFIX: la dirección que se le muestra al negocio', () => {
-  it('es la del subdominio de la app, no la del sitio', () => {
+  it('usa el dominio único de Cale', () => {
     expect(PAGE_ADDRESS_PREFIX).toBe('app.cale.com.ar/')
   })
 })

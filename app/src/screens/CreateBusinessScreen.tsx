@@ -60,6 +60,7 @@ export function CreateBusinessScreen({ onCreated }: CreateBusinessScreenProps) {
   return (
     <div className="grid items-start gap-10 md:grid-cols-[0.9fr_1.1fr] md:gap-16">
       <div className="rise-in flex flex-col gap-5 pt-2 md:pt-10" style={{ '--i': 0 } as CSSProperties}>
+        <p className="eyebrow">Paso 2 de 6 · Tu negocio</p>
         <h1 className="text-[1.875rem] md:text-[2.75rem] md:leading-[1.05]">
           Contanos de tu negocio<span className="text-muted">, son 3 datos.</span>
         </h1>
@@ -71,7 +72,7 @@ export function CreateBusinessScreen({ onCreated }: CreateBusinessScreenProps) {
       <form
         onSubmit={submit}
         noValidate
-        className="rise-in flex flex-col gap-6 rounded-[2rem] bg-surface p-6 shadow-soft md:p-8"
+        className="rise-in flex flex-col gap-6 rounded-[1.25rem] border border-line bg-surface p-6 md:p-8"
         style={{ '--i': 1 } as CSSProperties}
       >
         <TextField

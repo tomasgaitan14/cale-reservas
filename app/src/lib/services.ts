@@ -29,8 +29,8 @@ function toResult(error: { code?: string; message?: string } | null): ServiceRes
 }
 
 // La seguridad por filas deja ver solo los servicios de los negocios de la persona
-export async function fetchServices(): Promise<Service[]> {
-  const { data, error } = await supabase.from('services').select(SERVICE_COLUMNS).order('created_at')
+export async function fetchServices(businessId: string): Promise<Service[]> {
+  const { data, error } = await supabase.from('services').select(SERVICE_COLUMNS).eq('business_id', businessId).order('created_at')
   if (error) throw new ServiceLoadError(error.message)
   return data as Service[]
 }

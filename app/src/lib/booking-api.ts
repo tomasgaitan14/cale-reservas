@@ -45,6 +45,7 @@ export interface BookingRequest {
   // Ya normalizado: solo dígitos, con código de país
   phone: string
   consent: boolean
+  token: string
 }
 
 export interface BookingConfirmation {
@@ -57,15 +58,20 @@ export interface BookingConfirmation {
 export type BookingResult = { ok: true; confirmation: BookingConfirmation } | { ok: false; errors: BookingFormErrors }
 
 export async function createBooking(request: BookingRequest): Promise<BookingResult> {
-  const { data, error } = await supabase.rpc('create_booking', {
-    p_slug: request.slug,
-    p_service_id: request.serviceId,
-    p_date: request.date,
-    p_time: request.time,
-    p_client_name: request.name,
-    p_client_phone: request.phone,
-    p_consent: request.consent,
-  })
-  if (error) return { ok: false, errors: describeBookingError(error) }
-  return { ok: true, confirmation: data as BookingConfirmation }
+  if (!request.token) return { ok: false, errors: { general: 'Completá la verificación para reservar.' } }
+  try {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/book-appointment`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', apikey: import.meta.env.VITE_SUPABASE_ANON_KEY },
+      body: JSON.stringify(request), signal: AbortSignal.timeout(20000),
+    })
+    const result = await response.json()
+    if (!response.ok) {
+      if (['verification_failed', 'verification_unavailable'].includes(result.error)) return { ok: false, errors: { general: 'No pudimos verificar la reserva. Probá nuevamente.' } }
+      return { ok: false, errors: describeBookingError({ message: result.error }) }
+    }
+    if (!result.confirmation || !['business_name', 'service_name', 'date', 'time'].every(key => typeof result.confirmation[key] === 'string')) throw new Error('invalid_confirmation')
+    return { ok: true, confirmation: result.confirmation as BookingConfirmation }
+  } catch {
+    return { ok: false, errors: { general: 'No pudimos confirmar el resultado. Consultá al negocio antes de volver a reservar.' } }
+  }
 }

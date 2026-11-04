@@ -8,10 +8,10 @@ interface DatePickerProps {
 
 const SHORT_LENGTH = 3
 
-// Fila de días que se desliza hacia el costado: cada botón dice día de la semana, número y mes
+// Cuatro días visibles; el resto se recorre deslizando dentro del formulario.
 export function DatePicker({ dates, selected, onSelect }: DatePickerProps) {
   return (
-    <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0" role="group" aria-label="Días disponibles">
+    <div className="booking-dates" tabIndex={0} role="group" aria-label="Días disponibles">
       {dates.map(date => {
         const active = date === selected
         return (
@@ -21,7 +21,7 @@ export function DatePicker({ dates, selected, onSelect }: DatePickerProps) {
             aria-pressed={active}
             aria-label={`${weekdayName(date)} ${dayOfMonth(date)} de ${monthName(date)}`}
             onClick={() => onSelect(date)}
-            className={`flex h-24 w-[4.5rem] flex-none snap-start flex-col items-center justify-center gap-0.5 rounded-[1.25rem] border-2 transition duration-200 active:scale-[0.97] ${
+            className={`flex h-20 min-w-0 w-full snap-start flex-col items-center justify-center gap-0.5 rounded-[1.25rem] border-2 transition duration-200 active:scale-[0.97] ${
               active ? 'border-ink bg-ink text-on-ink' : 'border-line bg-surface hover:border-field-line'
             }`}
           >

@@ -1,11 +1,12 @@
+import { Turnstile } from '../components/booking/Turnstile.tsx'
 import { CheckCircle } from '@phosphor-icons/react'
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { DatePicker } from '../components/booking/DatePicker.tsx'
-import { DetailsForm, type BookingDetails } from '../components/booking/DetailsForm.tsx'
+import { DetailsForm, type BookingDetails, type BookingDraft } from '../components/booking/DetailsForm.tsx'
 import { ServicePicker } from '../components/booking/ServicePicker.tsx'
 import { TimePicker, type SlotsState } from '../components/booking/TimePicker.tsx'
 import { Shell } from '../components/Shell.tsx'
-import { SECONDARY_BUTTON } from '../components/ui.ts'
+import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../components/ui.ts'
 import {
   BookingLoadError,
   createBooking,
@@ -86,6 +87,10 @@ interface BookingFlowProps {
 }
 
 function BookingFlow({ slug, info }: BookingFlowProps) {
+  const [token, setToken] = useState('')
+  const [verificationAttempt, setVerificationAttempt] = useState(0)
+  const [draft, setDraft] = useState<BookingDraft>({ name: '', phone: '', consent: false })
+  const [stage, setStage] = useState<'service' | 'schedule' | 'details'>('service')
   const [serviceId, setServiceId] = useState<string | null>(null)
   const [date, setDate] = useState<string | null>(null)
   const [time, setTime] = useState<string | null>(null)
@@ -120,10 +125,12 @@ function BookingFlow({ slug, info }: BookingFlowProps) {
   }
 
   async function submit(details: BookingDetails) {
-    if (!serviceId || !date || !time) return
+    if (!serviceId || !date || !time || !token) return
     setBusy(true)
     setErrors({})
-    const result = await createBooking({ slug, serviceId, date, time, ...details })
+    const result = await createBooking({ slug, serviceId, date, time, ...details, token })
+    setToken('')
+    setVerificationAttempt(value => value + 1)
     setBusy(false)
     if (result.ok) {
       setConfirmation(result.confirmation)
@@ -133,6 +140,7 @@ function BookingFlow({ slug, info }: BookingFlowProps) {
     // Si el horario se ocupó, se vuelve a buscar la lista para que no se ofrezca más
     if (result.errors.slot) {
       setTime(null)
+      setStage('schedule')
       setSlotsAttempt(count => count + 1)
     }
   }
@@ -141,90 +149,44 @@ function BookingFlow({ slug, info }: BookingFlowProps) {
 
   const bookable = info.services.length > 0 && info.open_days.length > 0
 
-  return (
-    <div className="grid items-start gap-10 pt-2 md:grid-cols-[0.8fr_1.2fr] md:gap-16 md:pt-8">
-      <aside className="rise-in flex flex-col gap-6 md:sticky md:top-8" style={{ '--i': 0 } as CSSProperties}>
-        <div className="flex flex-col gap-2">
-          <p className="font-head text-base font-extrabold tracking-tight text-link">Reservá tu turno</p>
-          <h1 className="break-words text-[1.875rem] md:text-[2.75rem] md:leading-[1.05]">{info.name}</h1>
-        </div>
-        {/* En el celular el resumen aparece recién cuando hay algo elegido, para que los servicios queden arriba */}
-        <dl className={`flex-col gap-3 rounded-[1.25rem] bg-ink p-5 text-on-ink md:flex ${serviceId ? 'flex' : 'hidden'}`}>
-          <SummaryRow label="Servicio" value={service ? `${service.name} · ${formatDuration(service.duration_minutes)}` : null} />
-          <SummaryRow label="Día" value={date ? formatLongDate(date) : null} />
-          <SummaryRow label="Hora" value={time} />
-        </dl>
-      </aside>
-
-      <div className="flex min-w-0 flex-col gap-10">
-        {!bookable ? (
-          <p className="rise-in rounded-[1.25rem] bg-tint p-5 text-base" style={{ '--i': 1 } as CSSProperties}>
-            Este negocio todavía no recibe reservas por acá. Volvé a probar más tarde.
-          </p>
-        ) : null}
-
-        {bookable ? (
-          <Step number={1} title="Elegí el servicio" index={1}>
-            <ServicePicker
-              services={info.services}
-              selectedId={serviceId}
-              onSelect={id => {
-                setServiceId(id)
-                setTime(null)
-                setErrors({})
-              }}
-            />
-          </Step>
-        ) : null}
-
-        {serviceId ? (
-          <Step number={2} title="Elegí el día" index={2}>
-            <DatePicker
-              dates={dates}
-              selected={date}
-              onSelect={next => {
-                setDate(next)
-                setTime(null)
-                setErrors({})
-              }}
-            />
-          </Step>
-        ) : null}
-
-        {serviceId && date ? (
-          <Step number={3} title="Elegí la hora" index={3}>
-            <TimePicker
-              slots={slots}
-              selected={time}
-              onSelect={next => {
-                setTime(next)
-                clearError('slot')
-              }}
-              onRetry={() => setSlotsAttempt(count => count + 1)}
-            />
-            {errors.slot ? (
-              <p role="alert" className="mt-3 rounded-[12px] bg-warn-bg p-3 text-[0.9375rem] font-medium text-warn">
-                {errors.slot}
-              </p>
-            ) : null}
-          </Step>
-        ) : null}
-
-        {serviceId && date && time ? (
-          <Step number={4} title="Tus datos" index={4}>
-            <DetailsForm errors={errors} busy={busy} onClearError={clearError} onSubmit={details => void submit(details)} />
-          </Step>
-        ) : null}
-      </div>
+  return <div className="warm-split pt-4 md:pt-10">
+    <aside className="flex flex-col gap-6 md:sticky md:top-8">
+      <p className="eyebrow">{info.name}</p>
+      <h1 className={`screen-title ${serviceId ? 'hidden md:block' : ''}`}>Un turno que te quede bien.</h1>
+      <p className={`max-w-sm text-lg text-muted ${serviceId ? 'hidden md:block' : ''}`}>Elegí el servicio, el día y el horario. Son solo unos pasos.</p>
+      {serviceId && <dl className="booking-summary flex flex-col gap-4 rounded-2xl bg-tint p-5">
+        <SummaryRow label="Servicio" value={service ? `${service.name} · ${formatDuration(service.duration_minutes)}` : null} />
+        <SummaryRow label="Día" value={date ? formatLongDate(date) : null} /><SummaryRow label="Hora" value={time} />
+      </dl>}
+    </aside>
+    <div className="warm-form">
+      {!bookable ? <p>Este negocio todavía no recibe reservas por acá. Volvé a probar más tarde.</p> : <>
+        <ol className="booking-progress" aria-label="Pasos de la reserva">
+          {(['service', 'schedule', 'details'] as const).map((item, index) => <li key={item} aria-current={stage === item ? 'step' : undefined}><span>{index + 1}</span>{['Servicio', 'Día y hora', 'Tus datos'][index]}</li>)}
+        </ol>
+        {stage === 'service' && <Step number={1} title="¿Qué turno necesitás?" index={0}>
+          <ServicePicker services={info.services} selectedId={serviceId} onSelect={id => { setServiceId(id); setDate(null); setTime(null); setErrors({}); setStage('schedule') }} />
+        </Step>}
+        {stage === 'schedule' && <Step number={2} title="¿Cuándo venís?" index={0}>
+          <DatePicker dates={dates} selected={date} onSelect={next => { setDate(next); setTime(null); setErrors({}) }} />
+          {date && <TimePicker slots={slots} selected={time} onSelect={next => { setTime(next); clearError('slot') }} onRetry={() => setSlotsAttempt(count => count + 1)} />}
+          {errors.slot && <p role="alert" className="rounded-xl bg-warn-bg p-3 text-warn">{errors.slot}</p>}
+          <div className="flex flex-wrap gap-3"><button className={SECONDARY_BUTTON} onClick={() => setStage('service')}>Atrás</button><button className={`${PRIMARY_BUTTON} flex-1`} disabled={!date || !time} onClick={() => setStage('details')}>Continuar</button></div>
+        </Step>}
+        {stage === 'details' && serviceId && date && time && <Step number={3} title="Dejanos tus datos" index={0}>
+          <DetailsForm verification={<Turnstile key={verificationAttempt} onToken={setToken} />} verificationReady={Boolean(token)} draft={draft} onDraftChange={setDraft} errors={errors} busy={busy} onClearError={clearError} onSubmit={details => void submit(details)} />
+          <button className={`${SECONDARY_BUTTON} self-start`} disabled={busy} onClick={() => setStage('schedule')}>Cambiar día u hora</button>
+        </Step>}
+      </>}
     </div>
-  )
+  </div>
 }
 
 function SummaryRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="flex flex-col">
-      <dt className="text-[0.9375rem] text-ink-muted">{label}</dt>
-      <dd className={`font-head text-lg font-extrabold tracking-tight ${value ? '' : 'text-ink-muted'}`}>{value ?? 'Sin elegir'}</dd>
+      <dt className="text-[0.9375rem] text-muted">{label}</dt>
+      <dd className={`font-head text-lg font-extrabold tracking-tight ${value ? '' : 'text-muted'}`}>{value ?? 'Sin elegir'}</dd>
     </div>
   )
 }
@@ -248,16 +210,14 @@ function BookingDone({ confirmation, businessName }: { confirmation: BookingConf
         <CheckCircle weight="bold" className="size-8" aria-hidden="true" />
       </span>
       <h1 className="text-[1.875rem] md:text-[2.5rem]">Tu turno quedó reservado</h1>
-      <div className="flex w-full flex-col gap-1 rounded-[1.25rem] bg-ink p-5 text-on-ink">
+      <div className="flex w-full flex-col gap-1 rounded-[1.25rem] bg-tint p-5 text-fg">
         <p className="font-head text-xl font-extrabold tracking-tight">{confirmation.service_name}</p>
         <p className="text-base">
           {formatLongDate(confirmation.date)} a las {confirmation.time}
         </p>
-        <p className="text-[0.9375rem] text-ink-muted">{businessName}</p>
+        <p className="text-[0.9375rem] text-muted">{businessName}</p>
       </div>
-      <p className="text-muted">
-        Si el negocio tiene activados los recordatorios, te escribimos por WhatsApp antes del turno. Si no podés ir, avisale directamente al negocio.
-      </p>
+      <p className="text-muted">Si no podés ir, avisale directamente al negocio. Los recordatorios por WhatsApp estarán disponibles próximamente.</p>
     </div>
   )
 }

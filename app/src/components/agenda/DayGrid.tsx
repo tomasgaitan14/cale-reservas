@@ -11,7 +11,7 @@ import { dayOfMonth, weekdayName, weekdayOf } from '../../lib/dates.ts'
 import type { WeekHours } from '../../lib/hours.ts'
 
 // Alto de una hora en la grilla: alcanza para que un turno de una hora muestre dos líneas de texto
-const HOUR_HEIGHT_PX = 64
+const HOUR_HEIGHT_PX = 52
 const MINUTES_PER_HOUR = 60
 const GUTTER_WIDTH = '3.5rem'
 const WEEKDAY_SHORT_LENGTH = 3
@@ -40,9 +40,9 @@ export function DayGrid({ dates, today, itemsByDate, hours, range, onEmptyClick,
   const minWidth = dates.length > 1 ? `${3.5 + dates.length * 7}rem` : undefined
 
   return (
-    <div className="overflow-x-auto rounded-[1.5rem] bg-surface shadow-soft">
+    <div className="natural-day-grid overflow-x-auto">
       <div style={{ minWidth }}>
-        <div className="grid border-b-2 border-line" style={columns}>
+        {dates.length > 1 && <div className="grid border-b border-line" style={columns}>
           <div />
           {dates.map(date => (
             <div key={date} className="flex flex-col items-center py-3">
@@ -56,7 +56,7 @@ export function DayGrid({ dates, today, itemsByDate, hours, range, onEmptyClick,
               </span>
             </div>
           ))}
-        </div>
+        </div>}
 
         <div className="grid" style={columns}>
           <div className="relative" style={{ height }} aria-hidden="true">
@@ -75,7 +75,7 @@ export function DayGrid({ dates, today, itemsByDate, hours, range, onEmptyClick,
             <div
               key={date}
               role="presentation"
-              className="relative cursor-pointer border-l-2 border-line bg-line/40"
+              className="relative cursor-pointer border-l border-line bg-line/40"
               style={{ height }}
               onClick={event => {
                 const rect = event.currentTarget.getBoundingClientRect()
@@ -93,7 +93,7 @@ export function DayGrid({ dates, today, itemsByDate, hours, range, onEmptyClick,
                 />
               ))}
               {lines.map(line => (
-                <div key={line} className="absolute inset-x-0 border-t-2 border-line" style={{ top: pixelsFor(line - range.start) }} />
+                <div key={line} className="absolute inset-x-0 border-t border-line" style={{ top: pixelsFor(line - range.start) }} />
               ))}
               {(itemsByDate[date] ?? []).map(item => (
                 <AgendaItemButton key={`${item.kind}-${item.id}`} item={item} range={range} onClick={() => onItemClick(item)} />
@@ -123,7 +123,7 @@ function AgendaItemButton({ item, range, onClick }: { item: AgendaItem; range: M
           onClick()
         }}
         aria-label={`Bloqueado de ${time}${item.reason ? `: ${item.reason}` : ''}`}
-        className="absolute inset-x-1 overflow-hidden rounded-[10px] border-2 border-field-line bg-[repeating-linear-gradient(135deg,var(--border),var(--border)_6px,var(--surface)_6px,var(--surface)_12px)] px-2 py-0.5 text-left text-[0.9375rem] font-bold text-muted transition duration-200 hover:border-ink"
+        className="natural-block absolute inset-x-1 overflow-hidden rounded-[10px] border border-field-line bg-[repeating-linear-gradient(135deg,var(--border),var(--border)_6px,var(--surface)_6px,var(--surface)_12px)] px-2 py-0.5 text-left text-[0.9375rem] font-bold text-muted transition duration-200 hover:border-ink"
         style={{ top, height }}
       >
         <span className="block truncate">{item.reason ?? 'Bloqueado'}</span>
@@ -139,15 +139,15 @@ function AgendaItemButton({ item, range, onClick }: { item: AgendaItem; range: M
         onClick()
       }}
       aria-label={`Turno de ${time}: ${item.clientName}, ${item.serviceName}`}
-      className={`absolute inset-x-1 overflow-hidden rounded-[10px] border-l-4 bg-tint px-2 py-0.5 text-left text-[0.9375rem] leading-tight transition duration-200 hover:brightness-95 active:scale-[0.99] ${
-        item.source === 'manual' ? 'border-ink' : 'border-ok'
+      className={`natural-appointment ${item.status === 'confirmed' ? 'is-confirmed' : 'is-pending'} absolute inset-x-1 overflow-hidden rounded-[10px] border-l-4 bg-tint px-2 py-0.5 text-left text-[0.9375rem] leading-tight transition duration-200 hover:brightness-95 active:scale-[0.99] ${
+        item.status === 'confirmed' ? 'border-ok' : 'border-pend'
       }`}
       style={{ top, height }}
     >
-      <span className="block truncate font-bold">
-        {minutesToTime(item.startMinutes)} {item.clientName}
-      </span>
-      {twoLines ? <span className="block truncate text-muted">{item.serviceName}</span> : null}
+      <span className="natural-appointment-main"><span className="block truncate font-bold">{item.serviceName}</span>
+      {twoLines ? <span className="block truncate text-muted">{item.clientName}</span> : null}</span>
+      {twoLines && <span className="natural-appointment-status">{item.status === 'confirmed' ? 'Confirmado' : item.status === 'pending' ? 'Pendiente' : 'Reservado'}</span>}
+      <span className="natural-appointment-time">{minutesToTime(item.startMinutes)}</span>
     </button>
   )
 }

@@ -22,9 +22,10 @@ type SaveMessage = { kind: 'ok' | 'error'; text: string }
 interface HoursScreenProps {
   business: Business
   onBack: () => void
+  onContinue?: () => void
 }
 
-export function HoursScreen({ business, onBack }: HoursScreenProps) {
+export function HoursScreen({ business, onBack, onContinue }: HoursScreenProps) {
   const [load, setLoad] = useState<LoadState>({ status: 'loading' })
   const [reloadCount, setReloadCount] = useState(0)
   const [week, setWeek] = useState<WeekHours>(emptyWeek())
@@ -35,10 +36,10 @@ export function HoursScreen({ business, onBack }: HoursScreenProps) {
   useEffect(() => {
     let cancelled = false
     setLoad({ status: 'loading' })
-    fetchHours()
+    fetchHours(business.id)
       .then(loaded => {
         if (cancelled) return
-        setWeek(loaded)
+        setWeek(onContinue && !hasAnyHours(loaded) ? defaultWeek() : loaded)
         setLoad({ status: 'ready' })
       })
       .catch((error: unknown) => {
@@ -48,7 +49,7 @@ export function HoursScreen({ business, onBack }: HoursScreenProps) {
     return () => {
       cancelled = true
     }
-  }, [reloadCount])
+  }, [reloadCount, onContinue, business.id])
 
   function changeDay(day: number, ranges: TimeRange[]) {
     setWeek(current => ({ ...current, [day]: ranges }))
@@ -67,11 +68,15 @@ export function HoursScreen({ business, onBack }: HoursScreenProps) {
       setMessage({ kind: 'error', text: 'Revisá los días marcados antes de guardar.' })
       return
     }
+    if (onContinue && !hasAnyHours(week)) {
+      setMessage({ kind: 'error', text: 'Elegí al menos un horario para continuar.' }); return
+    }
     setSaving(true)
     setMessage(null)
     const result = await saveHours(business.id, week)
     setSaving(false)
     setMessage(result.ok ? { kind: 'ok', text: 'Horarios guardados.' } : { kind: 'error', text: result.message })
+    if (result.ok) onContinue?.()
   }
 
   return (
@@ -80,7 +85,7 @@ export function HoursScreen({ business, onBack }: HoursScreenProps) {
         <h1 className="text-[1.875rem] md:text-[2.5rem]">Tus horarios</h1>
         <button type="button" className={SECONDARY_BUTTON} onClick={onBack}>
           <ArrowLeft weight="bold" className="size-5" aria-hidden="true" />
-          Volver al panel
+          {onContinue ? 'Seguir después' : 'Volver al negocio'}
         </button>
       </div>
 
@@ -203,7 +208,7 @@ export function HoursScreen({ business, onBack }: HoursScreenProps) {
 
               <div className="flex flex-col gap-3">
                 <button type="button" className={PRIMARY_BUTTON} onClick={() => void save()} disabled={saving}>
-                  {saving ? 'Guardando…' : 'Guardar horarios'}
+                  {saving ? 'Guardando…' : onContinue ? 'Guardar y continuar' : 'Guardar horarios'}
                 </button>
                 {message ? (
                   <p

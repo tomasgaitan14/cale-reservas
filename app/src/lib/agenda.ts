@@ -30,6 +30,7 @@ interface ItemBase {
 export interface AppointmentItem extends ItemBase {
   kind: 'appointment'
   clientName: string
+  status: string
   clientPhone: string | null
   serviceName: string
   source: string
@@ -97,6 +98,7 @@ export function dayItems(date: string, appointments: AgendaAppointment[], blocks
       startMinutes: segment.start,
       endMinutes: segment.end,
       clientName: appointment.client_name,
+      status: appointment.status,
       clientPhone: appointment.client_phone,
       serviceName: appointment.service_name,
       source: appointment.source,

@@ -23,9 +23,10 @@ type ListState = { status: 'loading' } | { status: 'error' } | { status: 'ready'
 interface ServicesScreenProps {
   business: Business
   onBack: () => void
+  onContinue?: () => void
 }
 
-export function ServicesScreen({ business, onBack }: ServicesScreenProps) {
+export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenProps) {
   const [list, setList] = useState<ListState>({ status: 'loading' })
   const [reloadCount, setReloadCount] = useState(0)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -38,7 +39,7 @@ export function ServicesScreen({ business, onBack }: ServicesScreenProps) {
 
   useEffect(() => {
     let cancelled = false
-    fetchServices()
+    fetchServices(business.id)
       .then(services => {
         if (!cancelled) setList({ status: 'ready', services })
       })
@@ -49,7 +50,7 @@ export function ServicesScreen({ business, onBack }: ServicesScreenProps) {
     return () => {
       cancelled = true
     }
-  }, [reloadCount])
+  }, [reloadCount, business.id])
 
   const reload = () => setReloadCount(count => count + 1)
 
@@ -70,6 +71,7 @@ export function ServicesScreen({ business, onBack }: ServicesScreenProps) {
     if (result.ok) {
       resetForm()
       reload()
+      onContinue?.()
     } else {
       setErrors(result.errors)
     }
@@ -93,21 +95,11 @@ export function ServicesScreen({ business, onBack }: ServicesScreenProps) {
     .sort((a, b) => a - b)
     .map(minutes => ({ value: minutes, label: formatDuration(minutes) }))
 
-  return (
-    <div className="flex flex-col gap-8 pt-2 md:pt-6">
-      <div className="rise-in flex flex-wrap items-center justify-between gap-4" style={{ '--i': 0 } as CSSProperties}>
-        <h1 className="text-[1.875rem] md:text-[2.5rem]">Tus servicios</h1>
-        <button type="button" className={SECONDARY_BUTTON} onClick={onBack}>
-          <ArrowLeft weight="bold" className="size-5" aria-hidden="true" />
-          Volver al panel
-        </button>
-      </div>
-
-      <div className="grid items-start gap-8 md:grid-cols-[0.9fr_1.1fr] md:gap-14">
+  const editorForm = (
         <form
           onSubmit={submit}
           noValidate
-          className="rise-in flex flex-col gap-5 rounded-[2rem] bg-surface p-6 shadow-soft md:p-8"
+          className="rise-in flex flex-col gap-5 rounded-[1.25rem] border border-line bg-surface p-6 md:p-8"
           style={{ '--i': 1 } as CSSProperties}
         >
           <h2 className="text-[1.3125rem]">{editingId ? 'Editar servicio' : 'Nuevo servicio'}</h2>
@@ -143,7 +135,7 @@ export function ServicesScreen({ business, onBack }: ServicesScreenProps) {
           <div className="flex flex-wrap gap-3">
             <button type="submit" className={`${PRIMARY_BUTTON} sm:w-auto sm:flex-1`} disabled={busy}>
               {editingId ? <Check weight="bold" className="size-5" aria-hidden="true" /> : <Plus weight="bold" className="size-5" aria-hidden="true" />}
-              {editingId ? 'Guardar cambios' : 'Agregar servicio'}
+              {editingId ? 'Guardar cambios' : onContinue ? 'Guardar y continuar' : 'Agregar servicio'}
             </button>
             {editingId ? (
               <button type="button" className={SECONDARY_BUTTON} onClick={resetForm} disabled={busy}>
@@ -152,6 +144,31 @@ export function ServicesScreen({ business, onBack }: ServicesScreenProps) {
             ) : null}
           </div>
         </form>
+  )
+  if (onContinue) return <section className="warm-split">
+    <div className="flex flex-col gap-5">
+      <h1 className="screen-title">Empecemos por un servicio.</h1>
+      <p className="max-w-md text-lg text-muted">Contanos qué ofrecés y cuánto dura. Después podés sumar más.</p>
+      <svg viewBox="0 0 240 200" className="mt-4 w-52 max-w-full text-link opacity-65" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+        <rect x="70" y="54" width="115" height="112" rx="14" /><path d="M70 83h115M96 43v24M158 43v24M51 156c-27-42-16-81 1-112M49 103c-25-3-31-18-28-33 20 3 31 12 28 33ZM50 81c21-1 30-15 29-28-17-1-26 10-29 28ZM156 181c16-19 34-23 55-17-11 13-27 16-44 12M175 161l28-33" />
+        <g fill="currentColor" stroke="none" opacity=".25"><rect x="91" y="99" width="16" height="16" rx="3"/><rect x="122" y="99" width="16" height="16" rx="3"/><rect x="153" y="99" width="16" height="16" rx="3"/><rect x="91" y="128" width="16" height="16" rx="3"/><rect x="122" y="128" width="16" height="16" rx="3"/></g>
+      </svg>
+    </div>
+    <div className="flex flex-col gap-4">{editorForm}<p className="text-sm text-muted">Podés cambiarlo cuando quieras.</p></div>
+  </section>
+
+  return (
+    <div className="flex flex-col gap-8 pt-2 md:pt-6">
+      <div className="rise-in flex flex-wrap items-center justify-between gap-4" style={{ '--i': 0 } as CSSProperties}>
+        <h1 className="text-[1.875rem] md:text-[2.5rem]">{onContinue ? 'Empecemos por un servicio.' : 'Tus servicios'}</h1>
+        <button type="button" className={SECONDARY_BUTTON} onClick={onBack}>
+          <ArrowLeft weight="bold" className="size-5" aria-hidden="true" />
+          {onContinue ? 'Seguir después' : 'Volver al negocio'}
+        </button>
+      </div>
+
+      <div className="grid items-start gap-8 md:grid-cols-[0.9fr_1.1fr] md:gap-14">
+        {editorForm}
 
         <section className="rise-in flex flex-col" style={{ '--i': 2 } as CSSProperties} aria-labelledby="services-title">
           <h2 id="services-title" className="mb-2 text-[1.3125rem]">

@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Shell } from './components/Shell.tsx'
 import { SECONDARY_BUTTON } from './components/ui.ts'
 import { useSession } from './hooks/useSession.ts'
 import { BusinessLoadError, fetchMyBusiness, type Business } from './lib/business.ts'
 import { parseRoute } from './lib/route.ts'
+import { designVariant } from './designs/model.ts'
 import { supabase } from './lib/supabase.ts'
 import { BookingPage } from './screens/BookingPage.tsx'
 import { CreateBusinessScreen } from './screens/CreateBusinessScreen.tsx'
 import { LoginScreen } from './screens/LoginScreen.tsx'
-import { Panel } from './screens/Panel.tsx'
+const DesignPreview = import.meta.env.DEV ? lazy(() => import('./designs/DesignPreview.tsx').then(module => ({ default: module.DesignPreview }))) : null
+const LandingScreen = lazy(() => import('./screens/LandingScreen.tsx').then(module => ({ default: module.LandingScreen })))
+const Panel = lazy(() => import('./screens/Panel.tsx').then(module => ({ default: module.Panel })))
 
 type BusinessState = { status: 'loading' } | { status: 'error' } | { status: 'ready'; business: Business | null }
 
@@ -32,24 +35,16 @@ function BusinessGate() {
     }
   }, [attempt])
 
-  if (state.status === 'loading') return <LoadingPanel />
-
-  if (state.status === 'error') {
-    return (
-      <div className="flex max-w-md flex-col items-start gap-4 pt-10">
-        <h1 className="text-[1.875rem]">No pudimos cargar tu panel</h1>
-        <p className="text-muted">Revisá tu conexión y probá de nuevo.</p>
-        <button type="button" className={SECONDARY_BUTTON} onClick={() => setAttempt(count => count + 1)}>
-          Reintentar
-        </button>
-      </div>
-    )
+  if (state.status === 'ready' && state.business) {
+    return <Suspense fallback={<Shell><LoadingPanel /></Shell>}><Panel business={state.business} /></Suspense>
   }
-
-  if (!state.business) {
-    return <CreateBusinessScreen onCreated={business => setState({ status: 'ready', business })} />
-  }
-  return <Panel business={state.business} />
+  return <Shell onSignOut={() => void supabase.auth.signOut()}>
+    {state.status === 'loading' ? <LoadingPanel /> : state.status === 'error' ? <div className="flex max-w-md flex-col items-start gap-4 pt-10">
+      <h1 className="text-[1.875rem]">No pudimos cargar tu panel</h1>
+      <p className="text-muted">Revisá tu conexión y probá de nuevo.</p>
+      <button type="button" className={SECONDARY_BUTTON} onClick={() => setAttempt(count => count + 1)}>Reintentar</button>
+    </div> : <CreateBusinessScreen onCreated={business => setState({ status: 'ready', business })} />}
+  </Shell>
 }
 
 // Esqueleto con la forma de la pantalla que viene, en vez de un spinner
@@ -89,11 +84,7 @@ function PanelApp() {
     )
   }
 
-  return (
-    <Shell onSignOut={() => void supabase.auth.signOut()}>
-      <BusinessGate />
-    </Shell>
-  )
+  return <BusinessGate />
 }
 
 function NotFound() {
@@ -107,9 +98,12 @@ function NotFound() {
   )
 }
 
-// app.cale.com.ar/panel es el panel del negocio; app.cale.com.ar/<negocio> es su página de reservas
+// cale.com.ar/panel es el panel del negocio; cale.com.ar/<negocio> es su página de reservas
 export function App() {
+  const variant = import.meta.env.DEV ? designVariant(window.location.pathname) : null
+  if (variant && DesignPreview) return <Suspense fallback={<Shell><LoadingPanel /></Shell>}><DesignPreview key={variant} variant={variant} /></Suspense>
   const route = parseRoute(window.location.pathname)
+  if (route.kind === 'landing') return <Suspense fallback={<Shell><LoadingPanel /></Shell>}><LandingScreen /></Suspense>
   if (route.kind === 'booking') return <BookingPage slug={route.slug} />
   if (route.kind === 'not-found') return <NotFound />
   return <PanelApp />

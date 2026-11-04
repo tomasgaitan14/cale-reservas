@@ -1,12 +1,12 @@
 import { ArrowLeft, CaretLeft, CaretRight, Plus, ProhibitInset } from '@phosphor-icons/react'
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { AppointmentForm } from '../components/agenda/AppointmentForm.tsx'
 import { BlockForm } from '../components/agenda/BlockForm.tsx'
 import { DayGrid } from '../components/agenda/DayGrid.tsx'
 import { ItemDetail } from '../components/agenda/ItemDetail.tsx'
 import { Modal } from '../components/Modal.tsx'
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../components/ui.ts'
-import { AgendaLoadError, fetchAgenda, type AgendaData } from '../lib/agenda-api.ts'
+import { AgendaLoadError, fetchAgenda, fetchDayCounts, type AgendaData } from '../lib/agenda-api.ts'
 import { dayItems, minutesToTime, visibleRange, weekDates, type AgendaItem } from '../lib/agenda.ts'
 import { addDays, dayOfMonth, formatLongDate, monthName, todayInArgentina } from '../lib/dates.ts'
 import { emptyWeek, type WeekHours } from '../lib/hours.ts'
@@ -34,14 +34,15 @@ const LAST_START_MINUTES = 23 * MINUTES_PER_HOUR + 45
 
 interface AgendaScreenProps {
   business: Business
-  onBack: () => void
+  onBack?: () => void
+  aside?: ReactNode
 }
 
 function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
-export function AgendaScreen({ business, onBack }: AgendaScreenProps) {
+export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
   const today = todayInArgentina()
   const [view, setView] = useState<View>('day')
   const [date, setDate] = useState(today)
@@ -52,6 +53,17 @@ export function AgendaScreen({ business, onBack }: AgendaScreenProps) {
   const [reloadCount, setReloadCount] = useState(0)
   const [dialog, setDialog] = useState<DialogState>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [counts, setCounts] = useState<{ today: number; tomorrow: number } | null>(null)
+  const [countsError, setCountsError] = useState(false)
+  useEffect(() => {
+    let active = true
+    setCountsError(false)
+    fetchDayCounts(business.id, today).then(value => { if (active) setCounts(value) }).catch((error: unknown) => {
+      if (!(error instanceof AgendaLoadError)) throw error
+      if (active) setCountsError(true)
+    })
+    return () => { active = false }
+  }, [business.id, today, reloadCount])
 
   const dates = view === 'day' ? [date] : weekDates(date)
   const firstDate = dates[0] ?? date
@@ -60,7 +72,7 @@ export function AgendaScreen({ business, onBack }: AgendaScreenProps) {
   // El horario y los servicios se leen una vez: sirven para dibujar la grilla y para los formularios
   useEffect(() => {
     let cancelled = false
-    Promise.all([fetchHours(), fetchServices()])
+    Promise.all([fetchHours(business.id), fetchServices(business.id)])
       .then(([loadedHours, loadedServices]) => {
         if (cancelled) return
         setHours(loadedHours)
@@ -73,11 +85,11 @@ export function AgendaScreen({ business, onBack }: AgendaScreenProps) {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [business.id])
 
   useEffect(() => {
     let cancelled = false
-    fetchAgenda(firstDate, lastDate)
+    fetchAgenda(business.id, firstDate, lastDate)
       .then(data => {
         if (!cancelled) setLoad({ status: 'ready', ...data })
       })
@@ -88,7 +100,7 @@ export function AgendaScreen({ business, onBack }: AgendaScreenProps) {
     return () => {
       cancelled = true
     }
-  }, [firstDate, lastDate, reloadCount])
+  }, [firstDate, lastDate, reloadCount, business.id])
 
   useEffect(() => {
     const timer = window.setInterval(() => setReloadCount(count => count + 1), REFRESH_INTERVAL_MS)
@@ -130,15 +142,9 @@ export function AgendaScreen({ business, onBack }: AgendaScreenProps) {
 
   return (
     <div className="flex flex-col gap-6 pt-2 md:pt-6">
-      <div className="rise-in flex flex-wrap items-center justify-between gap-4" style={{ '--i': 0 } as CSSProperties}>
-        <h1 className="text-[1.875rem] md:text-[2.5rem]">Tu agenda</h1>
-        <button type="button" className={SECONDARY_BUTTON} onClick={onBack}>
-          <ArrowLeft weight="bold" className="size-5" aria-hidden="true" />
-          Volver al panel
-        </button>
-      </div>
-
-      <div className="rise-in flex flex-wrap items-center gap-3" style={{ '--i': 1 } as CSSProperties}>
+      <div className="natural-agenda-heading rise-in flex flex-wrap items-center justify-between gap-4" style={{ '--i': 0 } as CSSProperties}>
+        <div><p className="eyebrow">{capitalize(formatLongDate(today))}</p><h1 className="screen-title">Tu día, en orden.</h1><p className="mt-3 text-lg text-muted">Todo lo que necesitás para atender, en un lugar.</p></div>
+      <div className="natural-agenda-actions flex flex-wrap items-center gap-3" style={{ '--i': 1 } as CSSProperties}>
         <button
           type="button"
           className={`${PRIMARY_BUTTON} sm:w-auto`}
@@ -162,12 +168,23 @@ export function AgendaScreen({ business, onBack }: AgendaScreenProps) {
           </span>
         ) : null}
       </div>
+        {onBack && <button type="button" className={SECONDARY_BUTTON} onClick={onBack}>
+          <ArrowLeft weight="bold" className="size-5" aria-hidden="true" />
+          Volver al panel
+        </button>}
+      </div>
+
+      <div className="natural-agenda-counts flex flex-wrap gap-6 text-base" aria-live="polite">
+        {countsError ? <p className="text-muted">No pudimos cargar los contadores.</p> : counts ? <><p>Hoy <strong className="ml-2">{counts.today} {counts.today === 1 ? 'turno' : 'turnos'}</strong></p><p>Mañana <strong className="ml-2">{counts.tomorrow} {counts.tomorrow === 1 ? 'turno' : 'turnos'}</strong></p></> : <p role="status" className="text-muted">Cargando los turnos de hoy y mañana…</p>}
+      </div>
+
 
       {services.length === 0 && !setupFailed ? (
         <p className="rounded-[12px] bg-tint p-3 text-base">Para cargar turnos a mano, primero cargá un servicio.</p>
       ) : null}
 
-      <div className="rise-in flex flex-wrap items-center justify-between gap-3" style={{ '--i': 2 } as CSSProperties}>
+      <div className={aside ? "natural-agenda-layout" : ""}><div className="natural-agenda-sheet">
+      <div className="natural-agenda-toolbar rise-in flex flex-wrap items-center justify-between gap-3" style={{ '--i': 2 } as CSSProperties}>
         <div className="flex items-center gap-2">
           <button type="button" aria-label={view === 'day' ? 'Día anterior' : 'Semana anterior'} className={`${SECONDARY_BUTTON} px-3`} onClick={() => setDate(addDays(date, -step))}>
             <CaretLeft weight="bold" className="size-5" aria-hidden="true" />
@@ -229,6 +246,8 @@ export function AgendaScreen({ business, onBack }: AgendaScreenProps) {
           </p>
         </div>
       ) : null}
+
+      </div>{aside && <aside className="natural-agenda-aside">{aside}</aside>}</div>
 
       {dialog?.kind === 'appointment-form' ? (
         <Modal title="Nuevo turno" onClose={() => setDialog(null)}>

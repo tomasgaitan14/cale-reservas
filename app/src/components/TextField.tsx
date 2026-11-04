@@ -7,7 +7,7 @@ interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id
   label: string
   hint?: string
   error?: string | null
-  // Texto fijo antes de lo que escribe la persona (por ejemplo, "app.cale.com.ar/")
+  // Texto fijo antes de lo que escribe la persona (por ejemplo, "cale.com.ar/")
   prefix?: string
 }
 

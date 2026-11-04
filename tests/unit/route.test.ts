@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { parseRoute } from '../../app/src/lib/route.ts'
 
 describe('parseRoute', () => {
-  it.each(['/', '/panel', '/panel/'])('%s es el panel del negocio', pathname => {
+  it('la raíz es la portada de Cale', () => { expect(parseRoute('/')).toEqual({ kind: 'landing' }) })
+  it.each(['/empezar', '/panel', '/panel/', '/panel/negocio', '/panel/avisos', '/panel/ajustes/'])('%s es el panel del negocio', pathname => {
     expect(parseRoute(pathname)).toEqual({ kind: 'panel' })
   })
 
