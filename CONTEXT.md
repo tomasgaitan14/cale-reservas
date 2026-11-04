@@ -20,7 +20,7 @@ React, Vite, TypeScript, Tailwind y Supabase cloud. Node 24. Sitio del panel: ht
 - Logo: botón Subir logo/Cambiar logo, miniatura junto al control y vista previa completa. PNG/JPG/WebP hasta 5 MB; conversión a PNG de 512 px, máximo 1 MB publicado.
 - Footer comercial sin logo: invitación a probar Cale gratis por siete días. Es solo contenido comercial; no hay cobros ni vencimiento automático.
 
-Último commit de la app publicado: 2b9524b (mejoras de UX y contacto público).
+Último commit de la app publicado: 4cc4211 (hora actual y contraste).
 Las migraciones aplicadas están reflejadas en supabase/migrations. Las funciones templates y send-message se usan para App Review de Meta: no tocarlas.
 
 ## Validación
@@ -65,8 +65,8 @@ Cierre: qué cambió, qué se comprobó, commit/publicación si se autorizaron, 
 
 - Reparación publicada: d7ff8a5. Ingreso con Google verificado hasta agenda autenticada. En la prueba el retorno terminó en cale-reservas.vercel.app; queda revisar la URL de retorno de Supabase para conservar app.cale.com.ar.
 
-## Preparado localmente: hora actual y contraste (04/11/2026)
+## Publicado: hora actual y contraste (04/11/2026)
 
 - Agenda: línea roja con hora argentina en la columna de hoy, en día y semana, dentro del rango visible. Actualiza cada minuto y al volver a la app; no captura clics.
 - Marca: textos secundarios y principales dentro del resumen usan el contraste del fondo; títulos y enlaces sobre fondo claro ajustan el color primario para mantener lectura.
-- Revisado con componentes reales y datos ficticios en escritorio y móvil, con verde oscuro, rosa oscuro y rosa claro. Sin cambios en datos ni colores guardados; sin publicar.
+- Revisado con componentes reales y datos ficticios en escritorio y móvil, con verde oscuro, rosa oscuro y rosa claro. Sin cambios en datos ni colores guardados. Publicado en app.cale.com.ar; estilos y configuración Supabase comprobados en el paquete servido. Validación: 340 pruebas, TypeScript y build aprobados.
