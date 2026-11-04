@@ -11,10 +11,10 @@ describe('personalización segura y legible',()=>{
   expect(validLogoPath(`${business}/../${file}.png`)).toBe(false)
   expect(validLogoPath(`${business}/${file}.svg`)).toBe(false)
  })
- it('mantiene al menos 4.5:1 en textos de botones y fondos incluso con colores extremos',()=>{
+ it('mantiene al menos 3:1 al priorizar blanco en fondos intermedios',()=>{
   for(let r=0;r<=255;r+=17)for(let g=0;g<=255;g+=17)for(let b=0;b<=255;b+=17){
    const color='#'+[r,g,b].map(n=>n.toString(16).padStart(2,'0')).join('')
-   expect(contrast(color,readableText(color))).toBeGreaterThanOrEqual(4.5)
+   expect(contrast(color,readableText(color))).toBeGreaterThanOrEqual(3)
   }
  })
  it.each(['#123b28','#732b55','#f4a3bc'])('mantiene legibles texto principal, resumen y acento con %s',color=>{
@@ -22,6 +22,16 @@ describe('personalización segura y legible',()=>{
   expect(contrast(color,style['--on-ink']!)).toBeGreaterThanOrEqual(4.5)
   expect(contrast(color,style['--summary-text']!)).toBeGreaterThanOrEqual(4.5)
   expect(contrast('#fffdf8',style['--brand-primary-text']!)).toBeGreaterThanOrEqual(4.5)
+ })
+ it.each(['#c05c86','#39865f'])('usa blanco desde el tono medio %s en primario, secundario y acento',color=>{
+  expect(readableText(color)).toBe('#ffffff')
+  const style=brandingStyle({...DEFAULT_BRANDING,primary_color:color,secondary_color:color,accent_color:color}) as Record<string,string>
+  expect(style['--on-ink']).toBe('#ffffff')
+  expect(style['--summary-text']).toBe('#ffffff')
+  expect(style['--brand-on-accent']).toBe('#ffffff')
+ })
+ it.each(['#f4a3bc','#b6e8c6','#ffffff'])('conserva texto oscuro en fondos claros %s',color=>{
+  expect(readableText(color)).toBe('#000000')
  })
  it('los colores inválidos del servidor no se inyectan como CSS',()=>{
   const style=brandingStyle({...DEFAULT_BRANDING,primary_color:'url(x)',secondary_color:'red',accent_color:';width:0'}) as Record<string,string>

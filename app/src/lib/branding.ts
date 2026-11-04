@@ -13,7 +13,8 @@ function luminance(hex: string) {
   return rgb[0]!*0.2126+rgb[1]!*0.7152+rgb[2]!*0.0722
 }
 export function contrast(a: string,b: string): number { const x=luminance(a),y=luminance(b);return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05) }
-export function readableText(background: string): string { return contrast('#ffffff',background)>=contrast('#000000',background)?'#ffffff':'#000000' }
+// Preferimos blanco también en tonos medios; reservamos negro para fondos claros.
+export function readableText(background: string): string { return contrast('#ffffff',background)>=3?'#ffffff':'#000000' }
 function accentText(color: string) {
   if(contrast(color,'#fffdf8')>=4.5)return color
   for(let weight=0.1;weight<=1;weight+=0.1){const dark='#'+[1,3,5].map(offset=>Math.round(parseInt(color.slice(offset,offset+2),16)*(1-weight)).toString(16).padStart(2,'0')).join('');if(contrast(dark,'#fffdf8')>=4.5)return dark}
