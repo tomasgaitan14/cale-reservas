@@ -74,6 +74,38 @@ export type Database = {
           },
         ]
       }
+      business_branding: {
+        Row: {
+          accent_color: string
+          business_id: string
+          logo_path: string | null
+          primary_color: string
+          secondary_color: string
+        }
+        Insert: {
+          accent_color?: string
+          business_id: string
+          logo_path?: string | null
+          primary_color?: string
+          secondary_color?: string
+        }
+        Update: {
+          accent_color?: string
+          business_id?: string
+          logo_path?: string | null
+          primary_color?: string
+          secondary_color?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_branding_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_members: {
         Row: {
           business_id: string
@@ -440,6 +472,7 @@ export type Database = {
         Args: { p_date: string; p_service_id: string; p_slug: string }
         Returns: string[]
       }
+      get_business_branding: { Args: { p_business_id: string }; Returns: Json }
       get_public_booking_info: { Args: { p_slug: string }; Returns: Json }
       has_push_subscription: {
         Args: { p_business_id: string; p_endpoint: string }
@@ -464,6 +497,16 @@ export type Database = {
         Returns: undefined
       }
       request_push_test: { Args: { p_endpoint: string }; Returns: undefined }
+      save_business_branding: {
+        Args: {
+          p_accent: string
+          p_business_id: string
+          p_logo_path: string
+          p_primary: string
+          p_secondary: string
+        }
+        Returns: undefined
+      }
       slots_for: {
         Args: { p_business_id: string; p_date: string; p_service_id: string }
         Returns: {

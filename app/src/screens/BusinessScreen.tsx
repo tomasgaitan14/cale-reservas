@@ -1,3 +1,4 @@
+import { BusinessBranding } from '../components/BusinessBranding.tsx'
 import { useState, type FormEvent } from 'react'
 import type { Business } from '../lib/business.ts'
 import { supabase } from '../lib/supabase.ts'
@@ -38,6 +39,7 @@ export function BusinessScreen({ business, ready, onChanged, onServices, onHours
       <section className="pb-6"><h2 className="text-2xl">Tus servicios</h2><p className="my-3 text-muted">Qué ofrecés, cuánto dura y qué servicios están disponibles.</p><button className={SECONDARY_BUTTON} onClick={onServices}>Editar servicios</button></section>
       <section className="py-6"><h2 className="text-2xl">Tus horarios</h2><p className="my-3 text-muted">Días de atención, descansos y horarios de cada semana.</p><button className={SECONDARY_BUTTON} onClick={onHours}>Editar horarios</button></section>
     </div></div>
+    <BusinessBranding businessId={business.id} name={business.name} />
     {ready ? <ShareBooking business={business} /> : <p className="rounded-xl bg-tint p-5">Tu link y QR van a aparecer cuando tengas al menos un servicio activo y horarios.</p>}
   </div>
 }

@@ -202,3 +202,12 @@ p {
 .booking-promo { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; margin-top: 48px; padding: 32px 0 16px; border-top: 1px solid var(--border); }
 .booking-promo p { line-height: 1.65; }
 @media(min-width:768px) { .booking-promo { flex-direction: row; align-items: center; justify-content: space-between; gap: 40px; margin-top: 64px; padding-top: 40px; } }
+
+.branding-editor { border-top: 1px solid var(--border); padding-top: 32px; display: flex; flex-direction: column; gap: 28px; }
+.branding-preview { min-width: 0; align-self: start; display: flex; flex-direction: column; gap: 24px; padding: 24px; background: #fffdf8; border: 1px solid var(--border); border-radius: 16px; }
+.branding-preview .booking-progress { align-items: center; }
+.branding-preview .brand-preview-step { background: var(--brand-accent); color: var(--brand-on-accent); }
+.booking-brand-theme .booking-summary, .booking-brand-theme .bg-tint { color: var(--summary-text); }
+.booking-brand-theme .booking-summary dt { color: inherit; opacity: .8; }
+.booking-brand-theme .booking-progress [aria-current="step"] { color: var(--brand-accent-text); }
+.booking-brand-theme .booking-progress [aria-current="step"] span { background: var(--brand-accent); border-color: var(--brand-accent); color: var(--brand-on-accent); }

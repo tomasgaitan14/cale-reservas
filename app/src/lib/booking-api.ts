@@ -1,3 +1,4 @@
+import type { Branding } from './branding.ts'
 import { describeBookingError, type BookingFormErrors } from './booking-errors.ts'
 import { supabase } from './supabase.ts'
 
@@ -8,6 +9,7 @@ export interface PublicService {
 }
 
 export interface BookingInfo {
+  branding?: Branding | null
   name: string
   slug: string
   services: PublicService[]

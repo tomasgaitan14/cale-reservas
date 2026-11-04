@@ -1,3 +1,5 @@
+import { DEFAULT_BRANDING, brandingStyle } from '../lib/branding.ts'
+import { logoUrl } from '../lib/branding-api.ts'
 import { Turnstile } from '../components/booking/Turnstile.tsx'
 import { CheckCircle } from '@phosphor-icons/react'
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
@@ -44,7 +46,7 @@ export function BookingPage({ slug }: { slug: string }) {
   }, [slug, reloadCount])
 
   return (
-    <Shell>
+    <Shell brand={state.status === 'ready' ? <BookingIdentity name={state.info.name} path={state.info.branding?.logo_path ?? null} /> : undefined}>
       {state.status === 'loading' ? <BookingSkeleton /> : null}
       {state.status === 'not-found' ? (
         <Notice title="No encontramos este negocio" text="Revisá que el link esté bien escrito." />
@@ -56,7 +58,7 @@ export function BookingPage({ slug }: { slug: string }) {
           </button>
         </Notice>
       ) : null}
-      {state.status === 'ready' ? <><BookingFlow key={`${slug}:${reloadCount}`} slug={slug} info={state.info} onBookAgain={() => { setReloadCount(count => count + 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }} /><BookingFooter /></> : null}
+      {state.status === 'ready' ? <><div className="booking-brand-theme" style={brandingStyle(state.info.branding ?? DEFAULT_BRANDING)}><BookingFlow key={`${slug}:${reloadCount}`} slug={slug} info={state.info} onBookAgain={() => { setReloadCount(count => count + 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }} /></div><BookingFooter /></> : null}
     </Shell>
   )
 }
@@ -233,4 +235,9 @@ function BookingFooter() {
     </div>
     <a className={`${SECONDARY_BUTTON} shrink-0`} href="https://app.cale.com.ar/empezar" target="_blank" rel="noopener noreferrer">Probar Cale gratis<span className="sr-only"> (abre en otra pestaña)</span></a>
   </footer>
+}
+
+function BookingIdentity({name,path}:{name:string;path:string|null}) {
+  const url=logoUrl(path)
+  return <div className="flex min-w-0 items-center gap-4">{url&&<img key={url} src={url} alt={`Logo de ${name}`} className="size-16 shrink-0 rounded-xl bg-white object-contain p-1" onError={event=>{event.currentTarget.hidden=true}}/>}<span className="break-words font-head text-xl font-extrabold">{name}</span></div>
 }
