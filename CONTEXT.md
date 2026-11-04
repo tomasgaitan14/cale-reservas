@@ -20,7 +20,7 @@ React, Vite, TypeScript, Tailwind y Supabase cloud. Node 24. Sitio del panel: ht
 - Logo: botón Subir logo/Cambiar logo, miniatura junto al control y vista previa completa. PNG/JPG/WebP hasta 5 MB; conversión a PNG de 512 px, máximo 1 MB publicado.
 - Footer comercial sin logo: invitación a probar Cale gratis por siete días. Es solo contenido comercial; no hay cobros ni vencimiento automático.
 
-Último commit publicado al escribir este documento: 1d3c07e (botón y miniatura de logo).
+Último commit de la app publicado: 2b9524b (mejoras de UX y contacto público).
 Las migraciones aplicadas están reflejadas en supabase/migrations. Las funciones templates y send-message se usan para App Review de Meta: no tocarlas.
 
 ## Validación
@@ -55,4 +55,4 @@ Cierre: qué cambió, qué se comprobó, commit/publicación si se autorizaron, 
 - Dirección editable sin prefijo dentro del campo y vista completa del link debajo.
 - El usuario autorizó mostrar el WhatsApp del negocio como contacto público. Migración public_business_contact aplicada y verificada como anon con datos ficticios y ROLLBACK; botón de contacto en confirmación con mensaje del turno y aclaración de que no cancela automáticamente.
 - Prueba UX: negocio ficticio separado, un turno creado y cancelado. No se modificó el negocio existente. Safari/PWA en iPhone no se revalidó en esta revisión.
-- Validación: 324 pruebas unitarias/componentes, TypeScript y build aprobados. Publicación autorizada; en proceso.
+- Validación: 324 pruebas unitarias/componentes, TypeScript y build aprobados. Publicado en https://app.cale.com.ar y comprobado en navegador. Commit de la app: 2b9524b.
