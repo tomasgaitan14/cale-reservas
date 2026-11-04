@@ -1,3 +1,4 @@
+import { PushInvitation } from '../components/PushInvitation.tsx'
 import { signOutWithPush } from '../lib/push.ts'
 import { InstallPanel } from '../components/InstallPanel.tsx'
 import { useCallback, useEffect, useState } from 'react'
@@ -72,7 +73,7 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
   const ready = progress.serviceCount > 0 && progress.hasHours
   const wizard = !preferences.onboarding_completed && !skipped
   const stepNumber = { services: 3, hours: 4, reminders: 5, ready: 6 }[step]
-  if (wizard) return <Shell onSignOut={() => { void signOutWithPush().then(({ error }) => { if (error) window.alert(error.message) }) }}><div className="flex flex-col gap-8">
+  if (wizard) return <Shell onSignOut={() => { void signOutWithPush().then(({ error }) => { if (error) window.alert(error.message) }) }}><PushInvitation businessId={business.id} /><div className="flex flex-col gap-8">
     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-5">
       <p className="font-semibold text-link">Paso {stepNumber} de 6</p>
       <button className={SECONDARY_BUTTON} onClick={() => setSkipped(true)}>Seguir después</button>
@@ -85,6 +86,7 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
     {step === 'ready' && <><div><p className="eyebrow">Todo listo</p><h1 className="screen-title">Tu agenda ya tiene su lugar.</h1><p className="mt-3 text-lg text-muted">Tu página puede recibir reservas. WhatsApp se activa más adelante.</p></div><ShareBooking business={business} /><button className={`${PRIMARY_BUTTON} md:max-w-xs md:self-end`} disabled={finishing} onClick={() => void finish()}>{finishing ? 'Guardando…' : 'Ir a mi agenda'}</button></>}
   </div></Shell>
   return <div className="natural-panel">
+    <PushInvitation businessId={business.id} />
     <header className="natural-panel-header"><Brand /><nav aria-label="Secciones del panel" className="panel-nav">{TABS.map(({ key, label, icon: Icon }) => <button type="button" key={key} aria-current={tab === key ? 'page' : undefined} onClick={() => navigate(key)}><Icon size={22} aria-hidden="true" />{label}</button>)}</nav><button className="natural-business-button" onClick={() => navigate('business')}><Storefront size={22} aria-hidden="true" /><span>{business.name}</span></button></header><main className="natural-panel-main">
     {!preferences.onboarding_completed && <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-tint p-5"><p>Terminemos de preparar tu negocio. Retomás donde lo dejaste.</p><button className={SECONDARY_BUTTON} onClick={() => setSkipped(false)}>Continuar configuración</button></div>}
     {error && <p role="alert" className="text-warn">{error}</p>}
