@@ -1,3 +1,4 @@
+import { InstallPanel } from '../components/InstallPanel.tsx'
 import { LegalLinks } from '../components/LegalLinks.tsx'
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
@@ -16,7 +17,7 @@ export function SettingsScreen() {
     <div className="settings-sections divide-y divide-line">
       <section className="settings-section"><h2 className="text-xl">Tu cuenta de Google</h2><p className="break-words text-muted">{session?.user.email ?? 'Cargando tu cuenta…'}</p><button className={SECONDARY_BUTTON} onClick={() => void signOut()}>Cerrar sesión</button></section>
       <section className="settings-section"><h2 className="text-xl">¿Necesitás una mano?</h2><p className="text-muted">Podés escribirnos por consultas sobre tu cuenta o tus reservas.</p><button className={SECONDARY_BUTTON} onClick={() => { window.location.href = 'mailto:cale.turnos@gmail.com' }}>Contactar a Cale</button></section>
-      <section className="settings-section"><h2 className="text-xl">Instalar Cale · Próximamente</h2><p className="text-muted">Estamos preparando la instalación del panel y las notificaciones en tu celular.</p></section>
+      <section className="settings-section"><h2 className="text-xl">Instalar Cale</h2><InstallPanel /></section>
       <section className="settings-section"><h2 className="text-xl">Borrar mis datos</h2><p className="text-muted">El borrado inmediato desde el panel se incorpora antes de abrir Cale a negocios reales. Mientras tanto podés solicitarlo al contacto de ayuda.</p></section>
       <section className="settings-section"><h2 className="text-xl">Privacidad y condiciones</h2><LegalLinks /></section>
     </div>{error && <p role="alert" className="text-warn">{error}</p>}

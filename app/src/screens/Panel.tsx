@@ -1,3 +1,4 @@
+import { InstallPanel } from '../components/InstallPanel.tsx'
 import { useCallback, useEffect, useState } from 'react'
 import { Bell, CalendarBlank, GearSix, Storefront } from '@phosphor-icons/react'
 import type { Business } from '../lib/business.ts'
@@ -87,6 +88,7 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
     {!preferences.onboarding_completed && <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-tint p-5"><p>Terminemos de preparar tu negocio. Retomás donde lo dejaste.</p><button className={SECONDARY_BUTTON} onClick={() => setSkipped(false)}>Continuar configuración</button></div>}
     {error && <p role="alert" className="text-warn">{error}</p>}
     {preferences.onboarding_completed && !ready && <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-tint p-5" role="status"><p>{progress.serviceCount < 1 ? 'Tu página necesita al menos un servicio activo para recibir reservas.' : 'Cargá tus horarios para que tu página pueda recibir reservas.'}</p><button className={SECONDARY_BUTTON} onClick={() => { navigate('business'); setEditor(progress.serviceCount < 1 ? 'services' : 'hours') }}>{progress.serviceCount < 1 ? 'Revisar servicios' : 'Cargar horarios'}</button></div>}
+    {preferences.onboarding_completed && tab === 'agenda' && !editor && <InstallPanel invitation />}
     {tab === 'agenda'  && <AgendaScreen business={business} aside={ready ? <ShareBooking business={business} compact /> : undefined} />}
     {tab === 'business' && (editor === 'services' ? <ServicesScreen business={business} onBack={() => { setEditor(null); refresh() }} /> : editor === 'hours' ? <HoursScreen business={business} onBack={() => { setEditor(null); refresh() }} /> : <BusinessScreen business={business} ready={ready} onChanged={setBusiness} onServices={() => setEditor('services')} onHours={() => setEditor('hours')} />)}
     {tab === 'reminders' && <RemindersScreen business={business} preferences={preferences} onSaved={setPreferences} />}

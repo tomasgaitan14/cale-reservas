@@ -1,3 +1,4 @@
+import { usePanelPwa } from './hooks/usePanelPwa.ts'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Shell } from './components/Shell.tsx'
 import { SECONDARY_BUTTON } from './components/ui.ts'
@@ -100,6 +101,7 @@ function NotFound() {
 
 // cale.com.ar/panel es el panel del negocio; cale.com.ar/<negocio> es su página de reservas
 export function App() {
+  usePanelPwa()
   const variant = import.meta.env.DEV ? designVariant(window.location.pathname) : null
   if (variant && DesignPreview) return <Suspense fallback={<Shell><LoadingPanel /></Shell>}><DesignPreview key={variant} variant={variant} /></Suspense>
   const route = parseRoute(window.location.pathname)
