@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { SAMPLE_WHATSAPP } from '../support/businesses.ts'
 import { newBookableBusiness, slotsFor } from '../support/booking.ts'
 import { addDays, argentinaTime, argentinaToday, minutesSinceMidnight, nextDateOnWeekday } from '../support/dates.ts'
 import { createService } from '../support/services.ts'
@@ -16,6 +17,8 @@ describe('página pública de un negocio', () => {
     expect(info.error).toBeNull()
     expect(info.data).toEqual({
       name: 'Peluquería Lucero',
+      branding: null,
+      whatsapp: SAMPLE_WHATSAPP,
       slug: lucero.slug,
       services: [{ id: lucero.serviceId, name: 'Corte de pelo', duration_minutes: 60 }],
       open_days: [1, 2, 3, 4, 5],

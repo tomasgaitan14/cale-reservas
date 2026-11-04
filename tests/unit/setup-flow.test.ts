@@ -43,14 +43,13 @@ async function addService(){await act(async()=>{
 });await act(async()=>container.querySelector('form')!.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})))}
 async function remount(){await act(async()=>root.unmount());root=createRoot(container);await render()}
 describe('alta guiada con avance persistido',()=>{
- it('completa servicio, semana propuesta, recordatorios y llegada a la agenda',async()=>{
+ it('completa servicio y horarios y llega a la agenda sin configurar funciones futuras',async()=>{
   await render();expect(container.textContent).toContain('Empecemos por un servicio')
   await addService();expect(container.textContent).toContain('Tus horarios')
   await click('Guardar y continuar')
   expect(api.saveHours).toHaveBeenCalledWith(BUSINESS.id,expect.objectContaining({1:[{start:'09:00',end:'18:00'}],5:[{start:'09:00',end:'18:00'}],0:[],6:[]}))
-  expect(container.textContent).toContain('Un recordatorio,menos olvidos.')
-  await click('48 h antes');await click('Guardar y continuar')
-  expect(preferences.reminder_hours).toBe(48);expect(preferences.reminders_reviewed).toBe(true)
+  expect(container.textContent).not.toContain('Un recordatorio,menos olvidos.')
+  expect(preferences.reminders_reviewed).toBe(false)
   expect(container.textContent).toContain('Tu agenda ya tiene su lugar')
   await click('Ir a mi agenda');expect(preferences.onboarding_completed).toBe(true)
   expect(container.textContent).toContain('Agenda del negocio')
@@ -83,7 +82,7 @@ describe('alta guiada con avance persistido',()=>{
   expect(container.textContent).toContain('Tu página necesita al menos un servicio activo')
   await click('Revisar servicios')
   expect(container.textContent).toContain('Tus servicios')
-  expect(container.textContent).not.toContain('Paso 3 de 6')
+  expect(container.textContent).not.toContain('Paso 3 de 5')
  })
 
 })

@@ -17,7 +17,7 @@ export function LandingScreen() {
   const session = useSession()
   const preview = import.meta.env.DEV && new URLSearchParams(window.location.search).has('preview')
   useEffect(() => {
-    document.title = 'Reservas y recordatorios de turnos · Cale'
+    document.title = 'Reservas online y agenda para tu negocio · Cale'
     if (session.status === 'signed-in' && !preview) window.location.replace('/panel')
   }, [session.status, preview])
   const authError = new URLSearchParams(window.location.hash.slice(1)).has('error')
@@ -28,8 +28,8 @@ export function LandingScreen() {
       <section className="landing-hero">
         <div className="natural-hero-copy flex flex-col items-start gap-6">
           <p className="eyebrow">Tu negocio, con más espacio para vos</p>
-          <h1>Reservas y recordatorios de turnos, <span className="text-link">en automático.</span></h1>
-          <p className="max-w-lg text-lg text-muted">Tus clientes reservan online en tu propio link y Cale les recuerda el turno por WhatsApp. Vos ves todo en tu agenda.</p>
+          <h1>Tus reservas online, <span className="text-link">tu día en orden.</span></h1>
+          <p className="max-w-lg text-lg text-muted">Tus clientes eligen su turno desde tu propio link. Vos recibís las reservas y organizás tu día en una sola agenda.</p>
           <div className="flex w-full flex-wrap gap-3"><button className={`${PRIMARY_BUTTON} sm:w-auto`} onClick={openPanel}>Crear mi cuenta<ArrowRight size={20} aria-hidden="true" /></button><button className={SECONDARY_BUTTON} onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })}>Ver cómo funciona</button></div>
           <p className="flex items-center gap-2 text-sm text-muted"><Clock size={18} aria-hidden="true" />WhatsApp · Próximamente</p>
         </div>
@@ -45,6 +45,6 @@ export function LandingScreen() {
       <section className="landing-section faq-section"><div className="section-heading"><p className="eyebrow">Preguntas que aparecen</p><h2>Lo importante,<br />sin vueltas.</h2></div><div>{FAQ.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div></section>
       <section className="landing-closing"><p className="eyebrow">Empezá por tu negocio</p><h2>Dale un lugar a tus turnos.</h2><p className="mt-4 text-muted">Una agenda clara para vos. Una forma simple de reservar para tus clientes.</p><button className={`${PRIMARY_BUTTON} mt-6 sm:w-auto`} onClick={openPanel}>Crear mi cuenta<ArrowRight aria-hidden="true" /></button></section>
     </main>
-    <footer className="marketing-footer"><Brand /><p className="text-sm text-muted">Reservas y recordatorios para negocios con agenda.</p><div className="flex flex-wrap gap-3">{[['Privacidad','/privacidad'],['Términos','/terminos'],['Eliminar datos','/eliminar-datos']].map(([label, path]) => <button className="footer-button" key={path} onClick={() => window.location.assign(`https://cale.com.ar${path}`)}>{label}</button>)}</div></footer>
+    <footer className="marketing-footer"><Brand /><p className="text-sm text-muted">Reservas online y agenda para tu negocio.</p><div className="flex flex-wrap gap-3">{[['Privacidad','/privacidad'],['Términos','/terminos'],['Eliminar datos','/eliminar-datos']].map(([label, path]) => <button className="footer-button" key={path} onClick={() => window.location.assign(`https://cale.com.ar${path}`)}>{label}</button>)}</div></footer>
   </div>
 }

@@ -148,7 +148,7 @@ function BookingFlow({ slug, info, onBookAgain }: BookingFlowProps) {
     }
   }
 
-  if (confirmation) return <BookingDone confirmation={confirmation} businessName={info.name} onBookAgain={onBookAgain} />
+  if (confirmation) return <BookingDone confirmation={confirmation} businessName={info.name} whatsapp={info.whatsapp} onBookAgain={onBookAgain} />
 
   const bookable = info.services.length > 0 && info.open_days.length > 0
 
@@ -206,7 +206,10 @@ function Step({ number, title, index, children }: { number: number; title: strin
   )
 }
 
-function BookingDone({ confirmation, businessName, onBookAgain }: { confirmation: BookingConfirmation; businessName: string; onBookAgain: () => void }) {
+function BookingDone({ confirmation, businessName, whatsapp, onBookAgain }: { confirmation: BookingConfirmation; businessName: string; whatsapp?: string; onBookAgain: () => void }) {
+  const contact = whatsapp && /^\d{10,15}$/.test(whatsapp)
+    ? `https://wa.me/${whatsapp}?text=${encodeURIComponent(`Hola, quiero consultar por mi turno de ${confirmation.service_name} del ${formatLongDate(confirmation.date)} a las ${confirmation.time}.`)}`
+    : null
   return (
     <div className="rise-in flex max-w-xl flex-col items-start gap-6 pt-6 md:pt-14" role="status">
       <span className="grid size-14 place-items-center rounded-[1rem] bg-ok-bg text-ok">
@@ -222,7 +225,8 @@ function BookingDone({ confirmation, businessName, onBookAgain }: { confirmation
       </div>
       <button type="button" className={PRIMARY_BUTTON} onClick={onBookAgain}>Reservar otro turno</button>
       <p className="text-sm text-muted">Tu turno actual sigue reservado. Podés pedir otro para este negocio.</p>
-      <p className="text-muted">Si no podés ir, avisale directamente al negocio. Los recordatorios por WhatsApp estarán disponibles próximamente.</p>
+      <p className="text-muted">Si necesitás cambiar o cancelar tu turno, contactá al negocio. Los recordatorios automáticos por WhatsApp estarán disponibles próximamente.</p>
+      {contact && <><a className={SECONDARY_BUTTON} href={contact} target="_blank" rel="noopener noreferrer">Contactar al negocio<span className="sr-only"> (abre WhatsApp)</span></a><p className="text-sm text-muted">Abrir WhatsApp no cambia ni cancela tu reserva. Coordiná el cambio con el negocio.</p></>}
     </div>
   )
 }

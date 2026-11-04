@@ -9,6 +9,7 @@ export interface PublicService {
 }
 
 export interface BookingInfo {
+  whatsapp?: string
   branding?: Branding | null
   name: string
   slug: string

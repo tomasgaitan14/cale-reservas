@@ -95,6 +95,32 @@ describe('reserva completa desde la interfaz',()=>{
   await submit()
   expect(api.book).toHaveBeenLastCalledWith(expect.objectContaining({time:'14:00',name:'Cliente demo',consent:true}))
  })
+ it('sin consentimiento explica qué falta, enfoca la opción y no envía la reserva',async()=>{
+  await openDetails();await enter('client-name','Cliente demo');await enter('client-phone','3445 55-0142');await submit()
+  expect(api.book).not.toHaveBeenCalled()
+  expect(container.textContent).toContain('Marcá la opción de recordatorios por WhatsApp para continuar.')
+  expect(document.activeElement?.id).toBe('client-consent')
+  await act(async()=>container.querySelector<HTMLInputElement>('#client-consent')!.click())
+  expect(container.textContent).not.toContain('Marcá la opción')
+  await submit();expect(api.book).toHaveBeenCalledTimes(1)
+ })
+ it('sin nombre muestra el campo pendiente y conserva los demás datos',async()=>{
+  await openDetails();await enter('client-phone','3445 55-0142');await submit()
+  expect(api.book).not.toHaveBeenCalled()
+  expect(container.textContent).toContain('Escribí tu nombre.')
+  expect(document.activeElement?.id).toBe('client-name')
+  expect(container.querySelector<HTMLInputElement>('#client-phone')!.value).toBe('3445 55-0142')
+ })
+ it('ofrece contactar al negocio público sin cancelar ni crear otra reserva',async()=>{
+  api.info.mockResolvedValue({...await api.info(),whatsapp:'540000000000'})
+  await openDetails();await fillDetails();await submit()
+  const link=[...container.querySelectorAll('a')].find(link=>link.textContent?.includes('Contactar al negocio'))!
+  expect(link.href).toContain('https://wa.me/540000000000?text=')
+  expect(decodeURIComponent(link.href)).toContain('Servicio demo del miércoles 4 de noviembre a las 13:00')
+  expect(link.rel).toContain('noopener')
+  expect(container.textContent).toContain('Abrir WhatsApp no cambia ni cancela tu reserva.')
+  expect(api.book).toHaveBeenCalledTimes(1)
+ })
  it('un celular inválido no envía el pedido a la API',async()=>{
   await openDetails();await enter('client-name','Cliente demo');await enter('client-phone','123');await submit()
   expect(api.book).not.toHaveBeenCalled()

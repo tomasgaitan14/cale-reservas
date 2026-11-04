@@ -6,16 +6,17 @@ interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id
   id: string
   label: string
   hint?: string
+  preview?: string
   error?: string | null
   // Texto fijo antes de lo que escribe la persona (por ejemplo, "cale.com.ar/")
   prefix?: string
 }
 
 // Etiqueta arriba, ayuda opcional y el error debajo, como pide el diseño de formularios de Cale
-export function TextField({ id, label, hint, error, prefix, ...inputProps }: TextFieldProps) {
+export function TextField({ id, label, hint, error, prefix, preview, ...inputProps }: TextFieldProps) {
   const hintId = `${id}-hint`
   const errorId = `${id}-error`
-  const describedBy = [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ') || undefined
+  const describedBy = [hint ? hintId : null, preview ? `${id}-preview` : null, error ? errorId : null].filter(Boolean).join(' ') || undefined
 
   return (
     <div className="flex flex-col gap-2">
@@ -40,6 +41,7 @@ export function TextField({ id, label, hint, error, prefix, ...inputProps }: Tex
           {...inputProps}
         />
       </div>
+      {preview ? <p id={`${id}-preview`} className="break-all text-sm text-muted">Tu link: <span className="font-medium text-fg">{preview}</span></p> : null}
       {hint ? (
         <p id={hintId} className="text-[0.9375rem] text-muted">
           {hint}

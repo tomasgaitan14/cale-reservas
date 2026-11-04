@@ -5,9 +5,9 @@ describe('el alta retoma el primer requisito incompleto', () => {
   it.each([
     [0, false, false, 'services'], [0, true, true, 'services'],
     [1, false, false, 'hours'], [2, false, true, 'hours'],
-    [1, true, false, 'reminders'], [1, true, true, 'ready'],
+    [1, true, false, 'ready'], [1, true, true, 'ready'],
   ] as const)('con %s servicios, horarios=%s, recordatorios=%s retoma %s', (count, hours, reviewed, expected) => {
-    expect(nextSetupStep(count, hours, reviewed)).toBe(expected)
+    expect(nextSetupStep(count, hours)).toBe(expected)
   })
   it('la anticipación queda limitada a las tres opciones acordadas', () => {
     expect(REMINDER_OPTIONS).toEqual([24, 48, 2])

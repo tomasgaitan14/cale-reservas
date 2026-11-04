@@ -35,13 +35,20 @@ interface DetailsFormProps {
 
 export function DetailsForm({ draft, onDraftChange, errors, busy, verification, verificationReady = true, onClearError, onSubmit }: DetailsFormProps) {
   const { name, phone, consent } = draft
+  const [consentError, setConsentError] = useState<string | null>(null)
+  const [nameError, setNameError] = useState<string | null>(null)
   const [phoneError, setPhoneError] = useState<string | null>(null)
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const normalized = normalizePhone(phone)
-    if (!normalized) {
-      setPhoneError(INVALID_PHONE_MESSAGE)
+    const validName = name.trim().length > 0
+    setNameError(validName ? null : 'Escribí tu nombre.')
+    setPhoneError(normalized ? null : INVALID_PHONE_MESSAGE)
+    setConsentError(consent ? null : 'Marcá la opción de recordatorios por WhatsApp para continuar.')
+    if (!validName || !normalized || !consent) {
+      const invalidId = !validName ? 'client-name' : !normalized ? 'client-phone' : 'client-consent'
+      document.getElementById(invalidId)?.focus()
       return
     }
     onSubmit({ name: name.trim(), phone: normalized, consent })
@@ -57,9 +64,10 @@ export function DetailsForm({ draft, onDraftChange, errors, busy, verification, 
         value={name}
         onChange={event => {
           onDraftChange({ ...draft, name: event.target.value })
+          setNameError(null)
           onClearError('name')
         }}
-        error={errors.name}
+        error={nameError ?? errors.name}
         required
       />
       <TextField
@@ -69,7 +77,7 @@ export function DetailsForm({ draft, onDraftChange, errors, busy, verification, 
         inputMode="tel"
         autoComplete="tel"
         placeholder="3445 55-0142"
-        hint="Con el código de área, sin el 15. Es para avisarte por WhatsApp."
+        hint="Con el código de área, sin el 15. El negocio lo usa para contactarte por tu turno."
         value={phone}
         onChange={event => {
           onDraftChange({ ...draft, phone: event.target.value })
@@ -84,17 +92,20 @@ export function DetailsForm({ draft, onDraftChange, errors, busy, verification, 
         <label className="flex cursor-pointer items-start gap-3 text-base">
           <input
             type="checkbox"
+            id="client-consent"
+            aria-invalid={consentError || errors.consent ? true : undefined}
             className="peer sr-only"
             checked={consent}
-            aria-describedby={errors.consent ? 'consent-error' : undefined}
+            aria-describedby={consentError || errors.consent ? 'consent-error' : undefined}
             onChange={event => {
               onDraftChange({ ...draft, consent: event.target.checked })
+              setConsentError(null)
               onClearError('consent')
             }}
           />
           <span
             className={`mt-0.5 grid size-6 flex-none place-items-center rounded-md border-2 bg-surface text-on-ink transition-colors peer-checked:border-ink peer-checked:bg-ink peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-link ${
-              errors.consent ? 'border-warn' : 'border-field-line'
+              consentError || errors.consent ? 'border-warn' : 'border-field-line'
             }`}
             aria-hidden="true"
           >
@@ -102,10 +113,10 @@ export function DetailsForm({ draft, onDraftChange, errors, busy, verification, 
           </span>
           <span>Acepto que me manden por WhatsApp recordatorios de este turno.</span>
         </label>
-        {errors.consent ? (
+        {consentError || errors.consent ? (
           <p id="consent-error" role="alert" className="flex items-start gap-1.5 text-[0.9375rem] font-medium text-warn">
             <WarningCircle weight="bold" className="mt-0.5 size-4 flex-none" aria-hidden="true" />
-            {errors.consent}
+            {consentError ?? errors.consent}
           </p>
         ) : null}
       </div>

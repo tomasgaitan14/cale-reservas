@@ -26,12 +26,12 @@ export function LoginScreen() {
   return (
     <div className="grid items-start gap-10 md:grid-cols-[1.15fr_0.85fr] md:gap-16">
       <div className="rise-in flex flex-col gap-5 pt-2 md:pt-10" style={{ '--i': 0 } as React.CSSProperties}>
-        <p className="eyebrow">Paso 1 de 6 · Tu cuenta</p>
+        <p className="eyebrow">Paso 1 de 5 · Tu cuenta</p>
         <h1 className="text-[1.875rem] md:text-[2.75rem] md:leading-[1.05]">
           Entrá o creá tu cuenta <span className="text-muted">con Google.</span>
         </h1>
         <p className="max-w-[34ch] text-[1.1875rem] text-muted">
-          Desde acá vas a cargar tus servicios y tus horarios, y a elegir cuándo les avisamos a tus clientes por WhatsApp.
+          Cargá tus servicios y horarios, compartí tu link y gestioná las reservas desde tu agenda. Los recordatorios por WhatsApp estarán disponibles próximamente.
         </p>
       </div>
 

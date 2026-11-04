@@ -69,20 +69,19 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
   if (!preferences || !progress) return <Shell><section className="py-10">
     {error ? <><h1 className="text-2xl">No pudimos abrir tu panel</h1><p role="alert" className="my-5 text-muted">{error}</p><button className={SECONDARY_BUTTON} onClick={refresh}>Reintentar</button></> : <div className="skeleton h-64 rounded-2xl" role="status" aria-label="Cargando tu panel" />}
   </section></Shell>
-  const step = nextSetupStep(progress.serviceCount, progress.hasHours, preferences.reminders_reviewed)
+  const step = nextSetupStep(progress.serviceCount, progress.hasHours)
   const ready = progress.serviceCount > 0 && progress.hasHours
   const wizard = !preferences.onboarding_completed && !skipped
-  const stepNumber = { services: 3, hours: 4, reminders: 5, ready: 6 }[step]
+  const stepNumber = { services: 3, hours: 4, ready: 5 }[step]
   if (wizard) return <Shell onSignOut={() => { void signOutWithPush().then(({ error }) => { if (error) window.alert(error.message) }) }}><PushInvitation businessId={business.id} /><div className="flex flex-col gap-8">
     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-5">
-      <p className="font-semibold text-link">Paso {stepNumber} de 6</p>
+      <p className="font-semibold text-link">Paso {stepNumber} de {SETUP_STEPS.length}</p>
       <button className={SECONDARY_BUTTON} onClick={() => setSkipped(true)}>Seguir después</button>
     </div>
     <ol aria-label="Pasos de configuración" className="setup-progress">{SETUP_STEPS.map((label, index) => <li key={label} aria-current={index + 1 === stepNumber ? 'step' : undefined} className={index + 1 <= stepNumber ? 'text-link' : 'text-muted'}><span>{index + 1}</span>{label}</li>)}</ol>
     {error && <p role="alert" className="text-warn">{error}</p>}
     {step === 'services' && <ServicesScreen business={business} onBack={() => setSkipped(true)} onContinue={refresh} />}
     {step === 'hours' && <HoursScreen business={business} onBack={() => setSkipped(true)} onContinue={refresh} />}
-    {step === 'reminders' && <RemindersScreen business={business} preferences={preferences} onboarding onSaved={setPreferences} />}
     {step === 'ready' && <><div><p className="eyebrow">Todo listo</p><h1 className="screen-title">Tu agenda ya tiene su lugar.</h1><p className="mt-3 text-lg text-muted">Tu página puede recibir reservas. WhatsApp se activa más adelante.</p></div><ShareBooking business={business} /><button className={`${PRIMARY_BUTTON} md:max-w-xs md:self-end`} disabled={finishing} onClick={() => void finish()}>{finishing ? 'Guardando…' : 'Ir a mi agenda'}</button></>}
   </div></Shell>
   return <div className="natural-panel">
