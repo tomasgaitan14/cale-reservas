@@ -7,7 +7,8 @@ export function allowedPushEndpoint(endpoint: string): boolean {
 }
 export function pushMessage(job: PushJob) {
   const text = job.kind === 'test' ? 'Los avisos de Cale ya llegan a este dispositivo.' : job.kind === 'cancelled' ? 'Se canceló un turno. Revisá tu agenda.' : 'Tenés una nueva reserva. Revisá tu agenda.'
-  return { title: 'Cale', body: text, tag: `cale-${job.id}`, url: '/panel' }
+  const title = job.kind === 'test' ? 'Notificación de prueba' : job.kind === 'cancelled' ? 'Turno cancelado' : 'Nueva reserva'
+  return { title, body: text, tag: `cale-${job.id}`, url: '/panel' }
 }
 export async function deliverJobs(jobs: PushJob[], send: (job: PushJob, payload: string) => Promise<unknown>, finish: (job: PushJob, status: 'sent' | 'expired' | 'retry') => Promise<void>) {
   await Promise.all(jobs.map(async job => {

@@ -14,7 +14,7 @@ self.addEventListener('push', event => {
   // Todo push muestra un aviso visible; nunca usamos push silencioso.
   let message = {}
   try { message = event.data?.json() ?? {} } catch { /* Usar texto genérico ante un payload inválido. */ }
-  event.waitUntil(self.registration.showNotification('Cale', {
+  event.waitUntil(self.registration.showNotification(typeof message.title === 'string' && message.title.trim() ? message.title : 'Novedades en tu agenda', {
     body: typeof message.body === 'string' ? message.body : 'Hay novedades en tu agenda.',
     icon: '/icons/cale-192.png', badge: '/icons/cale-192.png',
     tag: typeof message.tag === 'string' ? message.tag : 'cale-agenda',

@@ -4,8 +4,9 @@ const job: PushJob = { id: 'job', lease_id: 'lease', subscription_id: 'subscript
 describe('entrega push', () => {
   it.each(['http://web.push.apple.com/x','https://evil.invalid/x','https://web.push.apple.com.evil.invalid/x','https://web.push.apple.com:444/x','https://user@web.push.apple.com/x','https://web.push.apple.com/x?token=1'])('rechaza un endpoint no permitido: %s', endpoint => { expect(allowedPushEndpoint(endpoint)).toBe(false) })
   it('notifica sin datos personales y siempre abre el panel', () => {
-    expect(pushMessage(job)).toEqual({ title: 'Cale', body: 'Tenés una nueva reserva. Revisá tu agenda.', tag: 'cale-job', url: '/panel' })
+    expect(pushMessage(job)).toEqual({ title: 'Nueva reserva', body: 'Tenés una nueva reserva. Revisá tu agenda.', tag: 'cale-job', url: '/panel' })
   })
+  it.each([['new_booking','Nueva reserva'],['cancelled','Turno cancelado'],['test','Notificación de prueba']])('usa el título de %s', (kind, title) => { expect(pushMessage({ ...job, kind }).title).toBe(title) })
   it('confirma solo después de enviar', async () => {
     const calls: string[] = []
     await deliverJobs([job], async () => { calls.push('send') }, async (_, status) => { calls.push(status) })
