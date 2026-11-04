@@ -20,7 +20,7 @@ React, Vite, TypeScript, Tailwind y Supabase cloud. Node 24. Sitio del panel: ht
 - Logo: botón Subir logo/Cambiar logo, miniatura junto al control y vista previa completa. PNG/JPG/WebP hasta 5 MB; conversión a PNG de 512 px, máximo 1 MB publicado.
 - Footer comercial sin logo: invitación a probar Cale gratis por siete días. Es solo contenido comercial; no hay cobros ni vencimiento automático.
 
-Último commit de la app publicado: f6c3e0a (blanco desde tonos medios).
+Último commit de la app publicado: dab95c8 (blanco para rosa #dd9c9f).
 Las migraciones aplicadas están reflejadas en supabase/migrations. Las funciones templates y send-message se usan para App Review de Meta: no tocarlas.
 
 ## Validación
@@ -71,4 +71,4 @@ Cierre: qué cambió, qué se comprobó, commit/publicación si se autorizaron, 
 - Marca: textos secundarios y principales dentro del resumen usan el contraste del fondo; títulos y enlaces sobre fondo claro ajustan el color primario para mantener lectura.
 - Revisado con componentes reales y datos ficticios en escritorio y móvil, con verde oscuro, rosa oscuro y rosa claro. Sin cambios en datos ni colores guardados. Publicado en app.cale.com.ar; estilos y configuración Supabase comprobados en el paquete servido. Validación: 340 pruebas, TypeScript y build aprobados.
 
-- Ajuste publicado de contraste: se prioriza blanco desde tonos intermedios con un mínimo de 3:1; los tonos claros conservan negro. 16 pruebas de marca, TypeScript y build aprobados.
+- Ajuste publicado de contraste: se prioriza blanco desde tonos intermedios con umbral visual de 2.2:1 a pedido del usuario (incluye #dd9c9f; blanco tiene menor contraste que negro); los tonos claros conservan negro. 17 pruebas de marca, TypeScript y build aprobados.
