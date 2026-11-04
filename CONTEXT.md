@@ -62,3 +62,5 @@ Cierre: qué cambió, qué se comprobó, commit/publicación si se autorizaron, 
 - El ingreso publicado apuntaba a un dominio de ejemplo antes de llegar a Google. Se repusieron las cuatro variables públicas de producción de Vercel desde la configuración local existente.
 - La compilación ahora rechaza variables ausentes y destinos de ejemplo/inválidos; nueve pruebas de configuración, TypeScript y build aprobados.
 - No se cambiaron permisos, datos ni credenciales privadas de Supabase.
+
+- Reparación publicada: d7ff8a5. Ingreso con Google verificado hasta agenda autenticada. En la prueba el retorno terminó en cale-reservas.vercel.app; queda revisar la URL de retorno de Supabase para conservar app.cale.com.ar.
