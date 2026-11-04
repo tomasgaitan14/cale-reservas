@@ -56,7 +56,7 @@ export function BookingPage({ slug }: { slug: string }) {
           </button>
         </Notice>
       ) : null}
-      {state.status === 'ready' ? <BookingFlow slug={slug} info={state.info} /> : null}
+      {state.status === 'ready' ? <><BookingFlow key={`${slug}:${reloadCount}`} slug={slug} info={state.info} onBookAgain={() => { setReloadCount(count => count + 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }} /><BookingFooter /></> : null}
     </Shell>
   )
 }
@@ -84,9 +84,10 @@ function BookingSkeleton() {
 interface BookingFlowProps {
   slug: string
   info: BookingInfo
+  onBookAgain: () => void
 }
 
-function BookingFlow({ slug, info }: BookingFlowProps) {
+function BookingFlow({ slug, info, onBookAgain }: BookingFlowProps) {
   const [token, setToken] = useState('')
   const [verificationAttempt, setVerificationAttempt] = useState(0)
   const [draft, setDraft] = useState<BookingDraft>({ name: '', phone: '', consent: false })
@@ -145,7 +146,7 @@ function BookingFlow({ slug, info }: BookingFlowProps) {
     }
   }
 
-  if (confirmation) return <BookingDone confirmation={confirmation} businessName={info.name} />
+  if (confirmation) return <BookingDone confirmation={confirmation} businessName={info.name} onBookAgain={onBookAgain} />
 
   const bookable = info.services.length > 0 && info.open_days.length > 0
 
@@ -203,7 +204,7 @@ function Step({ number, title, index, children }: { number: number; title: strin
   )
 }
 
-function BookingDone({ confirmation, businessName }: { confirmation: BookingConfirmation; businessName: string }) {
+function BookingDone({ confirmation, businessName, onBookAgain }: { confirmation: BookingConfirmation; businessName: string; onBookAgain: () => void }) {
   return (
     <div className="rise-in flex max-w-xl flex-col items-start gap-6 pt-6 md:pt-14" role="status">
       <span className="grid size-14 place-items-center rounded-[1rem] bg-ok-bg text-ok">
@@ -217,7 +218,19 @@ function BookingDone({ confirmation, businessName }: { confirmation: BookingConf
         </p>
         <p className="text-[0.9375rem] text-muted">{businessName}</p>
       </div>
+      <button type="button" className={PRIMARY_BUTTON} onClick={onBookAgain}>Reservar otro turno</button>
+      <p className="text-sm text-muted">Tu turno actual sigue reservado. Podés pedir otro para este negocio.</p>
       <p className="text-muted">Si no podés ir, avisale directamente al negocio. Los recordatorios por WhatsApp estarán disponibles próximamente.</p>
     </div>
   )
+}
+
+function BookingFooter() {
+  return <footer className="booking-promo" aria-label="Conocé Cale">
+    <div className="flex min-w-0 flex-col items-start gap-3">
+      <h2 className="text-xl">¿Tenés un negocio con turnos?</h2>
+      <p className="max-w-md text-muted">Tu agenda y tu propio link de reservas, en un mismo lugar. Probá Cale gratis por 7 días.</p>
+    </div>
+    <a className={`${SECONDARY_BUTTON} shrink-0`} href="https://app.cale.com.ar/empezar" target="_blank" rel="noopener noreferrer">Probar Cale gratis<span className="sr-only"> (abre en otra pestaña)</span></a>
+  </footer>
 }
