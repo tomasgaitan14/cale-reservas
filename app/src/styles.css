@@ -211,3 +211,5 @@ p {
 .booking-brand-theme .booking-summary dt { color: inherit; opacity: .8; }
 .booking-brand-theme .booking-progress [aria-current="step"] { color: var(--brand-accent-text); }
 .booking-brand-theme .booking-progress [aria-current="step"] span { background: var(--brand-accent); border-color: var(--brand-accent); color: var(--brand-on-accent); }
+
+.branding-logo-preview { display: grid; place-items: center; width: 96px; height: 96px; flex: none; overflow: hidden; border: 1px dashed var(--field-border); border-radius: 14px; background: #fff; }

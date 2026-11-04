@@ -1,3 +1,4 @@
+import { ImageSquare, UploadSimple } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
 import { BRAND_PALETTES, DEFAULT_BRANDING, brandingStyle, validColor, type Branding } from '../lib/branding.ts'
 import { fetchBranding, logoUrl, prepareLogo, removeLogo, saveBranding, uploadLogo } from '../lib/branding-api.ts'
@@ -11,6 +12,7 @@ export function BusinessBranding({businessId,name}:{businessId:string;name:strin
   const [busy,setBusy]=useState(false)
   const [notice,setNotice]=useState('')
   const [attempt,setAttempt]=useState(0)
+  const fileInput=useRef<HTMLInputElement>(null)
   const version=useRef(0)
   useEffect(()=>{let active=true;setSaved(null);setNotice('');fetchBranding(businessId).then(value=>{if(active){setSaved(value);setDraft(value)}}).catch(cause=>{if(active)setNotice(cause.message)});return()=>{active=false;version.current++}},[businessId,attempt])
   useEffect(()=>{if(!image){setPreview(null);return}const url=URL.createObjectURL(image);setPreview(url);return()=>URL.revokeObjectURL(url)},[image])
@@ -34,8 +36,21 @@ export function BusinessBranding({businessId,name}:{businessId:string;name:strin
     <div className="warm-split">
       <div className="flex min-w-0 flex-col items-start gap-6">
         <fieldset disabled={busy||!saved} className="flex w-full min-w-0 flex-col gap-6">
-          <div className="flex flex-col items-start gap-3"><label htmlFor="business-logo" className="font-semibold">Logo del negocio</label><input id="business-logo" type="file" accept="image/png,image/jpeg,image/webp" className="w-full min-w-0 text-sm" onChange={event=>{void choose(event.target.files?.[0]);event.target.value=''}}/><p className="text-sm text-muted">PNG, JPG o WebP, hasta 5 MB. Lo adaptamos a un cuadrado sin deformarlo. El logo será público.</p>
-          {(logo||image) && <button type="button" className={SECONDARY_BUTTON} onClick={()=>{version.current++;setImage(null);setDraft(value=>({...value,logo_path:null}))}}>Quitar logo</button>}</div>
+          <div className="flex flex-col items-start gap-4">
+            <p className="font-semibold">Logo del negocio</p>
+            <input ref={fileInput} id="business-logo" type="file" accept="image/png,image/jpeg,image/webp" hidden aria-label="Seleccionar archivo de logo" onChange={event=>{void choose(event.target.files?.[0]);event.target.value=''}}/>
+            <div className="flex w-full min-w-0 items-center gap-4">
+              <div className="branding-logo-preview">
+                {logo ? <img src={logo} alt={`Vista previa del logo de ${name}`} className="size-full object-contain p-2" /> : <div className="flex flex-col items-center gap-1 text-muted"><ImageSquare size={30} aria-hidden="true"/><span className="text-xs">Sin logo</span></div>}
+              </div>
+              <div className="flex min-w-0 flex-col items-start gap-2">
+                <button type="button" className={SECONDARY_BUTTON} onClick={()=>fileInput.current?.click()}><UploadSimple size={20} aria-hidden="true"/>{logo?'Cambiar logo':'Subir logo'}</button>
+                {(logo||image) && <button type="button" className="min-h-11 px-1 text-sm text-muted underline underline-offset-4" onClick={()=>{version.current++;setImage(null);setDraft(value=>({...value,logo_path:null}))}}>Quitar logo</button>}
+              </div>
+            </div>
+            {image && <p role="status" className="text-sm text-link">Logo listo. Guardá el diseño para publicarlo.</p>}
+            <p className="text-sm text-muted">PNG, JPG o WebP, hasta 5 MB. Lo adaptamos a un cuadrado sin deformarlo. El logo será público.</p>
+          </div>
           <div><p className="mb-3 font-semibold">Un punto de partida</p><div className="flex flex-wrap gap-2">{BRAND_PALETTES.map(palette=><button type="button" key={palette.name} className={SECONDARY_BUTTON} onClick={()=>setDraft(value=>({...value,...palette}))}>{palette.name}</button>)}</div></div>
           {([['primary_color','Primario','Botones y selecciones'],['secondary_color','Secundario','Fondos suaves y resumen'],['accent_color','Acento','Pasos y detalles destacados']] as const).map(([key,label,hint])=><div key={key} className="flex flex-col gap-2"><label htmlFor={`brand-${key}`} className="font-semibold">{label}</label><div className="flex items-center gap-3"><input aria-label={`Elegir color ${label.toLowerCase()}`} type="color" value={validColor(draft[key])?draft[key]:DEFAULT_BRANDING[key]} onChange={event=>setDraft(value=>({...value,[key]:event.target.value}))} className="h-12 w-14 cursor-pointer rounded-lg border border-line p-1"/><input id={`brand-${key}`} value={draft[key]} maxLength={7} spellCheck={false} className="h-12 min-w-0 flex-1 rounded-lg border border-field-line bg-surface px-3" aria-invalid={!validColor(draft[key])} onChange={event=>setDraft(value=>({...value,[key]:event.target.value}))}/></div><p className="text-sm text-muted">{hint}</p></div>)}
           <p className="text-sm text-muted">Ajustamos el color de los textos para que se lean bien sobre tu paleta.</p>
