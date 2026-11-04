@@ -56,3 +56,9 @@ Cierre: qué cambió, qué se comprobó, commit/publicación si se autorizaron, 
 - El usuario autorizó mostrar el WhatsApp del negocio como contacto público. Migración public_business_contact aplicada y verificada como anon con datos ficticios y ROLLBACK; botón de contacto en confirmación con mensaje del turno y aclaración de que no cancela automáticamente.
 - Prueba UX: negocio ficticio separado, un turno creado y cancelado. No se modificó el negocio existente. Safari/PWA en iPhone no se revalidó en esta revisión.
 - Validación: 324 pruebas unitarias/componentes, TypeScript y build aprobados. Publicado en https://app.cale.com.ar y comprobado en navegador. Commit de la app: 2b9524b.
+
+## Reparación de configuración de publicación (04/11/2026)
+
+- El ingreso publicado apuntaba a un dominio de ejemplo antes de llegar a Google. Se repusieron las cuatro variables públicas de producción de Vercel desde la configuración local existente.
+- La compilación ahora rechaza variables ausentes y destinos de ejemplo/inválidos; nueve pruebas de configuración, TypeScript y build aprobados.
+- No se cambiaron permisos, datos ni credenciales privadas de Supabase.
