@@ -23,7 +23,7 @@ export function brandingStyle(value: Branding): CSSProperties {
   const primary=validColor(value.primary_color)?value.primary_color:DEFAULT_BRANDING.primary_color
   const secondary=validColor(value.secondary_color)?value.secondary_color:DEFAULT_BRANDING.secondary_color
   const accent=validColor(value.accent_color)?value.accent_color:DEFAULT_BRANDING.accent_color
-  return { '--link':primary,'--ink':primary,'--on-ink':readableText(primary),'--ink-muted':readableText(primary),'--tint':secondary,'--summary-text':readableText(secondary),'--brand-accent':accent,'--brand-on-accent':readableText(accent),'--brand-accent-text':accentText(accent) } as CSSProperties
+  return { '--brand-primary-text':accentText(primary),'--link':primary,'--ink':primary,'--on-ink':readableText(primary),'--ink-muted':readableText(primary),'--tint':secondary,'--summary-text':readableText(secondary),'--brand-accent':accent,'--brand-on-accent':readableText(accent),'--brand-accent-text':accentText(accent) } as CSSProperties
 }
 export function validLogoPath(path: string, businessId?: string): boolean {
   const uuid='[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'

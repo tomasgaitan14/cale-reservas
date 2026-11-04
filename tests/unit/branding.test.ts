@@ -17,6 +17,12 @@ describe('personalización segura y legible',()=>{
    expect(contrast(color,readableText(color))).toBeGreaterThanOrEqual(4.5)
   }
  })
+ it.each(['#123b28','#732b55','#f4a3bc'])('mantiene legibles texto principal, resumen y acento con %s',color=>{
+  const style=brandingStyle({...DEFAULT_BRANDING,primary_color:color,secondary_color:color,accent_color:color}) as Record<string,string>
+  expect(contrast(color,style['--on-ink']!)).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(color,style['--summary-text']!)).toBeGreaterThanOrEqual(4.5)
+  expect(contrast('#fffdf8',style['--brand-primary-text']!)).toBeGreaterThanOrEqual(4.5)
+ })
  it('los colores inválidos del servidor no se inyectan como CSS',()=>{
   const style=brandingStyle({...DEFAULT_BRANDING,primary_color:'url(x)',secondary_color:'red',accent_color:';width:0'}) as Record<string,string>
   expect(style['--ink']).toBe(DEFAULT_BRANDING.primary_color)

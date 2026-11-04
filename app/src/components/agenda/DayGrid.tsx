@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import {
   hourLines,
   minutesFromOffset,
@@ -7,7 +7,7 @@ import {
   type AgendaItem,
   type MinuteRange,
 } from '../../lib/agenda.ts'
-import { dayOfMonth, weekdayName, weekdayOf } from '../../lib/dates.ts'
+import { dayOfMonth, localParts, weekdayName, weekdayOf } from '../../lib/dates.ts'
 import type { WeekHours } from '../../lib/hours.ts'
 
 // Alto de una hora en la grilla: alcanza para que un turno de una hora muestre dos líneas de texto
@@ -33,6 +33,21 @@ interface DayGridProps {
 const pixelsFor = (minutes: number): number => (minutes / MINUTES_PER_HOUR) * HOUR_HEIGHT_PX
 
 export function DayGrid({ dates, today, itemsByDate, hours, range, onEmptyClick, onItemClick }: DayGridProps) {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const update = () => setNow(new Date())
+    const timer = window.setInterval(update, 60_000)
+    window.addEventListener('focus', update)
+    document.addEventListener('visibilitychange', update)
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('focus', update)
+      document.removeEventListener('visibilitychange', update)
+    }
+  }, [])
+  const current = localParts(now.toISOString())
+  const currentMinute = timeToMinutes(current.time)
+  const showCurrentTime = currentMinute >= range.start && currentMinute < range.end
   const height = pixelsFor(range.end - range.start)
   const lines = hourLines(range)
   const columns: CSSProperties = { gridTemplateColumns: `${GUTTER_WIDTH} repeat(${dates.length}, minmax(0, 1fr))` }
@@ -98,6 +113,12 @@ export function DayGrid({ dates, today, itemsByDate, hours, range, onEmptyClick,
               {(itemsByDate[date] ?? []).map(item => (
                 <AgendaItemButton key={`${item.kind}-${item.id}`} item={item} range={range} onClick={() => onItemClick(item)} />
               ))}
+              {date === current.date && showCurrentTime && <div
+                className="agenda-current-time"
+                role="img"
+                aria-label={`Hora actual: ${current.time}`}
+                style={{ top: pixelsFor(currentMinute - range.start) }}
+              ><span className="agenda-current-time-dot" /><span className="agenda-current-time-label">{current.time}</span></div>}
             </div>
           ))}
         </div>

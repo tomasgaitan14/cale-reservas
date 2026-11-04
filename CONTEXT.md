@@ -64,3 +64,9 @@ Cierre: qué cambió, qué se comprobó, commit/publicación si se autorizaron, 
 - No se cambiaron permisos, datos ni credenciales privadas de Supabase.
 
 - Reparación publicada: d7ff8a5. Ingreso con Google verificado hasta agenda autenticada. En la prueba el retorno terminó en cale-reservas.vercel.app; queda revisar la URL de retorno de Supabase para conservar app.cale.com.ar.
+
+## Preparado localmente: hora actual y contraste (04/11/2026)
+
+- Agenda: línea roja con hora argentina en la columna de hoy, en día y semana, dentro del rango visible. Actualiza cada minuto y al volver a la app; no captura clics.
+- Marca: textos secundarios y principales dentro del resumen usan el contraste del fondo; títulos y enlaces sobre fondo claro ajustan el color primario para mantener lectura.
+- Revisado con componentes reales y datos ficticios en escritorio y móvil, con verde oscuro, rosa oscuro y rosa claro. Sin cambios en datos ni colores guardados; sin publicar.
