@@ -20,7 +20,7 @@ React, Vite, TypeScript, Tailwind y Supabase cloud. Node 24. Sitio del panel: ht
 - Logo: botón Subir logo/Cambiar logo, miniatura junto al control y vista previa completa. PNG/JPG/WebP hasta 5 MB; conversión a PNG de 512 px, máximo 1 MB publicado.
 - Footer comercial sin logo: invitación a probar Cale gratis por siete días. Es solo contenido comercial; no hay cobros ni vencimiento automático.
 
-Último commit de la app publicado: 6c37534 (firma en encabezado de reservas).
+Último commit de la app publicado: b94bdf9 (ícono de confirmación con paleta).
 Las migraciones aplicadas están reflejadas en supabase/migrations. Las funciones templates y send-message se usan para App Review de Meta: no tocarlas.
 
 ## Validación
@@ -74,3 +74,5 @@ Cierre: qué cambió, qué se comprobó, commit/publicación si se autorizaron, 
 - Ajuste publicado de contraste: se prioriza blanco desde tonos intermedios con umbral visual de 2.2:1 a pedido del usuario (incluye #dd9c9f; blanco tiene menor contraste que negro); los tonos claros conservan negro. 17 pruebas de marca, TypeScript y build aprobados.
 
 - Encabezado público: debajo del nombre del negocio aparece “Reservas con [ícono] Cale”. El enlace Cale abre https://cale-reservas.vercel.app en otra pestaña. Revisado en móvil; TypeScript y build correctos; publicado y paquete verificado.
+
+- Confirmación de reserva: recuadro del tilde usa color primario y texto de contraste de la marca, en lugar del verde fijo. TypeScript/build correctos; publicado y paquete verificado.
