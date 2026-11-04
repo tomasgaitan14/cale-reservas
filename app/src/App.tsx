@@ -1,3 +1,4 @@
+import { signOutWithPush } from './lib/push.ts'
 import { usePanelPwa } from './hooks/usePanelPwa.ts'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Shell } from './components/Shell.tsx'
@@ -39,7 +40,7 @@ function BusinessGate() {
   if (state.status === 'ready' && state.business) {
     return <Suspense fallback={<Shell><LoadingPanel /></Shell>}><Panel business={state.business} /></Suspense>
   }
-  return <Shell onSignOut={() => void supabase.auth.signOut()}>
+  return <Shell onSignOut={() => { void signOutWithPush().then(({ error }) => { if (error) window.alert(error.message) }) }}>
     {state.status === 'loading' ? <LoadingPanel /> : state.status === 'error' ? <div className="flex max-w-md flex-col items-start gap-4 pt-10">
       <h1 className="text-[1.875rem]">No pudimos cargar tu panel</h1>
       <p className="text-muted">Revisá tu conexión y probá de nuevo.</p>

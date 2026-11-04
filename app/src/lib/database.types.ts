@@ -156,6 +156,95 @@ export type Database = {
         }
         Relationships: []
       }
+      push_jobs: {
+        Row: {
+          appointment_id: string | null
+          attempts: number
+          available_at: string
+          created_at: string
+          id: string
+          kind: string
+          lease_id: string | null
+          subscription_id: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          attempts?: number
+          available_at?: string
+          created_at?: string
+          id?: string
+          kind: string
+          lease_id?: string | null
+          subscription_id: string
+        }
+        Update: {
+          appointment_id?: string | null
+          attempts?: number
+          available_at?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          lease_id?: string | null
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_jobs_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_jobs_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "push_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          business_id: string
+          created_at: string
+          endpoint: string
+          id: string
+          last_test_at: string | null
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          business_id: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          last_test_at?: string | null
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          business_id?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          last_test_at?: string | null
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reserved_slugs: {
         Row: {
           slug: string
@@ -279,6 +368,18 @@ export type Database = {
         Args: { p_appointment_id: string }
         Returns: undefined
       }
+      claim_push_jobs: {
+        Args: never
+        Returns: {
+          auth: string
+          endpoint: string
+          id: string
+          kind: string
+          lease_id: string
+          p256dh: string
+          subscription_id: string
+        }[]
+      }
       create_booking: {
         Args: {
           p_client_name: string
@@ -331,16 +432,38 @@ export type Database = {
         Returns: string
       }
       delete_time_block: { Args: { p_block_id: string }; Returns: undefined }
+      finish_push_job: {
+        Args: { p_id: string; p_lease_id: string; p_status: string }
+        Returns: undefined
+      }
       get_available_slots: {
         Args: { p_date: string; p_service_id: string; p_slug: string }
         Returns: string[]
       }
       get_public_booking_info: { Args: { p_slug: string }; Returns: Json }
+      has_push_subscription: {
+        Args: { p_business_id: string; p_endpoint: string }
+        Returns: boolean
+      }
       is_business_member: { Args: { p_business_id: string }; Returns: boolean }
+      register_push_subscription: {
+        Args: {
+          p_auth: string
+          p_business_id: string
+          p_endpoint: string
+          p_p256dh: string
+        }
+        Returns: undefined
+      }
+      remove_push_subscription: {
+        Args: { p_endpoint: string }
+        Returns: undefined
+      }
       replace_working_hours: {
         Args: { p_business_id: string; p_ranges: Json }
         Returns: undefined
       }
+      request_push_test: { Args: { p_endpoint: string }; Returns: undefined }
       slots_for: {
         Args: { p_business_id: string; p_date: string; p_service_id: string }
         Returns: {

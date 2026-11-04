@@ -1,3 +1,4 @@
+import { signOutWithPush } from '../lib/push.ts'
 import { InstallPanel } from '../components/InstallPanel.tsx'
 import { useCallback, useEffect, useState } from 'react'
 import { Bell, CalendarBlank, GearSix, Storefront } from '@phosphor-icons/react'
@@ -71,7 +72,7 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
   const ready = progress.serviceCount > 0 && progress.hasHours
   const wizard = !preferences.onboarding_completed && !skipped
   const stepNumber = { services: 3, hours: 4, reminders: 5, ready: 6 }[step]
-  if (wizard) return <Shell onSignOut={() => void supabase.auth.signOut()}><div className="flex flex-col gap-8">
+  if (wizard) return <Shell onSignOut={() => { void signOutWithPush().then(({ error }) => { if (error) window.alert(error.message) }) }}><div className="flex flex-col gap-8">
     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-5">
       <p className="font-semibold text-link">Paso {stepNumber} de 6</p>
       <button className={SECONDARY_BUTTON} onClick={() => setSkipped(true)}>Seguir después</button>
@@ -92,6 +93,6 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
     {tab === 'agenda'  && <AgendaScreen business={business} aside={ready ? <ShareBooking business={business} compact /> : undefined} />}
     {tab === 'business' && (editor === 'services' ? <ServicesScreen business={business} onBack={() => { setEditor(null); refresh() }} /> : editor === 'hours' ? <HoursScreen business={business} onBack={() => { setEditor(null); refresh() }} /> : <BusinessScreen business={business} ready={ready} onChanged={setBusiness} onServices={() => setEditor('services')} onHours={() => setEditor('hours')} />)}
     {tab === 'reminders' && <RemindersScreen business={business} preferences={preferences} onSaved={setPreferences} />}
-    {tab === 'settings' && <SettingsScreen />}
+    {tab === 'settings' && <SettingsScreen businessId={business.id} />}
   </main></div>
 }
