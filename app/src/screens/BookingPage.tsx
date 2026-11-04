@@ -212,7 +212,7 @@ function BookingDone({ confirmation, businessName, whatsapp, onBookAgain }: { co
     : null
   return (
     <div className="rise-in flex max-w-xl flex-col items-start gap-6 pt-6 md:pt-14" role="status">
-      <span className="grid size-14 place-items-center rounded-[1rem] bg-ok-bg text-ok">
+      <span className="grid size-14 place-items-center rounded-[1rem] bg-ink text-on-ink">
         <CheckCircle weight="bold" className="size-8" aria-hidden="true" />
       </span>
       <h1 className="text-[1.875rem] md:text-[2.5rem]">Tu turno quedó reservado</h1>
