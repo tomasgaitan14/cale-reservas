@@ -74,21 +74,38 @@ Si el cron estuviera apagado, se procesa a mano con `call public.process_whatsap
 
 ## Retención y qué se borra
 
-`purge_whatsapp_webhook_events()` borra **la fila entera** (el contenido trae teléfonos, nombres y textos de clientes):
+`purge_whatsapp_webhook_events()` borra **la fila entera** (el contenido trae teléfonos, nombres y textos de clientes). Los plazos
+no están en el código: viven en `whatsapp_events_retention`, una tabla de una sola fila.
 
-| Eventos | Se borran a los |
-|---|---|
-| `processed`, `ignored` | 30 días (desde `processed_at`) |
-| `failed`, `expired` | 90 días |
-| `stored` (mensajes entrantes sin procesar) | 90 días (desde la llegada) |
-| `pending`, `processing` | nunca: siempre terminan en uno de los estados de arriba |
+| Eventos | Columna | Por defecto | Por qué |
+|---|---|---|---|
+| `processed`, `ignored` | `processed_days` | 30 días | El resultado ya quedó en `reminder_deliveries`; el evento crudo solo sirve para diagnosticar. |
+| `failed`, `expired` | `failed_days` | 90 días | Hay que poder investigar un `ownership_mismatch` o una conexión que apareció tarde, y eso puede tardar. |
+| `stored` (mensajes entrantes sin procesar) | `stored_days` | 90 días (provisorio) | Ver abajo. |
+| `pending`, `processing` | — | nunca | Siempre terminan en uno de los estados de arriba. |
+
+**Por qué 90 días para los mensajes entrantes sin procesar (provisorio).** Hoy ninguna etapa los procesa (botones, cancelaciones y
+bajas son otra etapa), pero son los mensajes reales de los clientes: perderlos antes de construir esa etapa sería perder
+confirmaciones o pedidos de baja. 90 días da margen para construirla y para reprocesar lo acumulado, y es el mismo plazo que los
+fallidos, que tampoco están resueltos. Es un plazo largo para datos personales, así que **se revisa cuando exista la etapa que los
+procesa** (entonces pasan a `processed` y a los 30 días).
+
+**Cómo se cambia.** Un `UPDATE` de la fila, sin tocar código, cron ni funciones:
+
+```sql
+update public.whatsapp_events_retention set stored_days = 60, updated_at = now();
+```
+
+Cada plazo admite de 1 a 365 días (un error de tipeo no borra todo de golpe ni guarda datos para siempre) y la tabla solo la
+leen y escriben el servidor y quien administra la base. En producción, cambiarlo es un cambio de configuración: pide aprobación. Si
+la fila faltara, la purga falla con `55000` y no borra nada (en vez de borrar con un plazo inventado).
 
 **Efecto en la auditoría.** Esta tabla es una bandeja operativa, no un registro de auditoría. Lo que perdura es el resultado en
-`reminder_deliveries` (estado, `sent_at`, `delivered_at`, `read_at`, `last_error_code`, `last_error_at`), que no se purga. Pasados los 30 días ya
-no se puede reproducir un aviso procesado ni ver su contenido original; los fallidos y vencidos se conservan 90 días justamente
-para investigarlos. Tampoco hay deduplicación contra avisos más viejos que la retención: Meta reintenta avisos fallidos por un plazo
-acotado (verificar el plazo exacto en su documentación antes de acortar la retención). Los 90 días de los mensajes sin procesar son una decisión pendiente
-de confirmar: cuando haya una etapa que los procese, conviene revisarla.
+`reminder_deliveries` (estado, `sent_at`, `delivered_at`, `read_at`, `last_error_code`, `last_error_at`), que no se purga. Pasado el plazo de
+cada grupo ya no se puede reproducir un aviso ni ver su contenido original. Tampoco hay deduplicación contra avisos más viejos que
+la retención: Meta reintenta avisos fallidos por un plazo acotado (verificar el plazo exacto en su documentación antes de acortar
+`processed_days`). Si alguna vez hace falta una auditoría más larga, se guarda aparte lo que se necesite sin el contenido (por ejemplo,
+solo ids y estados), no se alarga la retención del contenido.
 
 ## Salud
 

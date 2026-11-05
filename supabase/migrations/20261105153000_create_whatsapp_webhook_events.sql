@@ -13,8 +13,32 @@
 --   * Error inesperado al procesar: hasta 8 intentos con espera creciente (1 min hasta 1 h); después queda `failed`.
 --   * Un evento `processing` cuyo lease venció (el procesador murió a mitad de camino) lo vuelve a tomar `claim_whatsapp_events`.
 --
--- Retención (`purge_whatsapp_webhook_events`): procesados e ignorados, 30 días; fallidos y vencidos, 90 días; mensajes entrantes
--- sin procesar, 90 días. Se borra la fila entera (el contenido trae teléfonos, nombres y textos de clientes).
+-- Retención (`purge_whatsapp_webhook_events`): por defecto, procesados e ignorados 30 días; fallidos y vencidos 90 días; mensajes
+-- entrantes sin procesar 90 días. Los plazos viven en `whatsapp_events_retention` (una sola fila) y se cambian con un UPDATE, sin
+-- tocar el código ni el cron. Se borra la fila entera (el contenido trae teléfonos, nombres y textos de clientes).
+
+-- Plazos de retención de la bandeja, en días. Una sola fila (singleton): se cambia con un UPDATE, y cada plazo tiene límites para que
+-- un error de tipeo no borre todo de golpe ni deje datos de clientes guardados para siempre.
+create table public.whatsapp_events_retention (
+  singleton boolean primary key default true check (singleton),
+  processed_days integer not null default 30 check (processed_days between 1 and 365),
+  failed_days integer not null default 90 check (failed_days between 1 and 365),
+  stored_days integer not null default 90 check (stored_days between 1 and 365),
+  updated_at timestamptz not null default now()
+);
+
+comment on column public.whatsapp_events_retention.processed_days is
+  'Days to keep processed and ignored events. The durable result lives in reminder_deliveries, so the raw event is only needed for troubleshooting.';
+comment on column public.whatsapp_events_retention.failed_days is
+  'Days to keep failed and expired events: long enough to investigate an ownership mismatch or a connection that appeared late.';
+comment on column public.whatsapp_events_retention.stored_days is
+  'Days to keep incoming messages that no stage processes yet (buttons, opt-outs). They hold customer text and phone numbers, so the window is capped; 90 matches failed_days and is provisional until a stage processes them.';
+
+insert into public.whatsapp_events_retention default values;
+
+alter table public.whatsapp_events_retention enable row level security;
+revoke all on table public.whatsapp_events_retention from anon, authenticated;
+grant all privileges on table public.whatsapp_events_retention to service_role;
 
 create table public.whatsapp_webhook_events (
   id uuid primary key default gen_random_uuid(),
@@ -403,22 +427,34 @@ as $$
   select count(*)::integer from reopened;
 $$;
 
--- Retención: borra por completo los eventos viejos (ver el encabezado). Devuelve cuántos borró por estado.
+-- Retención: borra por completo los eventos viejos según `whatsapp_events_retention`. Devuelve cuántos borró por estado.
 create function public.purge_whatsapp_webhook_events()
 returns jsonb
-language sql
+language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  v_retention public.whatsapp_events_retention%rowtype;
+  v_result jsonb;
+begin
+  select * into v_retention from public.whatsapp_events_retention;
+  if not found then
+    raise exception 'whatsapp_events_retention_missing' using errcode = '55000';
+  end if;
+
   with deleted as (
     delete from public.whatsapp_webhook_events e
-    where (e.process_status in ('processed', 'ignored') and e.processed_at < now() - interval '30 days')
-       or (e.process_status in ('failed', 'expired') and coalesce(e.processed_at, e.received_at) < now() - interval '90 days')
-       or (e.process_status = 'stored' and e.received_at < now() - interval '90 days')
+    where (e.process_status in ('processed', 'ignored') and e.processed_at < now() - make_interval(days => v_retention.processed_days))
+       or (e.process_status in ('failed', 'expired') and coalesce(e.processed_at, e.received_at) < now() - make_interval(days => v_retention.failed_days))
+       or (e.process_status = 'stored' and e.received_at < now() - make_interval(days => v_retention.stored_days))
     returning e.process_status
   )
-  select coalesce(jsonb_object_agg(process_status, events), '{}'::jsonb)
+  select coalesce(jsonb_object_agg(per_status.process_status, per_status.events), '{}'::jsonb)
+  into v_result
   from (select process_status, count(*) as events from deleted group by process_status) as per_status;
+  return v_result;
+end;
 $$;
 
 -- Permisos explícitos: solo el servidor (service_role); ningún usuario ni la API pública puede llamarlas

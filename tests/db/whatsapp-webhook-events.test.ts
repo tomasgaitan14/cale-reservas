@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { promisify } from 'node:util'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { CHECK_VIOLATION, INSUFFICIENT_PRIVILEGE } from '../support/pg-errors.ts'
+import { CHECK_VIOLATION, INSUFFICIENT_PRIVILEGE, UNIQUE_VIOLATION } from '../support/pg-errors.ts'
 import { localStack } from '../support/stack.ts'
 import { adminClient, anonymousClient, newUserClient } from '../support/users.ts'
 import {
@@ -650,6 +650,96 @@ describe('retención', () => {
     const wamid = await insertEvent({ process_status: 'failed', result_code: 'ownership_mismatch', processed_at: daysAgo(60) })
     await adminClient().rpc('purge_whatsapp_webhook_events')
     expect(await eventsOf(wamid)).toHaveLength(1)
+  })
+
+  describe('plazos configurables', () => {
+    const DEFAULTS = { processed_days: 30, failed_days: 90, stored_days: 90 }
+    const setRetention = async (values: Record<string, number>) => {
+      const { error } = await adminClient().from('whatsapp_events_retention').update(values).eq('singleton', true)
+      if (error) throw error
+    }
+
+    it('los plazos por defecto son 30, 90 y 90 días y hay una sola fila', async () => {
+      const { data, error } = await adminClient().from('whatsapp_events_retention').select('*')
+      expect(error).toBeNull()
+      expect(data).toHaveLength(1)
+      expect(data![0]).toMatchObject(DEFAULTS)
+    })
+
+    it.each([
+      ['0 días', { stored_days: 0 }],
+      ['más de un año', { stored_days: 366 }],
+      ['negativo', { processed_days: -1 }],
+      ['0 días en fallidos', { failed_days: 0 }],
+      ['más de un año en procesados', { processed_days: 400 }],
+    ])('rechaza un plazo de %s', async (_label, values) => {
+      const result = await adminClient().from('whatsapp_events_retention').update(values).eq('singleton', true)
+      expect(result.error?.code).toBe(CHECK_VIOLATION)
+      const { data } = await adminClient().from('whatsapp_events_retention').select('*').single()
+      expect(data).toMatchObject(DEFAULTS)
+    })
+
+    it('no admite una segunda fila de configuración', async () => {
+      const second = await adminClient().from('whatsapp_events_retention').insert({ singleton: false })
+      expect(second.error).not.toBeNull()
+      const duplicate = await adminClient().from('whatsapp_events_retention').insert({ singleton: true })
+      expect(duplicate.error?.code).toBe(UNIQUE_VIOLATION)
+    })
+
+    it('ni sin sesión ni un usuario pueden leer ni cambiar los plazos', async () => {
+      const user = await newUserClient()
+      for (const client of [anonymousClient(), user]) {
+        expect((await client.from('whatsapp_events_retention').select('stored_days')).error?.code).toBe(INSUFFICIENT_PRIVILEGE)
+        expect((await client.from('whatsapp_events_retention').update({ stored_days: 1 }).eq('singleton', true)).error?.code).toBe(INSUFFICIENT_PRIVILEGE)
+      }
+      expect((await adminClient().from('whatsapp_events_retention').select('stored_days').single()).data?.stored_days).toBe(DEFAULTS.stored_days)
+    })
+
+    it('la purga usa los plazos configurados, sin tocar código ni cron', async () => {
+      await setRetention({ processed_days: 7, failed_days: 10, stored_days: 30 })
+      try {
+        const processedOld = await insertEvent({ process_status: 'processed', processed_at: daysAgo(8) })
+        const processedNew = await insertEvent({ process_status: 'processed', processed_at: daysAgo(6) })
+        const failedOld = await insertEvent({ process_status: 'failed', processed_at: daysAgo(11) })
+        const failedNew = await insertEvent({ process_status: 'failed', processed_at: daysAgo(9) })
+        const expiredOld = await insertEvent({ process_status: 'expired', processed_at: daysAgo(11) })
+        const storedOld = await insertEvent({ kind: 'message', status_value: null, process_status: 'stored', received_at: daysAgo(31) })
+        const storedNew = await insertEvent({ kind: 'message', status_value: null, process_status: 'stored', received_at: daysAgo(29) })
+
+        expect((await adminClient().rpc('purge_whatsapp_webhook_events')).error).toBeNull()
+
+        for (const gone of [processedOld, failedOld, expiredOld, storedOld]) expect(await exists(gone)).toBe(false)
+        for (const kept of [processedNew, failedNew, storedNew]) expect(await exists(kept)).toBe(true)
+      } finally {
+        await setRetention(DEFAULTS)
+      }
+    })
+
+    it('un plazo más largo conserva lo que el por defecto borraría', async () => {
+      await setRetention({ stored_days: 120 })
+      try {
+        const stored = await insertEvent({ kind: 'message', status_value: null, process_status: 'stored', received_at: daysAgo(100) })
+        await adminClient().rpc('purge_whatsapp_webhook_events')
+        expect(await exists(stored)).toBe(true)
+      } finally {
+        await setRetention(DEFAULTS)
+      }
+    })
+
+    it('sin la fila de configuración la purga no borra nada y avisa', async () => {
+      const client = adminClient()
+      const stored = await insertEvent({ kind: 'message', status_value: null, process_status: 'stored', received_at: daysAgo(500) })
+      const removed = await client.from('whatsapp_events_retention').delete().eq('singleton', true)
+      expect(removed.error).toBeNull()
+      try {
+        const result = await client.rpc('purge_whatsapp_webhook_events')
+        expect(result.error?.code).toBe('55000')
+        expect(await exists(stored)).toBe(true)
+      } finally {
+        const restored = await client.from('whatsapp_events_retention').insert({ singleton: true })
+        expect(restored.error).toBeNull()
+      }
+    })
   })
 })
 
