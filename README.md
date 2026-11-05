@@ -23,7 +23,7 @@ Las variables van en `.env` (ver `.env.example`); nunca se commitean.
 
 `supabase/migrations/` es la **única fuente de verdad** del esquema de Supabase, también para `cale-api` (que solo tiene Edge Functions e
 integraciones con Meta). `npm run check:migrations` detecta archivos mal formados o repetidos y, con `-- --remote`, las migraciones aplicadas
-sin archivo. Ver [`docs/migrations.md`](docs/migrations.md).
+sin archivo. Ver [`docs/migrations.md`](docs/migrations.md). Cómo se guardan y procesan los avisos de WhatsApp: [`docs/whatsapp-webhook-events.md`](docs/whatsapp-webhook-events.md).
 
 ## Contacto
 
