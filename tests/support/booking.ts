@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createBusiness } from './businesses.ts'
 import { createService } from './services.ts'
-import { newUserClient } from './users.ts'
+import { adminClient, newUserClient } from './users.ts'
 import { saveHours, WEEKDAYS, type HoursRange } from './working-hours.ts'
 
 // Celular inventado en el formato canónico: nunca el de una persona real
@@ -49,7 +49,9 @@ export interface BookingRequest {
 }
 
 // Devuelve la respuesta tal cual, con su error si lo hay: para probar los rechazos
-export function tryBook(client: SupabaseClient, request: BookingRequest) {
+// Llama a create_booking con el rol que se le indique. Solo el servidor (service_role) puede ejecutarla: sirve para probar que el
+// resto no puede.
+export function tryBookAs(client: SupabaseClient, request: BookingRequest) {
   return client.rpc('create_booking', {
     p_slug: request.slug,
     p_service_id: request.serviceId,
@@ -61,8 +63,14 @@ export function tryBook(client: SupabaseClient, request: BookingRequest) {
   })
 }
 
-export async function book(client: SupabaseClient, request: BookingRequest): Promise<void> {
-  const { error } = await tryBook(client, request)
+// Una reserva como la hace la Edge Function book-appointment: con la clave del servidor, después de validar Turnstile.
+// Los visitantes y los dueños no llaman a create_booking directo (ver los tests de permisos).
+export function tryBook(request: BookingRequest) {
+  return tryBookAs(adminClient(), request)
+}
+
+export async function book(request: BookingRequest): Promise<void> {
+  const { error } = await tryBook(request)
   if (error) throw error
 }
 

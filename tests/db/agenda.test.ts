@@ -82,7 +82,7 @@ describe('bloquear horarios', () => {
     const lucero = await newBookableBusiness()
     await createBlock(lucero, { startDate: monday, startTime: '10:00', endTime: '12:00' })
 
-    const result = await tryBook(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    const result = await tryBook({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
 
     expect(result.error?.message).toBe('slot_unavailable')
     expect(await appointmentsOf(lucero)).toEqual([])
@@ -137,7 +137,7 @@ describe('qué bloqueos se aceptan', () => {
 
   it('rechaza un bloqueo que se pisa con un turno reservado, y no lo crea', async () => {
     const lucero = await newBookableBusiness()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
 
     const result = await tryCreateBlock(lucero.owner, lucero.id, { startDate: monday, startTime: '09:30', endTime: '10:30' })
 
@@ -147,7 +147,7 @@ describe('qué bloqueos se aceptan', () => {
 
   it('un turno cancelado no impide bloquear ese horario', async () => {
     const lucero = await newBookableBusiness()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
     const [appointment] = await appointmentsOf(lucero)
     await lucero.owner.rpc('cancel_appointment', { p_appointment_id: appointment!.id })
 
@@ -184,7 +184,8 @@ describe('quién puede bloquear', () => {
 
     expect(create.error?.message).toMatch(/permission denied/)
     expect(remove.error?.message).toMatch(/permission denied/)
-    expect(seen.data).toEqual([])
+    // Sin sesión no hay ningún permiso de lectura sobre la tabla: es un rechazo, no una lista vacía
+    expect(seen.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     expect(await blocksOf(lucero)).toHaveLength(1)
   })
 
@@ -199,8 +200,8 @@ describe('quién puede bloquear', () => {
     const removal = await lucero.owner.from('time_blocks').delete().eq('business_id', lucero.id).select('id')
 
     expect(insert.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
-    expect(update.data).toEqual([])
-    expect(removal.data).toEqual([])
+    expect(update.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
+    expect(removal.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     expect(await blocksOf(lucero)).toHaveLength(1)
   })
 
@@ -221,7 +222,7 @@ describe('bloqueo y reserva a la vez', () => {
       const endHour = `${String(Number(hour.slice(0, 2)) + 1).padStart(2, '0')}:00`
       const [block, booking] = await Promise.all([
         tryCreateBlock(lucero.owner, lucero.id, { startDate: monday, startTime: hour, endTime: endHour }),
-        tryBook(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: hour }),
+        tryBook({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: hour }),
       ])
 
       expect(block.error === null && booking.error === null, `a las ${hour} quedaron el bloqueo y el turno`).toBe(false)
@@ -295,9 +296,9 @@ describe('turno cargado a mano', () => {
     expect(declined?.consented_at).toBeNull()
   })
 
-  it('una reserva de la página pública queda como web y con el consentimiento', async () => {
+  it('una reserva hecha por el servidor desde la página pública queda como web y con el consentimiento', async () => {
     const lucero = await newBookableBusiness()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
 
     const [appointment] = await appointmentsOf(lucero)
 
@@ -314,7 +315,7 @@ describe('turno cargado a mano', () => {
 
   it('no se pisa con otro turno ni con un bloqueo, pero sí con uno cancelado', async () => {
     const lucero = await newBookableBusiness()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
     await createBlock(lucero, { startDate: monday, startTime: '14:00', endTime: '15:00' })
 
     const overBooking = await tryOwnerBook(lucero.owner, lucero.id, { serviceId: lucero.serviceId, date: monday, time: '10:30' })

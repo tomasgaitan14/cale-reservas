@@ -41,14 +41,16 @@ describe('negocios', () => {
     const mateo = await newUserClient()
     const lucero = await createBusiness(lucia, 'Peluquería Lucero', 'lucero')
 
-    // La seguridad por filas no devuelve error: simplemente no toca ninguna fila
+    // Modificar: la seguridad por filas no devuelve error, simplemente no toca ninguna fila
     const update = await mateo.from('businesses').update({ name: 'Cerrado por Mateo' }).eq('slug', lucero.slug).select('slug')
     expect(update.error).toBeNull()
     expect(update.data).toEqual([])
 
+    // Borrar: ningún usuario tiene ese permiso sobre la tabla, ni siquiera el dueño
     const removal = await mateo.from('businesses').delete().eq('slug', lucero.slug).select('slug')
-    expect(removal.error).toBeNull()
-    expect(removal.data).toEqual([])
+    expect(removal.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
+    const ownerRemoval = await lucia.from('businesses').delete().eq('slug', lucero.slug).select('slug')
+    expect(ownerRemoval.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
 
     const luciaView = await lucia.from('businesses').select('name').eq('slug', lucero.slug)
     expect(luciaView.data).toEqual([{ name: 'Peluquería Lucero' }])
@@ -92,12 +94,11 @@ describe('negocios', () => {
     const stored = await adminClient().from('businesses').select('slug').eq('slug', attempted)
     expect(stored.data).toEqual([])
 
+    // Sin sesión no hay ningún permiso de lectura: es un rechazo, no una lista vacía
     const businesses = await visitor.from('businesses').select('slug')
-    expect(businesses.error).toBeNull()
-    expect(businesses.data).toEqual([])
+    expect(businesses.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
 
     const members = await visitor.from('business_members').select('user_id')
-    expect(members.error).toBeNull()
-    expect(members.data).toEqual([])
+    expect(members.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
   })
 })

@@ -175,7 +175,8 @@ describe('aislamiento del horario', () => {
     await saveHours(lucia, lucero.id, [{ day_of_week: MONDAY, start_time: '09:00', end_time: '18:00' }])
     const visitor = anonymousClient()
 
-    expect(await readHours(visitor)).toEqual([])
+    // Sin sesión no hay ningún permiso de lectura sobre la tabla: es un rechazo, no una lista vacía
+    expect((await visitor.from('working_hours').select('day_of_week')).error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     const attempt = await trySaveHours(visitor, lucero.id, [])
     expect(attempt.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     // Lo frena el permiso de ejecución, no solo el control de membresía de la función
@@ -193,10 +194,11 @@ describe('aislamiento del horario', () => {
       .insert({ business_id: lucero.id, day_of_week: TUESDAY, start_time: '09:00', end_time: '18:00' })
     expect(insert.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
 
+    // El dueño solo tiene permiso de lectura: modificar o borrar se rechaza, no se filtra por fila
     const update = await lucia.from('working_hours').update({ end_time: '23:00' }).eq('business_id', lucero.id).select('id')
-    expect(update.data).toEqual([])
+    expect(update.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     const removal = await lucia.from('working_hours').delete().eq('business_id', lucero.id).select('id')
-    expect(removal.data).toEqual([])
+    expect(removal.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
 
     expect(await readHours(lucia)).toEqual([{ day_of_week: MONDAY, start_time: '09:00:00', end_time: '18:00:00' }])
   })

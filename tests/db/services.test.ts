@@ -63,8 +63,8 @@ describe('servicios', () => {
     const visitor = anonymousClient()
 
     const listed = await visitor.from('services').select('name')
-    expect(listed.error).toBeNull()
-    expect(listed.data).toEqual([])
+    // Sin sesión no hay ningún permiso de lectura: es un rechazo, no una lista vacía
+    expect(listed.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
 
     const created = await visitor.from('services').insert({ business_id: lucero.id, name: 'Colado', duration_minutes: 30 })
     expect(created.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
