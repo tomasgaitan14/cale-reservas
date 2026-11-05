@@ -42,6 +42,28 @@ SUPABASE_PROJECT_REF=<ref> npm run check:migrations -- --remote   # además, con
 
 Correr `--remote` antes de cada `db push` y después de él.
 
+## Permisos: el local no es igual a producción
+
+El Supabase actual de producción **no da ningún permiso de datos por defecto** a `anon`, `authenticated` ni `service_role` sobre las
+tablas nuevas de `public` (solo TRUNCATE, REFERENCES, TRIGGER y MAINTAIN), y las funciones no se pueden ejecutar sin un `GRANT`. El
+stack local de la CLI concede todo. Resultado: un objeto sin `GRANT` explícito pasa los tests locales y falla con `permission denied`
+solo en producción (pasó con `whatsapp_connections` y `reminder_deliveries`, que quedaron sin permisos para el servidor).
+
+Para que no se repita:
+
+- **Toda tabla o función nueva lleva sus `GRANT` explícitos** en la migración que la crea, para cada rol que la use. No se depende de los
+  permisos por defecto.
+- **`npm run db:reset:parity`** reinicia la base LOCAL con los permisos por defecto de producción (vacía `public`, fija los permisos por
+  defecto, aplica todas las migraciones y desprograma el job del push, que en local llamaría a producción). Usarlo en vez de
+  `supabase db reset` antes de correr los tests de base.
+- **`supabase/privileges.json`** es el manifiesto de permisos esperados (por tabla, vista y función). `tests/db/privileges.test.ts`
+  comprueba que la base local tenga los permisos por defecto de producción y que todo coincida con el manifiesto; si no pasan, el
+  mensaje dice qué hacer. Al cambiar permisos en una migración: `npm run check:privileges -- --update`, revisar el `git diff` del
+  manifiesto y commitearlo junto con la migración.
+- **`SUPABASE_PROJECT_REF=<ref> npm run check:privileges -- --remote`** compara producción con el manifiesto, solo en lectura. Los objetos
+  del manifiesto que todavía no existen en producción (migración sin aplicar) se informan sin fallar; cualquier otra diferencia falla.
+  Correrlo antes y después de cada `db push`.
+
 ## Qué usa `cale-api` de acá
 
 Las Edge Functions de `cale-api` leen tablas definidas en estas migraciones (por ejemplo `whatsapp_connections` y `reminder_deliveries`).

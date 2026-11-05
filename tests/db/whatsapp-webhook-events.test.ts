@@ -153,6 +153,46 @@ describe('ingesta', () => {
   })
 })
 
+describe('lotes parciales y reintentos', () => {
+  it('un lote reenviado completo después de guardarse solo una parte no duplica y cuenta lo que ya estaba', async () => {
+    const connection = await newConnection()
+    const items = Array.from({ length: 30 }, () => statusItem({ wamid: newWamid(), status: 'sent', connection }))
+
+    expect((await ingest(items.slice(0, 12))).data).toEqual({ received: 12, inserted: 12, duplicates: 0 })
+    expect((await ingest(items)).data).toEqual({ received: 30, inserted: 18, duplicates: 12 })
+    expect((await ingest(items)).data).toEqual({ received: 30, inserted: 0, duplicates: 30 })
+
+    const { count, error } = await adminClient()
+      .from('whatsapp_webhook_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('phone_number_id', connection.phoneNumberId)
+    expect(error).toBeNull()
+    expect(count).toBe(30)
+  })
+
+  it('varios reintentos idénticos a la vez dejan cada evento exactamente una vez', async () => {
+    const connection = await newConnection()
+    const items = Array.from({ length: 40 }, () => statusItem({ wamid: newWamid(), status: 'delivered', connection }))
+
+    const results = await Promise.all(Array.from({ length: 5 }, () => ingest(items)))
+    for (const result of results) expect(result.error).toBeNull()
+    const inserted = results.reduce((total, result) => total + (result.data as { inserted: number }).inserted, 0)
+    expect(inserted).toBe(40)
+
+    const { count } = await adminClient().from('whatsapp_webhook_events').select('id', { count: 'exact', head: true }).eq('phone_number_id', connection.phoneNumberId)
+    expect(count).toBe(40)
+  })
+
+  it('cada llamada es todo o nada: un ítem inválido no deja guardado ni uno solo del lote', async () => {
+    const connection = await newConnection()
+    const good = Array.from({ length: 10 }, () => statusItem({ wamid: newWamid(), status: 'sent', connection }))
+    const bad = { ...statusItem({ wamid: newWamid(), status: 'sent', connection }), status: 'deleted' }
+    expect((await ingest([...good, bad])).error?.code).toBe(CHECK_VIOLATION)
+    const { count } = await adminClient().from('whatsapp_webhook_events').select('id', { count: 'exact', head: true }).eq('phone_number_id', connection.phoneNumberId)
+    expect(count).toBe(0)
+  })
+})
+
 describe('permisos', () => {
   const calls: [string, Record<string, unknown>][] = [
     ['ingest_whatsapp_events', { p_items: [] }],

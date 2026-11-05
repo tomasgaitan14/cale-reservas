@@ -84,7 +84,7 @@ export function hasRemoteProblems(comparison: RemoteComparison): boolean {
 }
 
 // Salida de `supabase db query --linked`: un JSON con "rows" (y avisos); los errores llegan como { _tag: 'Error', error }.
-export function parseRemoteMigrations(output: string): Migration[] {
+export function parseQueryRows(output: string): unknown[] {
   const notJson = new MigrationCheckError('La CLI de Supabase no devolvió un JSON.')
   const start = output.indexOf('{')
   if (start < 0) throw notJson
@@ -100,7 +100,11 @@ export function parseRemoteMigrations(output: string): Migration[] {
     throw new MigrationCheckError(`La CLI de Supabase falló: ${String(body.error?.code ?? 'sin código')}: ${String(body.error?.message ?? '')}`.trim())
   }
   if (!Array.isArray(body.rows)) throw new MigrationCheckError('La respuesta de Supabase no trae "rows".')
-  return body.rows.map(row => {
+  return body.rows
+}
+
+export function parseRemoteMigrations(output: string): Migration[] {
+  return parseQueryRows(output).map(row => {
     const { version, name } = (row ?? {}) as { version?: unknown; name?: unknown }
     if (typeof version !== 'string' || typeof name !== 'string') throw new MigrationCheckError('Una fila del historial remoto no trae version y name.')
     return { version, name }

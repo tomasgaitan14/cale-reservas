@@ -1,8 +1,7 @@
-import { execFileSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { createBusiness } from './businesses.ts'
 import { SAMPLE_CLIENT_NAME, SAMPLE_PHONE } from './booking.ts'
-import { localStack } from './stack.ts'
+import { psql } from './psql.ts'
 import { adminClient, newUserClient } from './users.ts'
 
 // Todo lo que crean los tests lleva este prefijo en el id del mensaje, para limpiarlo al terminar sin tocar otros datos
@@ -17,10 +16,7 @@ let counter = 0
 export const newWamid = (): string => `${WAMID_PREFIX}${++counter}`
 const newDigits = (length: number): string => Array.from({ length }, () => Math.floor(Math.random() * 10)).join('')
 
-// Ejecuta SQL directo contra la base local y devuelve la salida cruda (para llamar al procedimiento y preparar casos extremos)
-export function psql(sql: string): string {
-  return execFileSync('psql', [localStack().dbUrl, '-v', 'ON_ERROR_STOP=1', '-qAt', '-c', sql], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
-}
+export { psql }
 
 export const runProcessor = (limit = 100): void => {
   psql(`call public.process_whatsapp_events(${limit})`)
