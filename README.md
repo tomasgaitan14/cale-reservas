@@ -19,6 +19,12 @@ Requiere Node 24 (`nvm use`) y, para los tests de base de datos, Docker y la CLI
 
 Las variables van en `.env` (ver `.env.example`); nunca se commitean.
 
+## Migraciones
+
+`supabase/migrations/` es la **única fuente de verdad** del esquema de Supabase, también para `cale-api` (que solo tiene Edge Functions e
+integraciones con Meta). `npm run check:migrations` detecta archivos mal formados o repetidos y, con `-- --remote`, las migraciones aplicadas
+sin archivo. Ver [`docs/migrations.md`](docs/migrations.md).
+
 ## Contacto
 
 `cale.turnos@gmail.com`
