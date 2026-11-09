@@ -37,8 +37,8 @@ describe('URL de la aplicación por entorno', () => {
     expect(() => readAppUrl(env({ APP_URL: value }))).toThrow(EnvironmentConfigError)
   })
   it('la URL de retorno de Mercado Pago sale de la del entorno', () => {
-    expect(subscriptionReturnUrl(env({}))).toBe('https://cale.com.ar/panel/ajustes?subscription=success')
-    expect(subscriptionReturnUrl(env({ APP_URL: DEV_APP_URL }))).toBe('https://dev.cale.com.ar/panel/ajustes?subscription=success')
+    expect(subscriptionReturnUrl(env({}))).toBe('https://cale.com.ar/panel/ajustes')
+    expect(subscriptionReturnUrl(env({ APP_URL: DEV_APP_URL }))).toBe('https://dev.cale.com.ar/panel/ajustes')
   })
 })
 

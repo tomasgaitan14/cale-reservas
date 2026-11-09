@@ -1,5 +1,10 @@
 import { supabase } from './supabase.ts'
 
+export function isSubscriptionReturn(search: string): boolean {
+  const params = new URLSearchParams(search)
+  return params.get('subscription') === 'success' || Boolean(params.get('preapproval_id'))
+}
+
 export async function startProSubscription(businessId: string, couponCode?: string): Promise<string> {
   const { data, error } = await supabase.functions.invoke('create-pro-subscription', { body: { businessId, ...(couponCode ? { couponCode } : {}) } })
   if (error) {

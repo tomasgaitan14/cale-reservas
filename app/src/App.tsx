@@ -5,7 +5,7 @@ import { Shell } from './components/Shell.tsx'
 import { SECONDARY_BUTTON } from './components/ui.ts'
 import { useSession } from './hooks/useSession.ts'
 import { BusinessLoadError, fetchMyBusiness, type Business } from './lib/business.ts'
-import { syncProSubscription } from './lib/billing.ts'
+import { isSubscriptionReturn, syncProSubscription } from './lib/billing.ts'
 import { parseRoute } from './lib/route.ts'
 import { designVariant } from './designs/model.ts'
 import { supabase } from './lib/supabase.ts'
@@ -30,8 +30,8 @@ function BusinessGate() {
       setState({ status: 'loading' })
       try {
         const business = await fetchMyBusiness()
-        const isSubscriptionReturn = new URLSearchParams(window.location.search).get('subscription') === 'success'
-        const waitingForPayment = business && business.plan !== 'pro' && (isSubscriptionReturn || business.billing_status === 'pending')
+        const returnedFromSubscription = isSubscriptionReturn(window.location.search)
+        const waitingForPayment = business && business.plan !== 'pro' && (returnedFromSubscription || business.billing_status === 'pending')
         if (!cancelled) setState({ status: 'ready', business })
         if (business && waitingForPayment) {
           void (async () => {
@@ -43,7 +43,7 @@ function BusinessGate() {
               currentBusiness = await fetchMyBusiness()
               if (!cancelled && currentBusiness?.plan === 'pro') setState({ status: 'ready', business: currentBusiness })
             }
-            if (isSubscriptionReturn && !cancelled) window.history.replaceState({}, '', `${window.location.pathname}${window.location.hash}`)
+            if (returnedFromSubscription && !cancelled) window.history.replaceState({}, '', `${window.location.pathname}${window.location.hash}`)
           })()
         }
       } catch (error: unknown) {

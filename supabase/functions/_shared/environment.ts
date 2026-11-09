@@ -6,7 +6,9 @@ export const PRODUCTION_APP_URL = 'https://cale.com.ar'
 export const PRODUCTION_ALLOWED_ORIGINS = ['https://cale.com.ar', 'https://www.cale.com.ar', 'https://app.cale.com.ar', 'https://cale-reservas.vercel.app'] as const
 export const DEFAULT_BOOKING_ORIGINS = ['http://127.0.0.1:5174', 'http://localhost:5174', 'https://cale-reservas.vercel.app', 'https://cale.com.ar'] as const
 export const DEFAULT_BOOKING_HOSTNAMES = ['127.0.0.1', 'localhost', 'cale-reservas.vercel.app', 'cale.com.ar'] as const
-export const SUBSCRIPTION_RETURN_PATH = '/panel/ajustes?subscription=success'
+// Mercado Pago agrega `?preapproval_id=...` al volver del checkout. La URL base no debe traer query,
+// porque el proveedor concatena ese parámetro con `?`.
+export const SUBSCRIPTION_RETURN_PATH = '/panel/ajustes'
 
 export const ENV_APP_URL = 'APP_URL'
 export const ENV_ALLOWED_ORIGINS = 'ALLOWED_ORIGINS'
