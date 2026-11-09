@@ -28,7 +28,7 @@ export function InstallPanel({ invitation = false }: { invitation?: boolean }) {
   }
   if (installed) return invitation ? null : <p className="text-muted">Ya estás usando Cale desde la app instalada.</p>
   if (invitation && (!eligible || dismissed)) return null
-  const official = window.location.origin === 'https://app.cale.com.ar'
+  const official = window.location.origin === 'https://cale.com.ar'
   return <>
     <div className={invitation ? 'install-invitation' : 'install-settings'}>
       <img src="/icons/cale-192.png" alt="" width={48} height={48} className="rounded-xl" />
@@ -37,7 +37,7 @@ export function InstallPanel({ invitation = false }: { invitation?: boolean }) {
     </div>
     {open && <Modal title="Agregá Cale al inicio" onClose={() => setOpen(false)}>
       <div className="flex items-center gap-4"><img src="/icons/cale-192.png" width={56} height={56} alt="Icono de Cale" className="rounded-xl" /><div><strong>Cale</strong><p className="text-sm text-muted">Tu panel y tu agenda.</p></div></div>
-      {!official ? <div className="rounded-xl bg-tint p-4"><p className="mb-3">Para instalar la versión definitiva, abrí esta dirección en Safari:</p><a className="inline-flex items-center gap-2 break-all font-semibold underline" href="https://app.cale.com.ar/panel">app.cale.com.ar/panel<ArrowSquareOut aria-hidden="true" /></a></div> : null}
+      {!official ? <div className="rounded-xl bg-tint p-4"><p className="mb-3">Para instalar la versión definitiva, abrí esta dirección en Safari:</p><a className="inline-flex items-center gap-2 break-all font-semibold underline" href="https://cale.com.ar/panel">cale.com.ar/panel<ArrowSquareOut aria-hidden="true" /></a></div> : null}
       <p className="text-muted">En tu iPhone, abrí el panel en Safari. Si llegaste desde WhatsApp u otra app, usá “Abrir en Safari”.</p>
       <ol className="install-steps">
         <li><Export aria-hidden="true" /><div><strong>1. Tocá Compartir</strong><p>Buscá el cuadrado con la flecha hacia arriba. Según tu Safari, puede estar dentro del menú de tres puntos.</p></div></li>

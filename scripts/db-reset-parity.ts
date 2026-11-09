@@ -4,7 +4,7 @@
 //
 // Pasos: se reinicia la base hasta la primera migración (deja el resto, como storage, limpio), se vacía el esquema `public` y el historial
 // de migraciones, se fijan los permisos por defecto de producción, se carga un secreto de Vault de mentira (la migración del push exige
-// uno), se aplican todas las migraciones y se desprograma el job del push (en local llamaría a la URL de producción).
+// uno), se aplican todas las migraciones y se desprograman los jobs de la app (el del push en local llamaría a producción, y el de WhatsApp procesaría los eventos de los tests).
 import { execFileSync } from 'node:child_process'
 import { readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -12,7 +12,6 @@ import { localDbUrl, psql } from './local-db.ts'
 import { parseMigrationFileName } from './migrations-check.ts'
 
 const MIGRATIONS_DIR = fileURLToPath(new URL('../supabase/migrations/', import.meta.url))
-const PUSH_JOB = 'cale-push-delivery'
 const PUSH_SECRET = 'cale_push_job_secret'
 const FAKE_SECRET_LENGTH = 40
 
@@ -41,5 +40,6 @@ psql(EMPTY_PUBLIC_SQL)
 psql(PRODUCTION_DEFAULTS_SQL)
 psql(`select vault.create_secret(repeat('x', ${FAKE_SECRET_LENGTH}), '${PUSH_SECRET}', 'local test only') where not exists (select 1 from vault.secrets where name = '${PUSH_SECRET}')`)
 supabase('migration', 'up')
-psql(`select cron.unschedule('${PUSH_JOB}') where exists (select 1 from cron.job where jobname = '${PUSH_JOB}')`)
+// Los jobs de la app no corren en local: el del push llamaría a producción y el de WhatsApp procesaría los eventos de los tests a mitad de camino
+psql("select cron.unschedule(jobid) from cron.job where jobname like 'cale-%'")
 console.log('✓ Base local reiniciada con los permisos por defecto de producción.')

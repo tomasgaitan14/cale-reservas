@@ -1,0 +1,3 @@
+/* Presentación para la captura: la interfaz y sus controles conservan sus estilos originales. */
+* { scrollbar-width:none }
+*::-webkit-scrollbar { display:none }

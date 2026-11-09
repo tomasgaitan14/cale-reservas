@@ -1,6 +1,6 @@
 // Largo máximo del slug: es el mismo límite que la restricción businesses_slug_format de la base, que es la que manda
 export const MAX_SLUG_LENGTH = 40
-export const PAGE_ADDRESS_PREFIX = 'app.cale.com.ar/'
+export const PAGE_ADDRESS_PREFIX = 'cale.com.ar/'
 
 const COMBINING_MARKS = /[̀-ͯ]/g
 

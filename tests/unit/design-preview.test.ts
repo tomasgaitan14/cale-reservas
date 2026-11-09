@@ -22,7 +22,7 @@ describe('propuestas comparables',()=>{
   it.each(DESIGN_VARIANTS)('%s permite revisar la portada y la reserva sin cuenta',variant=>{
     const landing=render(variant,'?vista=portada')
     expect(landing).toContain('Reservas y recordatorios de turnos,')
-    expect(landing).toContain('Crear mi cuenta')
+    expect(landing).toContain('Empezá Gratis')
     expect(landing).toContain('No crea una reserva real')
     const booking=render(variant,'?vista=reserva')
     expect(booking).toContain('Un turno que te quede bien.')

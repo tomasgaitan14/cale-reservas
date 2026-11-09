@@ -2,6 +2,7 @@ import { LegalLinks } from '../components/LegalLinks.tsx'
 import { GoogleLogo, WarningCircle } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { PRIMARY_BUTTON } from '../components/ui.ts'
+import { authRedirectUrl } from '../lib/auth.ts'
 import { supabase } from '../lib/supabase.ts'
 
 const GENERIC_ERROR = 'No pudimos entrar. Probá de nuevo en un momento.'
@@ -15,7 +16,7 @@ export function LoginScreen() {
     setError(null)
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: authRedirectUrl(window.location.origin) },
     })
     if (oauthError) {
       setError(GENERIC_ERROR)
