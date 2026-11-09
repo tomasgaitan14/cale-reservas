@@ -1,27 +1,18 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { jsonResponse, preflightResponse } from '../_shared/cors.ts'
+import { readAllowedOrigins } from '../_shared/environment.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } })
-
-const allowedOrigins = new Set(['https://cale.com.ar', 'https://www.cale.com.ar', 'https://app.cale.com.ar', 'https://cale-reservas.vercel.app'])
-
-function corsHeaders(request: Request): Record<string, string> {
-  const origin = request.headers.get('origin') ?? ''
-  return {
-    'Access-Control-Allow-Origin': allowedOrigins.has(origin) ? origin : 'https://cale.com.ar',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    Vary: 'Origin',
-  }
-}
+const allowedOrigins = readAllowedOrigins()
 
 function reply(request: Request, status: number, body: unknown) {
-  return Response.json(body, { status, headers: { ...corsHeaders(request), 'Cache-Control': 'no-store' } })
+  return jsonResponse(request, allowedOrigins, status, body)
 }
 
 Deno.serve(async request => {
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(request) })
+  if (request.method === 'OPTIONS') return preflightResponse(request, allowedOrigins)
   if (request.method !== 'POST') return reply(request, 405, { error: 'method_not_allowed' })
   if (!supabaseUrl || !serviceRoleKey) return reply(request, 503, { error: 'account_deletion_unavailable' })
 

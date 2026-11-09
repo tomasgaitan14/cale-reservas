@@ -1,4 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { jsonResponse, preflightResponse } from '../_shared/cors.ts'
+import { readAllowedOrigins } from '../_shared/environment.ts'
 import { syncSubscription } from '../_shared/sync-subscription.ts'
 import { mercadoPagoAccessToken } from '../_shared/mercadopago.ts'
 
@@ -6,18 +8,11 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 const mercadoPagoToken = mercadoPagoAccessToken
 const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } })
-
-function reply(status: number, body: unknown) {
-  return Response.json(body, { status, headers: {
-    'Access-Control-Allow-Origin': 'https://cale.com.ar',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Cache-Control': 'no-store',
-  } })
-}
+const allowedOrigins = readAllowedOrigins()
 
 Deno.serve(async request => {
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: { 'Access-Control-Allow-Origin': 'https://cale.com.ar', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' } })
+  const reply = (status: number, body: unknown) => jsonResponse(request, allowedOrigins, status, body)
+  if (request.method === 'OPTIONS') return preflightResponse(request, allowedOrigins)
   if (request.method !== 'POST') return reply(405, { error: 'method_not_allowed' })
   if (!supabaseUrl || !serviceRoleKey || !mercadoPagoToken) return reply(503, { error: 'billing_unavailable' })
   const authorization = request.headers.get('authorization')

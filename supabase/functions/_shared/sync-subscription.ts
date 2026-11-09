@@ -1,7 +1,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { BILLING_DAY, FULL_PRICE, isBillingDay, nextBillingDate } from './billing.ts'
+import { subscriptionReturnUrl } from './environment.ts'
 
-const SUCCESS_RETURN_URL = 'https://cale.com.ar/panel/ajustes?subscription=success'
 type BillingStatus = 'free' | 'pending' | 'active' | 'past_due' | 'canceled'
 
 function mapStatus(status: string): BillingStatus {
@@ -73,7 +73,7 @@ export async function syncSubscription(admin: SupabaseClient, token: string, sub
       method: 'PUT',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        back_url: SUCCESS_RETURN_URL,
+        back_url: subscriptionReturnUrl(),
         auto_recurring: {
           transaction_amount: FULL_PRICE,
           currency_id: 'ARS',

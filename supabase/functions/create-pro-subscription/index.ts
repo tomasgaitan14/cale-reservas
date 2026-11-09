@@ -1,38 +1,22 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { BILLING_DAY, FULL_PRICE } from '../_shared/billing.ts'
+import { jsonResponse, preflightResponse } from '../_shared/cors.ts'
+import { readAllowedOrigins, subscriptionReturnUrl } from '../_shared/environment.ts'
 import { mercadoPagoAccessToken } from '../_shared/mercadopago.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 const mercadoPagoToken = mercadoPagoAccessToken
-const appUrl = Deno.env.get('APP_URL') ?? 'https://cale.com.ar'
+const allowedOrigins = readAllowedOrigins()
+const returnUrl = subscriptionReturnUrl()
 const PROMO_CODE = 'DESCUENTOCALE50'
 const PROMO_PRICE = 7499
 
 const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } })
 
-function reply(status: number, body: unknown) {
-  return Response.json(body, {
-    status,
-    headers: {
-      'Access-Control-Allow-Origin': 'https://cale.com.ar',
-      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Cache-Control': 'no-store',
-    },
-  })
-}
-
 Deno.serve(async request => {
-  if (request.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': 'https://cale.com.ar',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      },
-    })
-  }
+  const reply = (status: number, body: unknown) => jsonResponse(request, allowedOrigins, status, body)
+  if (request.method === 'OPTIONS') return preflightResponse(request, allowedOrigins)
   if (request.method !== 'POST') return reply(405, { error: 'method_not_allowed' })
   if (!supabaseUrl || !serviceRoleKey || !mercadoPagoToken) return reply(503, { error: 'billing_unavailable' })
 
@@ -100,7 +84,7 @@ Deno.serve(async request => {
         transaction_amount: recurringAmount,
         currency_id: 'ARS',
       },
-      back_url: `${appUrl}/panel/ajustes?subscription=success`,
+      back_url: returnUrl,
     }),
     signal: AbortSignal.timeout(10000),
   })
