@@ -67,11 +67,11 @@ describe('reserva completa desde la interfaz',()=>{
   expect(container.querySelector<HTMLInputElement>('input[type="checkbox"]')!.checked).toBe(false)
   expect(api.book).toHaveBeenCalledTimes(1)
  })
- it('muestra la invitación de 7 días y permite abrir el alta sin perder la reserva',async()=>{
+ it('muestra la invitación gratuita y permite abrir el alta sin perder la reserva',async()=>{
   await openDetails()
-  expect(container.textContent).toContain('Probá Cale gratis por 7 días')
+  expect(container.textContent).toContain('Empezá Gratis y usala sin vencimiento.')
   const link=container.querySelector<HTMLAnchorElement>('footer a')!
-  expect(link.href).toBe('https://app.cale.com.ar/empezar')
+  expect(link.href).toBe('https://cale.com.ar/empezar')
   expect(link.target).toBe('_blank')
   expect(link.rel).toContain('noopener')
   await fillDetails();await submit()

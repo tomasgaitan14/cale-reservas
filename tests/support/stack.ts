@@ -4,6 +4,8 @@ export interface LocalStack {
   apiUrl: string
   anonKey: string
   serviceRoleKey: string
+  // Conexión directa a Postgres: para llamar procedimientos (la API no puede) y preparar datos que ningún cliente puede escribir
+  dbUrl: string
 }
 
 const STATUS_LINE = /^([A-Z_]+)="?(.*?)"?$/
@@ -33,6 +35,6 @@ export function localStack(): LocalStack {
     if (!value) throw new Error(`\`supabase status\` no devolvió ${name}`)
     return value
   }
-  cachedStack = { apiUrl: read('API_URL'), anonKey: read('ANON_KEY'), serviceRoleKey: read('SERVICE_ROLE_KEY') }
+  cachedStack = { apiUrl: read('API_URL'), anonKey: read('ANON_KEY'), serviceRoleKey: read('SERVICE_ROLE_KEY'), dbUrl: read('DB_URL') }
   return cachedStack
 }

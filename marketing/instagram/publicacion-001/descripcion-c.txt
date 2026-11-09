@@ -1,0 +1,10 @@
+“¿Tenés lugar mañana?”
+“¿A qué hora?”
+“¿Y el viernes?”
+
+Coordinar un turno puede llevar varios mensajes. Multiplicalo por cada persona que te escribe mientras estás atendiendo.
+
+Con Cale, les compartís tu link y pueden elegir servicio, día y horario. Menos ida y vuelta para coordinar. Más tiempo para atender.
+
+Probá Cale gratis por 14 días.
+

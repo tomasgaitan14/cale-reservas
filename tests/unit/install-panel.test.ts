@@ -36,7 +36,7 @@ describe('instalación guiada del panel', () => {
     expect(container.querySelector('dialog')?.open).toBe(true)
     expect(container.textContent).toContain('Tocá Compartir')
     expect(container.textContent).toContain('Elegí Agregar a inicio')
-    expect(container.querySelector('a')?.href).toBe('https://app.cale.com.ar/panel')
+    expect(container.querySelector('a')?.href).toBe('https://cale.com.ar/panel')
   })
   it('no invita automáticamente en un navegador de escritorio', async () => {
     vi.spyOn(window.navigator, 'userAgent', 'get').mockReturnValue('Desktop')

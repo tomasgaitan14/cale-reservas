@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { appointmentsOf, book, newBookableBusiness, SAMPLE_CLIENT_NAME, SAMPLE_PHONE, slotsFor, tryBook, type BookableBusiness } from '../support/booking.ts'
+import { appointmentsOf, book, newBookableBusiness, SAMPLE_CLIENT_NAME, SAMPLE_PHONE, slotsFor, tryBook, tryBookAs, type BookableBusiness } from '../support/booking.ts'
 import { addDays, argentinaToday, nextDateOnWeekday } from '../support/dates.ts'
 import { CHECK_VIOLATION, INSUFFICIENT_PRIVILEGE } from '../support/pg-errors.ts'
 import { createService } from '../support/services.ts'
@@ -17,11 +17,53 @@ const MAX_DAYS_AHEAD = 30
 // Argentina está tres horas detrás de UTC todo el año
 const ARGENTINA_UTC_OFFSET_HOURS = 3
 
+// Desde la publicación del formulario con Turnstile, create_booking solo la ejecuta el servidor (service_role): sin esto, cualquiera
+// podría reservar saltándose el captcha con la clave pública de la API.
+describe('quién puede ejecutar create_booking', () => {
+  const request = async () => {
+    const lucero = await newBookableBusiness()
+    return { lucero, booking: { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' } }
+  }
+
+  it('sin sesión (anon) no puede, y no se crea ningún turno', async () => {
+    const { lucero, booking } = await request()
+    const result = await tryBookAs(anonymousClient(), booking)
+    expect(result.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
+    expect(result.error?.message).toMatch(/permission denied for function create_booking/)
+    expect(await appointmentsOf(lucero)).toEqual([])
+  })
+
+  it('un usuario con sesión (authenticated) tampoco, ni siquiera en su propio negocio', async () => {
+    const { lucero, booking } = await request()
+    const stranger = await newUserClient()
+    for (const client of [stranger, lucero.owner]) {
+      const result = await tryBookAs(client, booking)
+      expect(result.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
+      expect(result.error?.message).toMatch(/permission denied for function create_booking/)
+    }
+    expect(await appointmentsOf(lucero)).toEqual([])
+  })
+
+  it('el servidor (service_role) sí puede', async () => {
+    const { lucero, booking } = await request()
+    expect((await tryBook(booking)).error).toBeNull()
+    expect(await appointmentsOf(lucero)).toHaveLength(1)
+  })
+
+  it('no hay ninguna otra forma de crear un turno sin pasar por el servidor: ni con una consulta directa a la tabla', async () => {
+    const { lucero } = await request()
+    const row = { business_id: lucero.id, service_name: 'Corte de pelo', starts_at: `${monday}T20:00:00Z`, ends_at: `${monday}T21:00:00Z`, client_name: 'Colado', client_phone: SAMPLE_PHONE }
+    expect((await anonymousClient().from('appointments').insert(row)).error?.code).toBe(INSUFFICIENT_PRIVILEGE)
+    expect((await lucero.owner.from('appointments').insert(row)).error?.code).toBe(INSUFFICIENT_PRIVILEGE)
+    expect(await appointmentsOf(lucero)).toEqual([])
+  })
+})
+
 describe('reservar un turno', () => {
-  it('cualquiera, sin sesión, reserva un horario libre y recibe la confirmación', async () => {
+  it('el servidor reserva un horario libre en nombre de un visitante y devuelve la confirmación', async () => {
     const lucero = await newBookableBusiness()
 
-    const booked = await tryBook(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    const booked = await tryBook({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
 
     expect(booked.error).toBeNull()
     expect(booked.data).toEqual({ business_name: 'Peluquería Lucero', service_name: 'Corte de pelo', date: monday, time: '10:00' })
@@ -29,7 +71,7 @@ describe('reservar un turno', () => {
 
   it('el negocio ve el turno con el nombre y el celular, pendiente y en hora de Argentina', async () => {
     const lucero = await newBookableBusiness()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
 
     const [appointment] = await appointmentsOf(lucero)
 
@@ -42,7 +84,7 @@ describe('reservar un turno', () => {
   it('el turno dura lo que dura el servicio que se eligió', async () => {
     const lucero = await newBookableBusiness({ serviceMinutes: 60 })
     const short = await createService(lucero.owner, lucero.id, 'Peinado', 30)
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: short.id, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: short.id, date: monday, time: '10:00' })
 
     const [appointment] = await appointmentsOf(lucero)
 
@@ -53,7 +95,7 @@ describe('reservar un turno', () => {
   it('el horario reservado deja de estar libre, y también los que se le superponen, aunque sean de otro servicio', async () => {
     const lucero = await newBookableBusiness({ serviceMinutes: 60 })
     const short = await createService(lucero.owner, lucero.id, 'Peinado', 30)
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
 
     const hourly = await slotsFor(anonymousClient(), lucero.slug, lucero.serviceId, monday)
     const halfHourly = await slotsFor(anonymousClient(), lucero.slug, short.id, monday)
@@ -71,16 +113,16 @@ describe('reservar un turno', () => {
   it('una reserva en un negocio no ocupa los horarios de otro', async () => {
     const lucero = await newBookableBusiness()
     const norte = await newBookableBusiness()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
 
     expect(await slotsFor(anonymousClient(), norte.slug, norte.serviceId, monday)).toContain('10:00')
   })
 
   it('rechaza reservar un horario que ya está ocupado', async () => {
     const lucero = await newBookableBusiness()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
 
-    const second = await tryBook(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', phone: '5493445550143' })
+    const second = await tryBook({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', phone: '5493445550143' })
 
     expect(second.error?.message).toBe('slot_unavailable')
     expect(await appointmentsOf(lucero)).toHaveLength(1)
@@ -91,9 +133,9 @@ describe('reservar un turno', () => {
     const request = { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '14:00' }
 
     const results = await Promise.all([
-      tryBook(anonymousClient(), { ...request, phone: '5493445550151' }),
-      tryBook(anonymousClient(), { ...request, phone: '5493445550152' }),
-      tryBook(anonymousClient(), { ...request, phone: '5493445550153' }),
+      tryBook({ ...request, phone: '5493445550151' }),
+      tryBook({ ...request, phone: '5493445550152' }),
+      tryBook({ ...request, phone: '5493445550153' }),
     ])
 
     expect(results.filter(result => result.error === null)).toHaveLength(1)
@@ -105,7 +147,7 @@ describe('reservar un turno', () => {
 describe('qué se puede reservar', () => {
   const rejected = async (overrides: { date?: string; time?: string; serviceId?: string }) => {
     const lucero = await newBookableBusiness()
-    const result = await tryBook(anonymousClient(), {
+    const result = await tryBook({
       slug: lucero.slug,
       serviceId: overrides.serviceId ?? lucero.serviceId,
       date: overrides.date ?? monday,
@@ -135,9 +177,9 @@ describe('qué se puede reservar', () => {
     await lucero.owner.from('services').update({ active: false }).eq('id', lucero.serviceId)
     const request = { slug: lucero.slug, date: monday, time: '10:00' }
 
-    const paused = await tryBook(anonymousClient(), { ...request, serviceId: lucero.serviceId })
-    const unknown = await tryBook(anonymousClient(), { ...request, serviceId: '00000000-0000-4000-8000-000000000000' })
-    const foreign = await tryBook(anonymousClient(), { ...request, serviceId: norte.serviceId })
+    const paused = await tryBook({ ...request, serviceId: lucero.serviceId })
+    const unknown = await tryBook({ ...request, serviceId: '00000000-0000-4000-8000-000000000000' })
+    const foreign = await tryBook({ ...request, serviceId: norte.serviceId })
 
     for (const result of [paused, unknown, foreign]) expect(result.error?.message).toBe('slot_unavailable')
     expect(await appointmentsOf(lucero)).toEqual([])
@@ -146,7 +188,7 @@ describe('qué se puede reservar', () => {
   it('rechaza un negocio que no existe', async () => {
     const lucero = await newBookableBusiness()
 
-    const result = await tryBook(anonymousClient(), { slug: 'no-existe-este-negocio', serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    const result = await tryBook({ slug: 'no-existe-este-negocio', serviceId: lucero.serviceId, date: monday, time: '10:00' })
 
     expect(result.error?.message).toBe('business_not_found')
   })
@@ -170,7 +212,7 @@ describe('datos de quien reserva', () => {
   it.each(Object.entries(INVALID_PHONES))('rechaza un celular %s', async (_case, phone) => {
     const lucero = await newBookableBusiness()
 
-    const result = await tryBook(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', phone })
+    const result = await tryBook({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', phone })
 
     expect(result.error?.code).toBe(CHECK_VIOLATION)
     expect(await appointmentsOf(lucero)).toEqual([])
@@ -179,7 +221,7 @@ describe('datos de quien reserva', () => {
   it.each(Object.entries(INVALID_NAMES))('rechaza un nombre %s', async (_case, name) => {
     const lucero = await newBookableBusiness()
 
-    const result = await tryBook(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', name })
+    const result = await tryBook({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', name })
 
     expect(result.error?.code).toBe(CHECK_VIOLATION)
     expect(await appointmentsOf(lucero)).toEqual([])
@@ -188,7 +230,7 @@ describe('datos de quien reserva', () => {
   it.each([MIN_PHONE_DIGITS, MAX_PHONE_DIGITS])('acepta un celular de %i dígitos', async digits => {
     const lucero = await newBookableBusiness()
 
-    const result = await tryBook(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', phone: '4'.repeat(digits) })
+    const result = await tryBook({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', phone: '4'.repeat(digits) })
 
     expect(result.error).toBeNull()
   })
@@ -196,8 +238,8 @@ describe('datos de quien reserva', () => {
   it('acepta un nombre de 80 caracteres y guarda el nombre sin los espacios de los costados', async () => {
     const lucero = await newBookableBusiness()
     const longName = 'a'.repeat(MAX_NAME_LENGTH)
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', name: longName })
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '11:00', name: '  Marina Ledesma  ', phone: '5493445550144' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', name: longName })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '11:00', name: '  Marina Ledesma  ', phone: '5493445550144' })
 
     const stored = await appointmentsOf(lucero)
 
@@ -207,7 +249,7 @@ describe('datos de quien reserva', () => {
   it('no reserva si la persona no aceptó recibir recordatorios por WhatsApp', async () => {
     const lucero = await newBookableBusiness()
 
-    const result = await tryBook(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', consent: false })
+    const result = await tryBook({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', consent: false })
 
     expect(result.error?.message).toBe('consent_required')
     expect(await appointmentsOf(lucero)).toEqual([])
@@ -216,7 +258,7 @@ describe('datos de quien reserva', () => {
 
 describe('tope de turnos por celular', () => {
   const bookAt = (lucero: BookableBusiness, time: string, phone = SAMPLE_PHONE) =>
-    tryBook(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time, phone })
+    tryBook({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time, phone })
 
   it('un mismo celular no puede tener más de 3 turnos próximos en un negocio', async () => {
     const lucero = await newBookableBusiness()
@@ -252,17 +294,17 @@ describe('turnos del negocio', () => {
   it('otro negocio, y quien no inició sesión, no ven los turnos ajenos', async () => {
     const lucero = await newBookableBusiness()
     const norte = await newBookableBusiness()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
 
     expect(await appointmentsOf(norte)).toEqual([])
+    // Sin sesión no hay ningún permiso sobre la tabla: es un rechazo, no una lista vacía
     const visitor = await anonymousClient().from('appointments').select('id')
-    expect(visitor.error).toBeNull()
-    expect(visitor.data).toEqual([])
+    expect(visitor.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
   })
 
   it('nadie escribe directo en la tabla de turnos, ni el negocio ni un visitante', async () => {
     const lucero = await newBookableBusiness()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
     const row = {
       business_id: lucero.id,
       service_name: 'Corte de pelo',
@@ -279,8 +321,9 @@ describe('turnos del negocio', () => {
 
     expect(byOwner.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     expect(byVisitor.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
-    expect(update.data).toEqual([])
-    expect(removal.data).toEqual([])
+    // El dueño solo tiene permiso de lectura sobre la tabla: modificar o borrar se rechaza, no se filtra por fila
+    expect(update.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
+    expect(removal.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
     expect((await appointmentsOf(lucero))[0]?.client_name).toBe(SAMPLE_CLIENT_NAME)
   })
 
@@ -298,7 +341,7 @@ describe('turnos del negocio', () => {
 describe('cancelar un turno', () => {
   it('el negocio cancela un turno y el horario vuelve a estar libre', async () => {
     const lucero = await newBookableBusiness()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
     const [appointment] = await appointmentsOf(lucero)
 
     const cancelled = await lucero.owner.rpc('cancel_appointment', { p_appointment_id: appointment!.id })
@@ -307,12 +350,12 @@ describe('cancelar un turno', () => {
     expect((await appointmentsOf(lucero))[0]?.status).toBe('cancelled')
     expect(await slotsFor(anonymousClient(), lucero.slug, lucero.serviceId, monday)).toContain('10:00')
     // Otra persona ya puede reservar ese horario
-    expect((await tryBook(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', phone: '5493445550146' })).error).toBeNull()
+    expect((await tryBook({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00', phone: '5493445550146' })).error).toBeNull()
   })
 
   it('cancelar dos veces el mismo turno no da error', async () => {
     const lucero = await newBookableBusiness()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
     const [appointment] = await appointmentsOf(lucero)
 
     await lucero.owner.rpc('cancel_appointment', { p_appointment_id: appointment!.id })
@@ -324,7 +367,7 @@ describe('cancelar un turno', () => {
   it('otro negocio no puede cancelar un turno ajeno y el turno sigue en pie', async () => {
     const lucero = await newBookableBusiness()
     const intruder = await newUserClient()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
     const [appointment] = await appointmentsOf(lucero)
 
     const attempt = await intruder.rpc('cancel_appointment', { p_appointment_id: appointment!.id })
@@ -335,7 +378,7 @@ describe('cancelar un turno', () => {
 
   it('quien no inició sesión no puede cancelar, y un turno que no existe da error', async () => {
     const lucero = await newBookableBusiness()
-    await book(anonymousClient(), { slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
+    await book({ slug: lucero.slug, serviceId: lucero.serviceId, date: monday, time: '10:00' })
     const [appointment] = await appointmentsOf(lucero)
 
     const asVisitor = await anonymousClient().rpc('cancel_appointment', { p_appointment_id: appointment!.id })

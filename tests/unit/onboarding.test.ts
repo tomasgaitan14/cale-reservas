@@ -15,16 +15,19 @@ describe('el alta retoma el primer requisito incompleto', () => {
 })
 describe('compartir reservas usa la dirección pública del negocio', () => {
   it('el link usa el mismo prefijo que alta y edición del negocio', () => {
-    expect(bookingUrl('peluqueria-miguelon')).toBe('https://app.cale.com.ar/peluqueria-miguelon')
+    expect(bookingUrl('peluqueria-miguelon')).toBe('https://cale.com.ar/peluqueria-miguelon')
   })
   it('conserva exactamente el identificador guardado del negocio', () => {
-    expect(bookingUrl('peluqueria-miguelon-2')).toBe('https://app.cale.com.ar/peluqueria-miguelon-2')
+    expect(bookingUrl('peluqueria-miguelon-2')).toBe('https://cale.com.ar/peluqueria-miguelon-2')
+  })
+  it('usa el dominio del entorno cuando el panel está en dev', () => {
+    expect(bookingUrl('peluqueria-miguelon', 'https://dev.cale.com.ar')).toBe('https://dev.cale.com.ar/peluqueria-miguelon')
   })
   it('el mensaje conserva el nombre y el link que se copian', () => {
     const url = bookingUrl('negocio-demo')
     const text = invitation('Negocio demo', url)
     expect(text).toContain('Negocio demo')
-    expect(text).toContain('https://app.cale.com.ar/negocio-demo')
+    expect(text).toContain('https://cale.com.ar/negocio-demo')
     expect(text).not.toContain('vercel.app')
   })
 })

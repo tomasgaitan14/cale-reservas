@@ -2,7 +2,7 @@ import { PushInvitation } from '../components/PushInvitation.tsx'
 import { signOutWithPush } from '../lib/push.ts'
 import { InstallPanel } from '../components/InstallPanel.tsx'
 import { useCallback, useEffect, useState } from 'react'
-import { Bell, CalendarBlank, GearSix, Storefront } from '@phosphor-icons/react'
+import { Bell, CalendarBlank, Clock, Crown, GearSix, Storefront } from '@phosphor-icons/react'
 import type { Business } from '../lib/business.ts'
 import { fetchSetupProgress, SetupLoadError, type SetupProgress } from '../lib/setup.ts'
 import { fetchPreferences, PreferencesError, savePreferences, type Preferences } from '../lib/preferences.ts'
@@ -26,17 +26,24 @@ const TABS = [
   { key: 'reminders', path: '/panel/avisos', label: 'Avisos', icon: Bell },
   { key: 'settings', path: '/panel/ajustes', label: 'Ajustes', icon: GearSix },
 ] as const
-function currentTab(): Tab { return TABS.find(tab => tab.path === window.location.pathname.replace(/\/+$/, ''))?.key ?? 'agenda' }
+function tabsForPlan(plan: string) { return TABS.filter(tab => plan === 'pro' || tab.key !== 'reminders') }
+function currentTab(isPro = true): Tab { return tabsForPlan(isPro ? 'pro' : 'gratis').find(tab => tab.path === window.location.pathname.replace(/\/+$/, ''))?.key ?? 'agenda' }
 
 export function Panel({ business: initialBusiness }: { business: Business }) {
   const [business, setBusiness] = useState(initialBusiness)
-  const [tab, setTab] = useState<Tab>(currentTab)
+  const [tab, setTab] = useState<Tab>(() => currentTab(initialBusiness.plan === 'pro'))
   const [editor, setEditor] = useState<'services' | 'hours' | null>(null)
   const [progress, setProgress] = useState<SetupProgress | null>(null)
   const [preferences, setPreferences] = useState<Preferences | null>(null)
   const [error, setError] = useState('')
   const [skipped, setSkipped] = useState(false)
   const [finishing, setFinishing] = useState(false)
+  useEffect(() => { setBusiness(initialBusiness) }, [initialBusiness])
+  useEffect(() => {
+    const isPro = business.plan === 'pro'
+    setTab(previous => previous === 'reminders' && !isPro ? 'agenda' : currentTab(isPro))
+    if (!isPro && window.location.pathname === '/panel/avisos') window.history.replaceState({}, '', '/panel')
+  }, [business.plan])
   const refresh = useCallback(() => {
     setError('')
     void Promise.all([fetchSetupProgress(initialBusiness.id), fetchPreferences(initialBusiness.id)])
@@ -48,12 +55,13 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
   }, [initialBusiness.id])
   useEffect(refresh, [refresh])
   useEffect(() => {
-    const onPop = () => { setTab(currentTab()); setEditor(null) }
+    const onPop = () => { setTab(currentTab(business.plan === 'pro')); setEditor(null) }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
-  }, [])
+  }, [business.plan])
   function navigate(next: Tab) {
-    const path = TABS.find(item => item.key === next)!.path
+    const path = tabsForPlan(business.plan ?? 'gratis').find(item => item.key === next)?.path
+    if (!path) return
     if (window.location.pathname !== path) window.history.pushState({}, '', path)
     setTab(next); setEditor(null); refresh()
   }
@@ -86,14 +94,14 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
   </div></Shell>
   return <div className="natural-panel">
     <PushInvitation businessId={business.id} />
-    <header className="natural-panel-header"><Brand /><nav aria-label="Secciones del panel" className="panel-nav">{TABS.map(({ key, label, icon: Icon }) => <button type="button" key={key} aria-current={tab === key ? 'page' : undefined} onClick={() => navigate(key)}><Icon size={22} aria-hidden="true" />{label}</button>)}</nav><button className="natural-business-button" onClick={() => navigate('business')}><Storefront size={22} aria-hidden="true" /><span>{business.name}</span></button></header><main className="natural-panel-main">
+    <header className="natural-panel-header"><Brand /><button className="natural-business-button" onClick={() => navigate('business')}><Storefront size={22} aria-hidden="true" /><span>{business.name}</span><span className={`plan-badge ${business.plan === 'pro' ? 'plan-badge-pro' : 'plan-badge-gratis'}`} title={business.plan === 'pro' ? 'Plan Pro activo' : 'Plan Gratis'}>{business.plan === 'pro' && <Crown size={14} weight="bold" aria-hidden="true" />}{business.plan === 'pro' ? 'Pro' : 'Gratis'}</span></button></header><main className="natural-panel-main">
     {!preferences.onboarding_completed && <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-tint p-5"><p>Terminemos de preparar tu negocio. Retomás donde lo dejaste.</p><button className={SECONDARY_BUTTON} onClick={() => setSkipped(false)}>Continuar configuración</button></div>}
     {error && <p role="alert" className="text-warn">{error}</p>}
     {preferences.onboarding_completed && !ready && <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-tint p-5" role="status"><p>{progress.serviceCount < 1 ? 'Tu página necesita al menos un servicio activo para recibir reservas.' : 'Cargá tus horarios para que tu página pueda recibir reservas.'}</p><button className={SECONDARY_BUTTON} onClick={() => { navigate('business'); setEditor(progress.serviceCount < 1 ? 'services' : 'hours') }}>{progress.serviceCount < 1 ? 'Revisar servicios' : 'Cargar horarios'}</button></div>}
     {preferences.onboarding_completed && tab === 'agenda' && !editor && <InstallPanel invitation />}
     {tab === 'agenda'  && <AgendaScreen business={business} aside={ready ? <ShareBooking business={business} compact /> : undefined} />}
     {tab === 'business' && (editor === 'services' ? <ServicesScreen business={business} onBack={() => { setEditor(null); refresh() }} /> : editor === 'hours' ? <HoursScreen business={business} onBack={() => { setEditor(null); refresh() }} /> : <BusinessScreen business={business} ready={ready} onChanged={setBusiness} onServices={() => setEditor('services')} onHours={() => setEditor('hours')} />)}
-    {tab === 'reminders' && <RemindersScreen business={business} preferences={preferences} onSaved={setPreferences} />}
-    {tab === 'settings' && <SettingsScreen businessId={business.id} />}
-  </main></div>
+    {tab === 'reminders' && <RemindersScreen business={business} />}
+    {tab === 'settings' && <SettingsScreen business={business} />}
+  </main><nav aria-label="Secciones del panel" className="panel-nav">{tabsForPlan(business.plan ?? 'gratis').map(({ key, label, icon: Icon }) => { const comingSoon = key === 'reminders'; return <button type="button" key={key} aria-current={tab === key ? 'page' : undefined} aria-label={comingSoon ? `${label}, próximamente` : label} title={comingSoon ? 'Recordatorios por WhatsApp próximamente' : undefined} onClick={() => navigate(key)}><Icon size={22} aria-hidden="true" />{label}{comingSoon && <Clock size={14} weight="bold" aria-hidden="true" />}</button> })}</nav></div>
 }

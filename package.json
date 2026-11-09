@@ -13,7 +13,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:migrations": "node scripts/check-migrations.ts",
+    "check:privileges": "node scripts/check-privileges.ts",
+    "db:reset:parity": "node scripts/db-reset-parity.ts"
   },
   "repository": {
     "type": "git",

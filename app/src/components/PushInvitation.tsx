@@ -48,7 +48,7 @@ export function PushInvitation({ businessId }: { businessId: string }) {
     {mode === 'install' && <div className="rounded-xl bg-tint p-4">
       <p className="mb-3 font-semibold">Primero agregá Cale al inicio de tu iPhone</p>
       <ol className="flex list-decimal flex-col gap-3 pl-5 text-sm leading-relaxed"><li>En Safari, tocá Compartir (el cuadrado con la flecha hacia arriba). Puede estar dentro del menú de tres puntos.</li><li>Elegí “Agregar a inicio” y confirmá “Agregar”.</li><li>Abrí Cale desde su icono. Ahí podrás activar las notificaciones.</li></ol>
-      {window.location.origin !== 'https://app.cale.com.ar' && <a className="mt-4 block break-all underline" href="https://app.cale.com.ar/panel">Instalá desde app.cale.com.ar/panel</a>}
+      {window.location.origin !== 'https://cale.com.ar' && <a className="mt-4 block break-all underline" href="https://cale.com.ar/panel">Instalá desde cale.com.ar/panel</a>}
     </div>}
     {mode === 'blocked' && <p className="rounded-xl bg-tint p-4">El permiso está bloqueado en este dispositivo. Podés cambiarlo en Ajustes del iPhone → Notificaciones → Cale, y después activar los avisos desde Ajustes de Cale.</p>}
     {error && <p role="alert" className="text-warn">{error}</p>}

@@ -1,0 +1,11 @@
+* { box-sizing:border-box }
+html,body { margin:0; background:#f6f3eb }
+.scene { position:relative; width:1080px; height:1920px; overflow:hidden; background:#f6f3eb; color:#15191c }
+.brand { position:absolute; top:126px; left:70px; width:240px; height:auto }
+h1 { position:absolute; top:276px; left:70px; margin:0; font-family:'Manrope Variable',sans-serif; font-size:85px; font-weight:800; letter-spacing:-4.2px; line-height:1.12 }
+h1 span { color:#355f46; font-size:78px }
+.phone { position:absolute; top:550px; left:220px; width:640px; height:1210px; border:12px solid #15191c; border-radius:62px; background:#15191c; overflow:hidden; box-shadow:0 22px 45px #28362c14 }
+.speaker { width:95px; height:7px; border-radius:8px; background:#555c56; position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:2 }
+iframe { position:absolute; top:28px; left:0; width:440px; height:827px; transform:scale(1.4); transform-origin:top left; border:0; border-radius:27px; background:#f6f3eb }
+.caption { position:absolute; top:1793px; width:100%; margin:0; text-align:center; font-family:'Manrope Variable',sans-serif; font-size:34px; font-weight:750; letter-spacing:-1px; color:#355f46 }
+.note { position:absolute; top:1850px; width:100%; margin:0; text-align:center; font-family:'DM Sans Variable',sans-serif; font-size:21px; color:#5e675d }

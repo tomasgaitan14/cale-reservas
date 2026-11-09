@@ -3,7 +3,7 @@ import { cleanSlugInput, MAX_SLUG_LENGTH, PAGE_ADDRESS_PREFIX, slugify } from '.
 
 describe('PAGE_ADDRESS_PREFIX: la dirección que se le muestra al negocio', () => {
   it('usa el dominio único de Cale', () => {
-    expect(PAGE_ADDRESS_PREFIX).toBe('app.cale.com.ar/')
+    expect(PAGE_ADDRESS_PREFIX).toBe('cale.com.ar/')
   })
 })
 

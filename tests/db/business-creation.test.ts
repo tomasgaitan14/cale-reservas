@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createBusiness, randomSlug, SAMPLE_WHATSAPP, tryCreateBusiness, uniqueSlug } from '../support/businesses.ts'
-import { CHECK_VIOLATION, UNIQUE_VIOLATION } from '../support/pg-errors.ts'
+import { CHECK_VIOLATION, INSUFFICIENT_PRIVILEGE, UNIQUE_VIOLATION } from '../support/pg-errors.ts'
 import { adminClient, newUserClient } from '../support/users.ts'
 
 
@@ -99,7 +99,7 @@ describe('validación al crear un negocio', () => {
 
     const lucia = await newUserClient()
     const listed = await lucia.from('reserved_slugs').select('slug')
-    expect(listed.error).toBeNull()
-    expect(listed.data).toEqual([])
+    // Sin permiso de lectura sobre la tabla: se rechaza (antes la seguridad por filas devolvía una lista vacía)
+    expect(listed.error?.code).toBe(INSUFFICIENT_PRIVILEGE)
   })
 })

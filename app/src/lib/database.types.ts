@@ -106,6 +106,65 @@ export type Database = {
           },
         ]
       }
+      business_billing: {
+        Row: {
+          billing_day: number
+          billing_day_configured_at: string | null
+          billing_exempt: boolean
+          billing_status: string
+          business_id: string
+          current_period_end: string | null
+          initial_charge_amount: number | null
+          last_payment_status: string | null
+          mercadopago_plan_id: string | null
+          mercadopago_subscription_id: string | null
+          promotion_applied_at: string | null
+          promotion_code: string | null
+          promotion_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          billing_day?: number
+          billing_day_configured_at?: string | null
+          billing_exempt?: boolean
+          billing_status?: string
+          business_id: string
+          current_period_end?: string | null
+          initial_charge_amount?: number | null
+          last_payment_status?: string | null
+          mercadopago_plan_id?: string | null
+          mercadopago_subscription_id?: string | null
+          promotion_applied_at?: string | null
+          promotion_code?: string | null
+          promotion_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          billing_day?: number
+          billing_day_configured_at?: string | null
+          billing_exempt?: boolean
+          billing_status?: string
+          business_id?: string
+          current_period_end?: string | null
+          initial_charge_amount?: number | null
+          last_payment_status?: string | null
+          mercadopago_plan_id?: string | null
+          mercadopago_subscription_id?: string | null
+          promotion_applied_at?: string | null
+          promotion_code?: string | null
+          promotion_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_billing_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_members: {
         Row: {
           business_id: string
@@ -169,6 +228,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          plan: string
           slug: string
           whatsapp: string
         }
@@ -176,6 +236,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          plan?: string
           slug: string
           whatsapp: string
         }
@@ -183,6 +244,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          plan?: string
           slug?: string
           whatsapp?: string
         }
@@ -430,6 +492,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          plan: string
           slug: string
           whatsapp: string
         }
@@ -473,6 +536,7 @@ export type Database = {
         Returns: string[]
       }
       get_business_branding: { Args: { p_business_id: string }; Returns: Json }
+      get_public_businesses: { Args: never; Returns: Json }
       get_public_booking_info: { Args: { p_slug: string }; Returns: Json }
       has_push_subscription: {
         Args: { p_business_id: string; p_endpoint: string }

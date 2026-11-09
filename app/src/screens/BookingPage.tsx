@@ -235,13 +235,13 @@ function BookingFooter() {
   return <footer className="booking-promo" aria-label="Conocé Cale">
     <div className="flex min-w-0 flex-col items-start gap-3">
       <h2 className="text-xl">¿Tenés un negocio con turnos?</h2>
-      <p className="max-w-md text-muted">Tu agenda y tu propio link de reservas, en un mismo lugar. Probá Cale gratis por 7 días.</p>
+      <p className="max-w-md text-muted">Tu agenda y tu propio link de reservas, en un mismo lugar. Empezá Gratis y usala sin vencimiento.</p>
     </div>
-    <a className={`${SECONDARY_BUTTON} shrink-0`} href="https://app.cale.com.ar/empezar" target="_blank" rel="noopener noreferrer">Probar Cale gratis<span className="sr-only"> (abre en otra pestaña)</span></a>
+    <a className={`${SECONDARY_BUTTON} shrink-0`} href="https://cale.com.ar/empezar" target="_blank" rel="noopener noreferrer">Empezá Gratis<span className="sr-only"> (abre en otra pestaña)</span></a>
   </footer>
 }
 
 function BookingIdentity({name,path}:{name:string;path:string|null}) {
   const url=logoUrl(path)
-  return <div className="flex min-w-0 items-center gap-4">{url&&<img key={url} src={url} alt={`Logo de ${name}`} className="size-16 shrink-0 rounded-xl bg-white object-contain p-1" onError={event=>{event.currentTarget.hidden=true}}/>}<div className="flex min-w-0 flex-col gap-1"><span className="break-words font-head text-xl font-extrabold">{name}</span><span className="flex flex-wrap items-center gap-1 text-sm text-muted">Reservas con <a href="https://cale-reservas.vercel.app" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-6 items-center gap-1.5 rounded font-semibold text-fg underline-offset-4 hover:underline"><img src="/favicon.svg" alt="" className="size-4 shrink-0" />Cale<span className="sr-only"> (abre en otra pestaña)</span></a></span></div></div>
+  return <div className="flex min-w-0 items-center gap-4">{url&&<img key={url} src={url} alt={`Logo de ${name}`} className="size-16 shrink-0 rounded-xl bg-white object-contain p-1" onError={event=>{event.currentTarget.hidden=true}}/>}<div className="flex min-w-0 flex-col gap-1"><span className="break-words font-head text-xl font-extrabold">{name}</span><span className="flex flex-wrap items-center gap-1 text-sm text-muted">Reservas con <a href="https://cale.com.ar" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-6 items-center gap-1.5 rounded font-semibold text-fg underline-offset-4 hover:underline"><img src="/favicon.svg" alt="" className="size-4 shrink-0" />Cale<span className="sr-only"> (abre en otra pestaña)</span></a></span></div></div>
 }

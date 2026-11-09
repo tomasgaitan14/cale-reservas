@@ -5,6 +5,7 @@ import { Shell } from './components/Shell.tsx'
 import { SECONDARY_BUTTON } from './components/ui.ts'
 import { useSession } from './hooks/useSession.ts'
 import { BusinessLoadError, fetchMyBusiness, type Business } from './lib/business.ts'
+import { isSubscriptionReturn, syncProSubscription } from './lib/billing.ts'
 import { parseRoute } from './lib/route.ts'
 import { designVariant } from './designs/model.ts'
 import { supabase } from './lib/supabase.ts'
@@ -14,6 +15,8 @@ import { LoginScreen } from './screens/LoginScreen.tsx'
 const DesignPreview = import.meta.env.DEV ? lazy(() => import('./designs/DesignPreview.tsx').then(module => ({ default: module.DesignPreview }))) : null
 const LandingScreen = lazy(() => import('./screens/LandingScreen.tsx').then(module => ({ default: module.LandingScreen })))
 const Panel = lazy(() => import('./screens/Panel.tsx').then(module => ({ default: module.Panel })))
+const BILLING_SYNC_TIMEOUT_MS = 2 * 60 * 1000
+const BILLING_SYNC_INTERVAL_MS = 3000
 
 type BusinessState = { status: 'loading' } | { status: 'error' } | { status: 'ready'; business: Business | null }
 
@@ -23,15 +26,32 @@ function BusinessGate() {
 
   useEffect(() => {
     let cancelled = false
-    setState({ status: 'loading' })
-    fetchMyBusiness()
-      .then(business => {
+    async function loadBusiness() {
+      setState({ status: 'loading' })
+      try {
+        const business = await fetchMyBusiness()
+        const returnedFromSubscription = isSubscriptionReturn(window.location.search)
+        const waitingForPayment = business && business.plan !== 'pro' && (returnedFromSubscription || business.billing_status === 'pending')
         if (!cancelled) setState({ status: 'ready', business })
-      })
-      .catch((error: unknown) => {
+        if (business && waitingForPayment) {
+          void (async () => {
+            await syncProSubscription(business.id).catch(() => undefined)
+            const startedAt = Date.now()
+            let currentBusiness: Business | null = business
+            while (currentBusiness && currentBusiness.plan !== 'pro' && currentBusiness.billing_status === 'pending' && Date.now() - startedAt < BILLING_SYNC_TIMEOUT_MS) {
+              await new Promise(resolve => window.setTimeout(resolve, BILLING_SYNC_INTERVAL_MS))
+              currentBusiness = await fetchMyBusiness()
+              if (!cancelled && currentBusiness?.plan === 'pro') setState({ status: 'ready', business: currentBusiness })
+            }
+            if (returnedFromSubscription && !cancelled) window.history.replaceState({}, '', `${window.location.pathname}${window.location.hash}`)
+          })()
+        }
+      } catch (error: unknown) {
         if (!(error instanceof BusinessLoadError)) throw error
         if (!cancelled) setState({ status: 'error' })
-      })
+      }
+    }
+    void loadBusiness()
     return () => {
       cancelled = true
     }
@@ -50,13 +70,14 @@ function BusinessGate() {
 }
 
 // Esqueleto con la forma de la pantalla que viene, en vez de un spinner
-function LoadingPanel() {
+function LoadingPanel({ message }: { message?: string }) {
   return (
     <div className="grid gap-10 pt-6 md:grid-cols-[1.1fr_0.9fr] md:gap-16 md:pt-12" role="status" aria-label="Cargando tu panel">
       <div className="flex flex-col gap-4">
         <div className="skeleton h-5 w-24 rounded-md" />
         <div className="skeleton h-14 w-3/4 rounded-xl" />
         <div className="skeleton h-28 w-full rounded-[1.25rem]" />
+        {message && <p className="max-w-md text-lg font-semibold text-ink">{message}</p>}
       </div>
       <div className="flex flex-col gap-4">
         <div className="skeleton h-20 w-full rounded-xl" />
