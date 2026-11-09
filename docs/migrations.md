@@ -26,6 +26,32 @@ el remoto sin archivo acá, que es exactamente el descuadre que este control det
 
 **Una migración ya aplicada no se edita.** Un cambio nuevo es una migración nueva.
 
+**Única excepción (09/11/2026):** `20261104142607_schedule_push_delivery.sql` se editó después de aplicarse porque llevaba escrita la URL del
+proyecto de producción: en un proyecto de desarrollo el job del push llamaba a producción. La URL ahora sale de Vault (ver
+más abajo) y `20261109200000_push_job_url_from_vault.sql` actualiza el job en los proyectos donde ya existía. La edición no cambia el esquema,
+solo evita que un proyecto nuevo nazca apuntando a otro entorno. `tests/unit/push-job-migration.test.ts` y `tests/unit/no-production-urls.test.ts`
+impiden que vuelva a pasar.
+
+## Entornos
+
+Estas migraciones se aplican a más de un proyecto de Supabase: `cale-api` (producción) y `cale-dev` (desarrollo). **Nada en una migración ni en
+una Edge Function puede llevar escrito un dominio o un proyecto de un entorno**: lo que cambia entre entornos es configuración (secretos de las
+funciones y secretos de Vault), no código. Antes de correr `supabase db push` o `supabase secrets set` hay que comprobar a qué proyecto apunta
+la CLI (`supabase/.temp/project-ref`, que recuerda el último proyecto vinculado) y pasar siempre `--project-ref`.
+
+### Secretos de Vault que exige cada proyecto
+
+Se cargan **antes** de aplicar las migraciones del job del push; sin ellos la migración falla a propósito (`configure_cale_push_job_secret_first`
+o `configure_cale_functions_base_url_first`), para que el job nunca apunte a otro entorno.
+
+| Secreto de Vault | Valor | Debe coincidir con |
+|------------------|-------|--------------------|
+| `cale_push_job_secret` | clave aleatoria de 32 caracteres o más | el secreto `PUSH_JOB_SECRET` de las Edge Functions del mismo proyecto |
+| `cale_functions_base_url` | `https://<ref>.supabase.co/functions/v1` del mismo proyecto, sin barra final | — |
+
+Para dar de alta un proyecto nuevo o corregir uno existente: cargar los dos secretos, aplicar las migraciones y comprobar que el comando del job
+(`select command from cron.job where jobname = 'cale-push-delivery'`) lee la URL de Vault y no lleva ningún dominio escrito.
+
 ## Verificación
 
 ```bash
@@ -54,7 +80,8 @@ Para que no se repita:
 - **Toda tabla o función nueva lleva sus `GRANT` explícitos** en la migración que la crea, para cada rol que la use. No se depende de los
   permisos por defecto.
 - **`npm run db:reset:parity`** reinicia la base LOCAL con los permisos por defecto de producción (vacía `public`, fija los permisos por
-  defecto, aplica todas las migraciones y desprograma el job del push, que en local llamaría a producción). Usarlo en vez de
+  defecto, carga los secretos de Vault de mentira del job del push, aplica todas las migraciones y desprograma los jobs, que en local no
+  tienen a quién llamar). Usarlo en vez de
   `supabase db reset` antes de correr los tests de base.
 - **`supabase/privileges.json`** es el manifiesto de permisos esperados (por tabla, vista y función). `tests/db/privileges.test.ts`
   comprueba que la base local tenga los permisos por defecto de producción y que todo coincida con el manifiesto; si no pasan, el
