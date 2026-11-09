@@ -13,12 +13,12 @@ describe('contenido y honestidad del panel', () => {
     expect(html).not.toContain('Copiar link')
     expect(html).not.toContain('Guardar QR')
   })
-  it('el link y el mensaje usan la dirección pública aunque el panel se abra en otro entorno', () => {
+  it('el link y el mensaje usan la dirección del entorno donde está abierto el panel', () => {
     vi.stubGlobal('window', { location: { origin: 'http://127.0.0.1:5174' } })
     const html = renderToStaticMarkup(createElement(BusinessScreen, { business, ready: true, onChanged: vi.fn(), onServices: vi.fn(), onHours: vi.fn() }))
-    expect(html).toContain('https://cale.com.ar/negocio-demo')
+    expect(html).toContain('http://127.0.0.1:5174/negocio-demo')
     expect(html).toContain('Copiar mensaje')
-    expect(html).not.toContain('http://127.0.0.1:5174/negocio-demo')
+    expect(html).not.toContain('https://cale.com.ar/negocio-demo')
   })
   it('mantiene WhatsApp como próximamente para Gratis y Pro', () => {
     const gratisHtml = renderToStaticMarkup(createElement(RemindersScreen, { business: { ...business, plan: 'gratis' } }))

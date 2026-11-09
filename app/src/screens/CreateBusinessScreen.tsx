@@ -4,7 +4,7 @@ import { TextField } from '../components/TextField.tsx'
 import { PRIMARY_BUTTON } from '../components/ui.ts'
 import { createBusiness, type Business } from '../lib/business.ts'
 import type { BusinessFormErrors } from '../lib/business-errors.ts'
-import { cleanSlugInput, MAX_SLUG_LENGTH, PAGE_ADDRESS_PREFIX, slugify } from '../lib/slug.ts'
+import { cleanSlugInput, MAX_SLUG_LENGTH, pageAddressPrefix, slugify } from '../lib/slug.ts'
 import { normalizeWhatsapp } from '../lib/whatsapp.ts'
 
 const MAX_NAME_LENGTH = 80
@@ -89,7 +89,7 @@ export function CreateBusinessScreen({ onCreated }: CreateBusinessScreenProps) {
         <TextField
           id="business-slug"
           label="Dirección de tu página"
-          preview={`${PAGE_ADDRESS_PREFIX}${slug}`}
+          preview={`${pageAddressPrefix()}${slug}`}
           placeholder="peluqueria-lucero"
           hint="Es el link que van a usar tus clientes para reservar. Solo letras, números y guiones."
           autoCapitalize="none"
