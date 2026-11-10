@@ -1,12 +1,13 @@
 import { ArrowsClockwise, Crown, EnvelopeSimple, UserPlus, UsersThree, X } from '@phosphor-icons/react'
 import { useEffect, useState, type FormEvent } from 'react'
-import { inviteProfessional, changeTeamRole, fetchTeam, removeTeamMember, revokeTeamInvitation, TeamLoadError, type BusinessInvitation, type TeamMember, type TeamRole } from '../lib/business.ts'
+import { inviteProfessional, changeTeamRole, fetchTeam, removeTeamMember, revokeTeamInvitation, TeamActionError, TeamLoadError, type Business, type BusinessInvitation, type TeamMember, type TeamRole } from '../lib/business.ts'
 import { SECONDARY_BUTTON, PRIMARY_BUTTON } from './ui.ts'
 import { SelectField } from './SelectField.tsx'
 import { TextField } from './TextField.tsx'
 
 interface ProfessionalsSectionProps {
   businessId: string
+  plan?: Business['plan']
   canManage: boolean
   isOwner: boolean
 }
@@ -23,7 +24,9 @@ function formatInviteDate(value: string): string {
   return new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'short' }).format(new Date(value))
 }
 
-export function ProfessionalsSection({ businessId, canManage, isOwner }: ProfessionalsSectionProps) {
+const FREE_TEAM_LIMIT = 3
+
+export function ProfessionalsSection({ businessId, plan, canManage, isOwner }: ProfessionalsSectionProps) {
   const [load, setLoad] = useState<LoadState>({ status: 'loading' })
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -56,9 +59,16 @@ export function ProfessionalsSection({ businessId, canManage, isOwner }: Profess
       await loadTeam()
     } catch (error: unknown) {
       if (!(error instanceof TeamLoadError)) throw error
-      setActionError('No pudimos enviar la invitación. Revisá los datos y probá de nuevo.')
+      setActionError(error instanceof TeamActionError && error.code === 'professional_limit_reached'
+        ? 'El plan Gratis permite hasta 3 profesionales. Pasate a Pro para sumar más personas al equipo.'
+        : 'No pudimos enviar la invitación. Revisá los datos y probá de nuevo.')
     } finally { setBusy(false) }
   }
+
+  const occupiedTeamMembers = load.status === 'ready'
+    ? load.members.filter(member => member.role !== 'owner').length + load.invitations.length
+    : 0
+  const freePlanLimitReached = plan !== 'pro' && load.status === 'ready' && occupiedTeamMembers >= FREE_TEAM_LIMIT
 
   async function runAction(action: () => Promise<void>, success: string) {
     setBusy(true); setActionError(''); setNotice('')
@@ -86,10 +96,11 @@ export function ProfessionalsSection({ businessId, canManage, isOwner }: Profess
       <TextField id="professional-name" label="Nombre" placeholder="Nombre del profesional" value={name} onChange={event => setName(event.target.value)} required />
       <TextField id="professional-email" label="Correo de Google" type="email" placeholder="nombre@correo.com" value={email} onChange={event => setEmail(event.target.value)} required />
       {isOwner ? <SelectField id="professional-role" label="Permisos" value={role} options={[{ value: 'professional', label: 'Profesional' }, { value: 'admin', label: 'Administrador' }]} onChange={event => setRole(event.target.value as Exclude<TeamRole, 'owner'>)} /> : <input type="hidden" value="professional" readOnly />}
-      <button type="submit" className={`${PRIMARY_BUTTON} md:w-auto`} disabled={busy || !name.trim() || !email.trim()}>
+      <button type="submit" className={`${PRIMARY_BUTTON} md:w-auto`} disabled={busy || freePlanLimitReached || !name.trim() || !email.trim()}>
         <UserPlus weight="bold" className="size-5" aria-hidden="true" />
         {busy ? 'Enviando…' : 'Invitar'}
       </button>
+      {plan !== 'pro' && load.status === 'ready' ? <p className="text-sm text-muted md:col-span-full">Plan Gratis · {occupiedTeamMembers} de {FREE_TEAM_LIMIT} profesionales utilizados. Pasate a Pro para sumar más personas al equipo.</p> : null}
     </form> : <div className="mt-6 flex items-start gap-3 rounded-[1.25rem] bg-tint p-5 text-muted"><UsersThree weight="bold" className="mt-0.5 size-6 flex-none text-link" /><p>Solo la administración puede invitar personas y administrar el equipo.</p></div>}
 
     {actionError ? <p className="mt-4 rounded-[12px] bg-warn-bg p-3 text-sm font-medium text-warn" role="alert">{actionError}</p> : null}

@@ -55,6 +55,16 @@ export class TeamLoadError extends Error {
   }
 }
 
+export class TeamActionError extends TeamLoadError {
+  code: string | null
+
+  constructor(detail: string, code: string | null = null) {
+    super(detail)
+    this.name = 'TeamActionError'
+    this.code = code
+  }
+}
+
 export async function fetchPublicBusinesses(): Promise<PublicBusiness[]> {
   const { data, error } = await supabase.rpc('get_public_businesses')
   if (error) throw new BusinessLoadError(error.message)
@@ -117,7 +127,19 @@ export async function fetchTeam(businessId: string): Promise<{ members: TeamMemb
 
 export async function inviteProfessional(input: { businessId: string; email: string; displayName: string; role: Exclude<TeamRole, 'owner'> }): Promise<{ emailSent: boolean }> {
   const { data, error } = await supabase.functions.invoke('invite-professional', { body: input })
-  if (error) throw new TeamLoadError(error.message)
+  if (error) {
+    let code: string | null = null
+    const context = (error as { context?: Response }).context
+    if (context) {
+      try {
+        const body = await context.clone().json() as { error?: unknown }
+        if (typeof body.error === 'string') code = body.error
+      } catch {
+        // Conservamos el mensaje genérico si la respuesta no trae JSON.
+      }
+    }
+    throw new TeamActionError(error.message, code)
+  }
   const result = data as { emailSent?: unknown } | null
   return { emailSent: result?.emailSent === true }
 }
