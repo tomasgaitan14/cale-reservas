@@ -69,7 +69,7 @@ export function ProfessionalsSection({ businessId, canManage, isOwner }: Profess
     } finally { setBusy(false) }
   }
 
-  return <section className="professionals-section border-t border-line pt-8" aria-labelledby="professionals-title">
+  return <section className="professionals-section min-w-0 border-t border-line pt-8" aria-labelledby="professionals-title">
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div>
         <p className="eyebrow">Equipo</p>
@@ -102,7 +102,16 @@ export function ProfessionalsSection({ businessId, canManage, isOwner }: Profess
         <div className="flex min-w-0 items-center gap-3"><span className="grid size-10 flex-none place-items-center rounded-full bg-tint text-link">{member.role === 'owner' ? <Crown weight="bold" className="size-5" aria-hidden="true" /> : <UsersThree weight="bold" className="size-5" aria-hidden="true" />}</span><div className="min-w-0"><p className="truncate font-head font-extrabold tracking-tight">{member.display_name || member.email || 'Profesional'}</p><p className="flex items-center gap-1 truncate text-sm text-muted"><EnvelopeSimple className="size-4" aria-hidden="true" />{member.email || 'Correo no disponible'}</p></div></div>
         <div className="flex items-center gap-2"><span className="rounded-full bg-tint px-3 py-1 text-sm font-semibold text-link">{roleLabel(member.role)}</span>{canManage && member.role !== 'owner' && (isOwner || member.role === 'professional') ? <><select aria-label={`Permisos de ${member.display_name || member.email || 'profesional'}`} className="field h-10 min-h-10 py-2" value={member.role} disabled={busy || !isOwner} onChange={event => void runAction(() => changeTeamRole(businessId, member.user_id, event.target.value as Exclude<TeamRole, 'owner'>), 'Permisos actualizados.')}><option value="professional">Profesional</option>{isOwner ? <option value="admin">Administrador</option> : null}</select><button type="button" className="inline-flex size-10 items-center justify-center rounded-[12px] text-warn transition hover:bg-warn-bg active:scale-[0.98]" aria-label={`Quitar a ${member.display_name || member.email || 'este profesional'}`} disabled={busy} onClick={() => { if (window.confirm('¿Quitar a esta persona del negocio?')) void runAction(() => removeTeamMember(businessId, member.user_id), 'Profesional quitado.') }}><X weight="bold" className="size-5" aria-hidden="true" /></button></> : null}</div>
       </div>)}
-      {load.invitations.map(invitation => <div key={invitation.id} className="flex flex-wrap items-center justify-between gap-4 bg-tint/50 py-4"><div className="min-w-0 flex-1"><p className="font-head font-extrabold tracking-tight">{invitation.display_name}</p><p className="text-sm text-muted [overflow-wrap:anywhere]">{invitation.email} · Invitación pendiente hasta el {formatInviteDate(invitation.expires_at)}</p></div><div className="flex shrink-0 items-center gap-2"><span className="rounded-full border border-line px-3 py-1 text-sm font-semibold text-muted">{roleLabel(invitation.role)}</span>{canManage && (isOwner || invitation.role === 'professional') ? <button type="button" className="inline-flex size-10 items-center justify-center rounded-[12px] text-warn transition hover:bg-warn-bg active:scale-[0.98]" aria-label={`Cancelar invitación a ${invitation.email}`} disabled={busy} onClick={() => void runAction(() => revokeTeamInvitation(invitation.id), 'Invitación cancelada.')}><X weight="bold" className="size-5" aria-hidden="true" /></button> : null}</div></div>)}
+      {load.invitations.map(invitation => <div key={invitation.id} className="grid min-w-0 grid-cols-1 gap-3 bg-tint/50 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4">
+        <div className="min-w-0">
+          <p className="break-words font-head font-extrabold tracking-tight">{invitation.display_name}</p>
+          <p className="break-words text-sm leading-relaxed text-muted [overflow-wrap:anywhere]">{invitation.email} · Invitación pendiente hasta el {formatInviteDate(invitation.expires_at)}</p>
+        </div>
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end">
+          <span className="rounded-full border border-line px-3 py-1 text-sm font-semibold text-muted">{roleLabel(invitation.role)}</span>
+          {canManage && (isOwner || invitation.role === 'professional') ? <button type="button" className="inline-flex size-10 flex-none items-center justify-center rounded-[12px] text-warn transition hover:bg-warn-bg active:scale-[0.98]" aria-label={`Cancelar invitación a ${invitation.email}`} disabled={busy} onClick={() => void runAction(() => revokeTeamInvitation(invitation.id), 'Invitación cancelada.')}><X weight="bold" className="size-5" aria-hidden="true" /></button> : null}
+        </div>
+      </div>)}
       {load.members.length === 0 && load.invitations.length === 0 ? <div className="flex flex-col items-start gap-3 py-8"><UsersThree weight="bold" className="size-8 text-link" aria-hidden="true" /><p className="font-head text-lg font-extrabold tracking-tight">Todavía no hay profesionales</p><p className="text-muted">Invitá a la primera persona para empezar a trabajar en equipo.</p></div> : null}
     </div> : null}
   </section>
