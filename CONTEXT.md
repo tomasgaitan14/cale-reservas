@@ -1,8 +1,8 @@
 # Cale: contexto para sesiones enfocadas
 
-Actualizado: 09/11/2026. Leer también las preferencias de colaboración en CLAUDE.md (archivo local, fuera de Git).
+Actualizado: 10/11/2026. Leer también las preferencias de colaboración en CLAUDE.md (archivo local, fuera de Git).
 
-## Estado consolidado al 09/11/2026
+## Estado consolidado al 10/11/2026
 
 Esta sección supersede los estados históricos que aparecen más abajo.
 
@@ -10,16 +10,17 @@ Esta sección supersede los estados históricos que aparecen más abajo.
 - Migración de dominio, Auth, Supabase, Meta Business y redirecciones finalizada. El ingreso con Google, la agenda, las reservas y la navegación en `cale.com.ar` fueron verificados.
 - Cuenta y datos: existe eliminación permanente de cuenta desde Ajustes, incluyendo negocio, turnos, horarios, preferencias, logos, push y facturación.
 - Datos reales: al 10/11/2026 no hay clientes reales ni información de producción que deba preservarse; los negocios, turnos y suscripciones existentes son de prueba. Un reset completo de `cale-api` y `cale-dev` es una opción autorizada si se confirma el alcance inmediatamente antes de ejecutarlo.
+- Limpieza ejecutada: se eliminaron los datos de prueba de `cale-api` y `cale-dev` (Auth, negocios, turnos, servicios, preferencias, branding, facturación, push, WhatsApp y objetos de Storage). Se conservaron esquema, funciones, secretos, bucket `business-logos`, slugs reservados y configuración de retención.
 - Planes: Gratis y Pro se leen desde `businesses.plan`. Gratis mantiene agenda, reservas, link, personalización y push de la app. La conexión automática con WhatsApp permanece en preparación para ambos planes.
 - Experiencia de planes: el encabezado muestra el negocio y su badge `PRO` con corona o `GRATIS`; la navegación principal está en una barra inferior estilo app. `Avisos` solo aparece para negocios Pro y continúa marcado como “Próximamente”; las cuentas Gratis no ven esa opción ni pueden acceder por URL directa.
-- Mercado Pago: checkout de Suscripciones funcionando; el webhook público funciona sin JWT y existe `sync-pro-subscription` para confirmar el estado al volver del checkout. El retorno usa `APP_URL` del entorno más `/panel/ajustes` sin query previa, porque Mercado Pago agrega `?preapproval_id=...`; el panel reconoce ese parámetro, sincroniza, espera hasta dos minutos y muestra el plan. Si Mercado Pago demora el webhook, Cale muestra “Procesando tu suscripción… No vuelvas a pagar” mientras `business_billing` está pendiente. La baja cancela los próximos cobros, conserva Pro hasta `current_period_end` y muestra los días restantes solo mientras esa baja está activa; al vencer el período, la sincronización devuelve el negocio a Gratis. La cuenta de prueba de `Peluqueria Maria Rosa` fue aprobada y quedó en `pro/active`.
+- Mercado Pago: checkout de Suscripciones funcionando; el webhook público funciona sin JWT y existe `sync-pro-subscription` para confirmar el estado al volver del checkout. El retorno usa `APP_URL` del entorno más `/panel/ajustes` sin query previa, porque Mercado Pago agrega `?preapproval_id=...`; el panel reconoce ese parámetro, sincroniza, espera hasta dos minutos y muestra el plan. Si Mercado Pago demora el webhook, Cale muestra “Procesando tu suscripción… No vuelvas a pagar” mientras `business_billing` está pendiente. La baja cancela los próximos cobros, conserva Pro hasta `current_period_end` y muestra los días restantes solo mientras esa baja está activa; al vencer el período, la sincronización devuelve el negocio a Gratis. Los datos de prueba de suscripciones fueron eliminados de ambos proyectos.
 - Promoción archivada: `ProOfferBanner`, el cupón `DESCUENTOCALE50` y la validación de 14 días quedaron guardados para reactivarlos, pero no se muestran en la Agenda. La simulación de antigüedad de `tomasgaitan14@gmail.com` fue revertida a su fecha real.
 - Cupones: la documentación oficial de Mercado Pago ubica los cupones documentados en Wallet Connect, no en el endpoint de Suscripciones usado por Cale. El backend conserva una implementación propia preparada para un primer período promocional de $7.499 y posterior normalización a $14.999, pero la promoción está archivada y no debe comunicarse como activa.
 - WhatsApp: el envío automático real todavía no está conectado. La pantalla de Avisos muestra vista previa y estado “Próximamente”; las notificaciones push de la app sí están disponibles desde Ajustes.
-- Facturación: el alta calcula el primer período proporcional sobre 30 días y el webhook/sincronización normalizan la suscripción a $14.999, día 10 y moneda ARS. `business_billing` guarda `billing_day`, `initial_charge_amount` y la fecha de configuración. La suscripción de prueba anterior conserva su período actual hasta el 8/12; la nueva prueba aprobada quedó activa y se configuró para los ciclos siguientes.
+- Facturación: el alta calcula el primer período proporcional sobre 30 días y el webhook/sincronización normalizan la suscripción a $14.999, día 10 y moneda ARS. `business_billing` guarda `billing_day`, `initial_charge_amount` y la fecha de configuración. Ambas bases quedaron sin filas de facturación de prueba; antes de abrir suscripciones reales habrá que repetir una prueba controlada.
 - Producción de Mercado Pago: las funciones de alta, sincronización, baja y webhook aceptan `MP_ACCESS_TOKEN`/`MP_WEBHOOK_SECRET` productivos con prioridad sobre las variables de prueba. El webhook valida la firma HMAC y ambas variables productivas ya están cargadas en Supabase. Falta únicamente la prueba controlada del flujo productivo, que la persona titular hará manualmente.
 
-## Entornos (09/11/2026)
+## Entornos (10/11/2026)
 
 | Entorno | Supabase | Front | Mercado Pago |
 |---------|----------|-------|--------------|
