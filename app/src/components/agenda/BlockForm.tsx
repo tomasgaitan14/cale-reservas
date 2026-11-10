@@ -7,6 +7,8 @@ import { todayInArgentina } from '../../lib/dates.ts'
 import { TextField } from '../TextField.tsx'
 import { TimeSelect } from '../TimeSelect.tsx'
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../ui.ts'
+import type { TeamMember } from '../../lib/business.ts'
+import { SelectField } from '../SelectField.tsx'
 
 const MAX_REASON_LENGTH = 80
 const MINUTES_PER_HOUR = 60
@@ -18,6 +20,9 @@ interface BlockFormProps {
   businessId: string
   initialDate: string
   initialTime: string
+  team: TeamMember[]
+  canManageTeam: boolean
+  initialProfessionalId?: string
   onSaved: () => void
   onCancel: () => void
 }
@@ -27,13 +32,14 @@ function defaultEnd(startTime: string): string {
   return minutesToTime(Math.min(timeToMinutes(startTime) + MINUTES_PER_HOUR, MINUTES_PER_DAY))
 }
 
-export function BlockForm({ businessId, initialDate, initialTime, onSaved, onCancel }: BlockFormProps) {
+export function BlockForm({ businessId, initialDate, initialTime, team, canManageTeam, initialProfessionalId = '', onSaved, onCancel }: BlockFormProps) {
   const [startDate, setStartDate] = useState(initialDate)
   const [startTime, setStartTime] = useState(initialTime)
   const [endDate, setEndDate] = useState(initialDate)
   const [endTime, setEndTime] = useState(defaultEnd(initialTime))
   const [allDay, setAllDay] = useState(false)
   const [reason, setReason] = useState('')
+  const [professionalId, setProfessionalId] = useState(initialProfessionalId)
   const [errors, setErrors] = useState<AgendaFormErrors>({})
   const [busy, setBusy] = useState(false)
 
@@ -51,6 +57,7 @@ export function BlockForm({ businessId, initialDate, initialTime, onSaved, onCan
       endDate,
       endTime: allDay ? DAY_END : endTime,
       reason,
+      professionalId: professionalId || undefined,
     })
     setBusy(false)
     if (result.ok) onSaved()
@@ -59,6 +66,15 @@ export function BlockForm({ businessId, initialDate, initialTime, onSaved, onCan
 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-5">
+      {canManageTeam && team.length > 0 ? (
+        <SelectField
+          id="block-professional"
+          label="Bloquear agenda de"
+          options={[{ value: '', label: 'Todo el negocio' }, ...team.map(member => ({ value: member.user_id, label: member.display_name || member.email || 'Profesional' }))]}
+          value={professionalId}
+          onChange={event => setProfessionalId(event.target.value)}
+        />
+      ) : null}
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-[11rem] flex-1">
           <TextField

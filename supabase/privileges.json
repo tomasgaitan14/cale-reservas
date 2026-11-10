@@ -29,6 +29,7 @@
     "function register_push_subscription(p_business_id uuid, p_endpoint text, p_p256dh text, p_auth text) | definer=true | anon=false | authenticated=true | service_role=false",
     "function remove_push_subscription(p_endpoint text) | definer=true | anon=false | authenticated=true | service_role=false",
     "function replace_working_hours(p_business_id uuid, p_ranges jsonb) | definer=true | anon=false | authenticated=true | service_role=false",
+    "function replace_working_hours(p_business_id uuid, p_ranges jsonb, p_professional_id uuid) | definer=true | anon=false | authenticated=true | service_role=false",
     "function request_push_test(p_endpoint text) | definer=true | anon=false | authenticated=true | service_role=false",
     "function requeue_whatsapp_events(p_phone_number_id text) | definer=true | anon=false | authenticated=false | service_role=true",
     "function save_business_branding(p_business_id uuid, p_primary text, p_secondary text, p_accent text, p_logo_path text) | definer=false | anon=false | authenticated=true | service_role=false",

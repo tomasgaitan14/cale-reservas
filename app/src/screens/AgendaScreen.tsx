@@ -100,7 +100,7 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
   // El horario y los servicios se leen una vez: sirven para dibujar la grilla y para los formularios
   useEffect(() => {
     let cancelled = false
-    Promise.all([fetchHours(business.id), fetchServices(business.id)])
+    Promise.all([fetchHours(business.id, selectedProfessionalId === 'all' ? undefined : selectedProfessionalId), fetchServices(business.id)])
       .then(([loadedHours, loadedServices]) => {
         if (cancelled) return
         setHours(loadedHours)
@@ -113,7 +113,7 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
     return () => {
       cancelled = true
     }
-  }, [business.id])
+  }, [business.id, selectedProfessionalId])
 
   useEffect(() => {
     let cancelled = false
@@ -318,6 +318,9 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
             businessId={business.id}
             initialDate={dialog.date}
             initialTime={dialog.time}
+            team={team}
+            canManageTeam={canManageTeam}
+            initialProfessionalId={selectedProfessionalId === 'all' ? undefined : selectedProfessionalId}
             onSaved={() => done('Horario bloqueado.')}
             onCancel={() => setDialog(null)}
           />
