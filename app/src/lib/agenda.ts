@@ -9,6 +9,7 @@ export interface AgendaAppointment {
   service_name: string
   status: string
   source: string
+  professional_id?: string | null
   starts_at: string
   ends_at: string
 }
@@ -18,6 +19,7 @@ export interface AgendaBlock {
   starts_at: string
   ends_at: string
   reason: string | null
+  professional_id?: string | null
 }
 
 interface ItemBase {
@@ -34,11 +36,13 @@ export interface AppointmentItem extends ItemBase {
   clientPhone: string | null
   serviceName: string
   source: string
+  professionalId: string | null
 }
 
 export interface BlockItem extends ItemBase {
   kind: 'block'
   reason: string | null
+  professionalId: string | null
 }
 
 export type AgendaItem = AppointmentItem | BlockItem
@@ -102,12 +106,13 @@ export function dayItems(date: string, appointments: AgendaAppointment[], blocks
       clientPhone: appointment.client_phone,
       serviceName: appointment.service_name,
       source: appointment.source,
+      professionalId: appointment.professional_id ?? null,
     })
   }
 
   for (const block of blocks) {
     const segment = segmentOn(date, block.starts_at, block.ends_at)
-    if (segment) items.push({ kind: 'block', id: block.id, startMinutes: segment.start, endMinutes: segment.end, reason: block.reason })
+    if (segment) items.push({ kind: 'block', id: block.id, startMinutes: segment.start, endMinutes: segment.end, reason: block.reason, professionalId: block.professional_id ?? null })
   }
 
   return items.sort((a, b) => a.startMinutes - b.startMinutes)

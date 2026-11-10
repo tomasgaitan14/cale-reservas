@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { Shell } from './components/Shell.tsx'
 import { SECONDARY_BUTTON } from './components/ui.ts'
 import { useSession } from './hooks/useSession.ts'
-import { BusinessLoadError, fetchMyBusiness, type Business } from './lib/business.ts'
+import { BusinessLoadError, claimPendingInvitations, fetchMyBusiness, TeamLoadError, type Business } from './lib/business.ts'
 import { isSubscriptionReturn, syncProSubscription } from './lib/billing.ts'
 import { parseRoute } from './lib/route.ts'
 import { designVariant } from './designs/model.ts'
@@ -29,6 +29,7 @@ function BusinessGate() {
     async function loadBusiness() {
       setState({ status: 'loading' })
       try {
+        await claimPendingInvitations()
         const business = await fetchMyBusiness()
         const returnedFromSubscription = isSubscriptionReturn(window.location.search)
         const waitingForPayment = business && business.plan !== 'pro' && (returnedFromSubscription || business.billing_status === 'pending')
@@ -47,7 +48,7 @@ function BusinessGate() {
           })()
         }
       } catch (error: unknown) {
-        if (!(error instanceof BusinessLoadError)) throw error
+        if (!(error instanceof BusinessLoadError || error instanceof TeamLoadError)) throw error
         if (!cancelled) setState({ status: 'error' })
       }
     }
