@@ -93,9 +93,9 @@ describe('dayItems', () => {
   })
 
   it('conserva los datos que se muestran del turno', () => {
-    const [item] = dayItems('2026-11-04', [appointment('a', '2026-11-04T13:00:00Z', '2026-11-04T14:00:00Z', { source: 'manual', client_phone: null })], [])
+    const [item] = dayItems('2026-11-04', [appointment('a', '2026-11-04T13:00:00Z', '2026-11-04T14:00:00Z', { source: 'manual', client_phone: null, professional_name: 'Camila Carro', professional_color: '#9a5f5f' })], [])
 
-    expect(item).toMatchObject({ status: 'pending', clientName: 'Marina Ledesma', clientPhone: null, serviceName: 'Corte de pelo', source: 'manual' })
+    expect(item).toMatchObject({ status: 'pending', clientName: 'Marina Ledesma', clientPhone: null, serviceName: 'Corte de pelo', source: 'manual', professionalName: 'Camila Carro', professionalColor: '#9a5f5f' })
   })
 })
 

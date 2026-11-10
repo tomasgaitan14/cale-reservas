@@ -37,6 +37,7 @@ export function ItemDetail({ item, date, onChanged, onClose }: ItemDetailProps) 
           <>
             <Row label="Cliente" value={item.clientName} />
             <Row label="Servicio" value={item.serviceName} />
+            <Row label="Profesional" value={item.professionalName} />
             <Row label="Celular" value={item.clientPhone ? `+${item.clientPhone}` : 'No dejó celular'} />
             <Row label="Cómo se cargó" value={item.source === 'manual' ? 'A mano, por el negocio' : 'Desde la página de reservas'} />
           </>

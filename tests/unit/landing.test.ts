@@ -9,13 +9,13 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 describe('portada de Cale', () => {
-  it('presenta la reserva y la agenda propia sin prometer WhatsApp activo', () => {
+  it('presenta la reserva, la agenda propia y los recordatorios por WhatsApp', () => {
     vi.stubGlobal('window', { location: { search: '', hash: '' } })
     const html = renderToStaticMarkup(createElement(LandingScreen))
     expect(html).toContain('Tus reservas online,')
     expect(html).toContain('tu día en orden.')
     expect(html).not.toContain('Cale les recuerda el turno por WhatsApp')
-    expect(html).toContain('WhatsApp · Próximamente')
+    expect(html).toContain('Recordatorios automáticos por WhatsApp')
     expect(html).toContain('Esta demostración no crea una reserva')
     expect(html).toContain('Confirmo')
     expect(html).toContain('Cancelo')

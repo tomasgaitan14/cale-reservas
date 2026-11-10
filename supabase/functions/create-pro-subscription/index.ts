@@ -9,6 +9,7 @@ const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 const mercadoPagoToken = mercadoPagoAccessToken
 const allowedOrigins = readAllowedOrigins()
 const returnUrl = subscriptionReturnUrl()
+const PRO_CHECKOUT_ENABLED = false
 const PROMO_CODE = 'DESCUENTOCALE50'
 const PROMO_PRICE = 7499
 
@@ -18,6 +19,7 @@ Deno.serve(async request => {
   const reply = (status: number, body: unknown) => jsonResponse(request, allowedOrigins, status, body)
   if (request.method === 'OPTIONS') return preflightResponse(request, allowedOrigins)
   if (request.method !== 'POST') return reply(405, { error: 'method_not_allowed' })
+  if (!PRO_CHECKOUT_ENABLED) return reply(403, { error: 'subscription_unavailable' })
   if (!supabaseUrl || !serviceRoleKey || !mercadoPagoToken) return reply(503, { error: 'billing_unavailable' })
 
   const authorization = request.headers.get('authorization')

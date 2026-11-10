@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.18"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       appointments: {
@@ -23,6 +48,7 @@ export type Database = {
           created_at: string
           ends_at: string
           id: string
+          professional_id: string | null
           service_id: string | null
           service_name: string
           source: string
@@ -37,6 +63,7 @@ export type Database = {
           created_at?: string
           ends_at: string
           id?: string
+          professional_id?: string | null
           service_id?: string | null
           service_name: string
           source?: string
@@ -51,6 +78,7 @@ export type Database = {
           created_at?: string
           ends_at?: string
           id?: string
+          professional_id?: string | null
           service_id?: string | null
           service_name?: string
           source?: string
@@ -70,38 +98,6 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      business_branding: {
-        Row: {
-          accent_color: string
-          business_id: string
-          logo_path: string | null
-          primary_color: string
-          secondary_color: string
-        }
-        Insert: {
-          accent_color?: string
-          business_id: string
-          logo_path?: string | null
-          primary_color?: string
-          secondary_color?: string
-        }
-        Update: {
-          accent_color?: string
-          business_id?: string
-          logo_path?: string | null
-          primary_color?: string
-          secondary_color?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "business_branding_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: true
-            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]
@@ -165,19 +161,107 @@ export type Database = {
           },
         ]
       }
+      business_branding: {
+        Row: {
+          accent_color: string
+          business_id: string
+          logo_path: string | null
+          primary_color: string
+          secondary_color: string
+        }
+        Insert: {
+          accent_color?: string
+          business_id: string
+          logo_path?: string | null
+          primary_color?: string
+          secondary_color?: string
+        }
+        Update: {
+          accent_color?: string
+          business_id?: string
+          logo_path?: string | null
+          primary_color?: string
+          secondary_color?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_branding_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_invitations: {
+        Row: {
+          accepted_at: string | null
+          business_id: string
+          created_at: string
+          display_name: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          role: string
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          business_id: string
+          created_at?: string
+          display_name: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          role: string
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          business_id?: string
+          created_at?: string
+          display_name?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          role?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_invitations_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_members: {
         Row: {
           business_id: string
+          created_at: string
+          display_name: string | null
+          email: string | null
           role: string
           user_id: string
         }
         Insert: {
           business_id: string
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
           role?: string
           user_id: string
         }
         Update: {
           business_id?: string
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
           role?: string
           user_id?: string
         }
@@ -339,6 +423,85 @@ export type Database = {
           },
         ]
       }
+      reminder_deliveries: {
+        Row: {
+          appointment_id: string
+          attempts: number
+          business_id: string
+          connection_id: string | null
+          created_at: string
+          delivered_at: string | null
+          id: string
+          last_error_at: string | null
+          last_error_code: string | null
+          meta_message_id: string | null
+          read_at: string | null
+          reminder_hours: number
+          scheduled_for: string
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_id: string
+          attempts?: number
+          business_id: string
+          connection_id?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          last_error_at?: string | null
+          last_error_code?: string | null
+          meta_message_id?: string | null
+          read_at?: string | null
+          reminder_hours: number
+          scheduled_for: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string
+          attempts?: number
+          business_id?: string
+          connection_id?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          last_error_at?: string | null
+          last_error_code?: string | null
+          meta_message_id?: string | null
+          read_at?: string | null
+          reminder_hours?: number
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminder_deliveries_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminder_deliveries_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminder_deliveries_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reserved_slugs: {
         Row: {
           slug: string
@@ -359,6 +522,7 @@ export type Database = {
           duration_minutes: number
           id: string
           name: string
+          professional_id: string
         }
         Insert: {
           active?: boolean
@@ -367,6 +531,7 @@ export type Database = {
           duration_minutes: number
           id?: string
           name: string
+          professional_id: string
         }
         Update: {
           active?: boolean
@@ -375,6 +540,7 @@ export type Database = {
           duration_minutes?: number
           id?: string
           name?: string
+          professional_id?: string
         }
         Relationships: [
           {
@@ -384,6 +550,13 @@ export type Database = {
             referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "services_professional_member_fk"
+            columns: ["business_id", "professional_id"]
+            isOneToOne: false
+            referencedRelation: "business_members"
+            referencedColumns: ["business_id", "user_id"]
+          },
         ]
       }
       time_blocks: {
@@ -392,6 +565,7 @@ export type Database = {
           created_at: string
           ends_at: string
           id: string
+          professional_id: string | null
           reason: string | null
           starts_at: string
         }
@@ -400,6 +574,7 @@ export type Database = {
           created_at?: string
           ends_at: string
           id?: string
+          professional_id?: string | null
           reason?: string | null
           starts_at: string
         }
@@ -408,6 +583,7 @@ export type Database = {
           created_at?: string
           ends_at?: string
           id?: string
+          professional_id?: string | null
           reason?: string | null
           starts_at?: string
         }
@@ -420,6 +596,146 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      whatsapp_connections: {
+        Row: {
+          business_id: string
+          connected_at: string | null
+          connection_status: string
+          created_at: string
+          credential_reference: string | null
+          display_phone_number: string | null
+          id: string
+          phone_number_id: string | null
+          updated_at: string
+          waba_id: string | null
+        }
+        Insert: {
+          business_id: string
+          connected_at?: string | null
+          connection_status?: string
+          created_at?: string
+          credential_reference?: string | null
+          display_phone_number?: string | null
+          id?: string
+          phone_number_id?: string | null
+          updated_at?: string
+          waba_id?: string | null
+        }
+        Update: {
+          business_id?: string
+          connected_at?: string | null
+          connection_status?: string
+          created_at?: string
+          credential_reference?: string | null
+          display_phone_number?: string | null
+          id?: string
+          phone_number_id?: string | null
+          updated_at?: string
+          waba_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_connections_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_events_retention: {
+        Row: {
+          failed_days: number
+          processed_days: number
+          singleton: boolean
+          stored_days: number
+          updated_at: string
+        }
+        Insert: {
+          failed_days?: number
+          processed_days?: number
+          singleton?: boolean
+          stored_days?: number
+          updated_at?: string
+        }
+        Update: {
+          failed_days?: number
+          processed_days?: number
+          singleton?: boolean
+          stored_days?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      whatsapp_webhook_events: {
+        Row: {
+          attempts: number
+          error_code: string | null
+          event_at: string | null
+          event_key: string
+          id: string
+          kind: string
+          last_error_at: string | null
+          last_error_code: string | null
+          lease_expires_at: string | null
+          lease_id: string | null
+          meta_message_id: string | null
+          next_attempt_at: string
+          payload: Json
+          phone_number_id: string | null
+          process_status: string
+          processed_at: string | null
+          received_at: string
+          result_code: string | null
+          status_value: string | null
+          waba_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          error_code?: string | null
+          event_at?: string | null
+          event_key: string
+          id?: string
+          kind: string
+          last_error_at?: string | null
+          last_error_code?: string | null
+          lease_expires_at?: string | null
+          lease_id?: string | null
+          meta_message_id?: string | null
+          next_attempt_at?: string
+          payload: Json
+          phone_number_id?: string | null
+          process_status?: string
+          processed_at?: string | null
+          received_at?: string
+          result_code?: string | null
+          status_value?: string | null
+          waba_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          error_code?: string | null
+          event_at?: string | null
+          event_key?: string
+          id?: string
+          kind?: string
+          last_error_at?: string | null
+          last_error_code?: string | null
+          lease_expires_at?: string | null
+          lease_id?: string | null
+          meta_message_id?: string | null
+          next_attempt_at?: string
+          payload?: Json
+          phone_number_id?: string | null
+          process_status?: string
+          processed_at?: string | null
+          received_at?: string
+          result_code?: string | null
+          status_value?: string | null
+          waba_id?: string | null
+        }
+        Relationships: []
       }
       working_hours: {
         Row: {
@@ -455,13 +771,31 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      whatsapp_webhook_events_health: {
+        Row: {
+          events: number | null
+          kind: string | null
+          oldest_received_at: string | null
+          process_status: string | null
+          result_code: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      apply_whatsapp_status_event: {
+        Args: { p_event_id: string; p_lease_id: string }
+        Returns: string
+      }
       cancel_appointment: {
         Args: { p_appointment_id: string }
         Returns: undefined
       }
+      change_business_member_role: {
+        Args: { p_business_id: string; p_role: string; p_user_id: string }
+        Returns: undefined
+      }
+      claim_pending_invitations: { Args: never; Returns: number }
       claim_push_jobs: {
         Args: never
         Returns: {
@@ -472,6 +806,13 @@ export type Database = {
           lease_id: string
           p256dh: string
           subscription_id: string
+        }[]
+      }
+      claim_whatsapp_events: {
+        Args: { p_lease_seconds?: number; p_limit?: number }
+        Returns: {
+          id: string
+          lease_id: string
         }[]
       }
       create_booking: {
@@ -520,9 +861,22 @@ export type Database = {
           p_business_id: string
           p_end_date: string
           p_end_time: string
+          p_professional_id?: string
           p_reason?: string
           p_start_date: string
           p_start_time: string
+        }
+        Returns: string
+      }
+      defer_whatsapp_event: {
+        Args: {
+          p_backoff_base: string
+          p_backoff_max: string
+          p_event_id: string
+          p_final_code: string
+          p_final_status: string
+          p_wait: string
+          p_waiting_code: string
         }
         Returns: string
       }
@@ -530,6 +884,10 @@ export type Database = {
       finish_push_job: {
         Args: { p_id: string; p_lease_id: string; p_status: string }
         Returns: undefined
+      }
+      finish_whatsapp_event: {
+        Args: { p_event_id: string; p_result_code: string; p_status: string }
+        Returns: string
       }
       get_available_slots: {
         Args: { p_date: string; p_service_id: string; p_slug: string }
@@ -542,7 +900,14 @@ export type Database = {
         Args: { p_business_id: string; p_endpoint: string }
         Returns: boolean
       }
+      ingest_whatsapp_events: { Args: { p_items: Json }; Returns: Json }
+      is_business_admin: { Args: { p_business_id: string }; Returns: boolean }
       is_business_member: { Args: { p_business_id: string }; Returns: boolean }
+      purge_whatsapp_webhook_events: { Args: never; Returns: Json }
+      record_whatsapp_event_error: {
+        Args: { p_error_code: string; p_event_id: string; p_lease_id: string }
+        Returns: string
+      }
       register_push_subscription: {
         Args: {
           p_auth: string
@@ -550,6 +915,10 @@ export type Database = {
           p_endpoint: string
           p_p256dh: string
         }
+        Returns: undefined
+      }
+      remove_business_member: {
+        Args: { p_business_id: string; p_user_id: string }
         Returns: undefined
       }
       remove_push_subscription: {
@@ -561,6 +930,14 @@ export type Database = {
         Returns: undefined
       }
       request_push_test: { Args: { p_endpoint: string }; Returns: undefined }
+      requeue_whatsapp_events: {
+        Args: { p_phone_number_id: string }
+        Returns: number
+      }
+      revoke_business_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
+      }
       save_business_branding: {
         Args: {
           p_accent: string
@@ -578,6 +955,7 @@ export type Database = {
         }[]
       }
       time_span_multirange: { Args: never; Returns: unknown }
+      whatsapp_delivery_rank: { Args: { p_status: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never
@@ -706,6 +1084,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

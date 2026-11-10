@@ -4,8 +4,8 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { Shell } from './components/Shell.tsx'
 import { SECONDARY_BUTTON } from './components/ui.ts'
 import { useSession } from './hooks/useSession.ts'
-import { BusinessLoadError, fetchMyBusiness, type Business } from './lib/business.ts'
-import { isSubscriptionReturn, syncProSubscription } from './lib/billing.ts'
+import { BusinessLoadError, claimPendingInvitations, fetchMyBusiness, TeamLoadError, type Business } from './lib/business.ts'
+import { isSubscriptionReturn, PRO_CHECKOUT_ENABLED, syncProSubscription } from './lib/billing.ts'
 import { parseRoute } from './lib/route.ts'
 import { designVariant } from './designs/model.ts'
 import { supabase } from './lib/supabase.ts'
@@ -29,6 +29,7 @@ function BusinessGate() {
     async function loadBusiness() {
       setState({ status: 'loading' })
       try {
+        await claimPendingInvitations()
         const business = await fetchMyBusiness()
         const returnedFromSubscription = isSubscriptionReturn(window.location.search)
         const waitingForPayment = business && business.plan !== 'pro' && (returnedFromSubscription || business.billing_status === 'pending')
@@ -47,7 +48,7 @@ function BusinessGate() {
           })()
         }
       } catch (error: unknown) {
-        if (!(error instanceof BusinessLoadError)) throw error
+        if (!(error instanceof BusinessLoadError || error instanceof TeamLoadError)) throw error
         if (!cancelled) setState({ status: 'error' })
       }
     }
@@ -124,6 +125,11 @@ function NotFound() {
 // cale.com.ar/panel es el panel del negocio; cale.com.ar/<negocio> es su página de reservas
 export function App() {
   usePanelPwa()
+  const currentUrl = new URL(window.location.href)
+  if (!PRO_CHECKOUT_ENABLED && currentUrl.pathname === '/empezar' && currentUrl.searchParams.get('plan') === 'pro') {
+    currentUrl.searchParams.delete('plan')
+    window.history.replaceState({}, '', `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`)
+  }
   const variant = import.meta.env.DEV ? designVariant(window.location.pathname) : null
   if (variant && DesignPreview) return <Suspense fallback={<Shell><LoadingPanel /></Shell>}><DesignPreview key={variant} variant={variant} /></Suspense>
   const route = parseRoute(window.location.pathname)

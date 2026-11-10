@@ -12,7 +12,10 @@ import { addDays, dayOfMonth, formatLongDate, monthName, todayInArgentina } from
 import { emptyWeek, type WeekHours } from '../lib/hours.ts'
 import { fetchHours, HoursLoadError } from '../lib/hours-api.ts'
 import { fetchServices, ServiceLoadError, type Service } from '../lib/services.ts'
-import type { Business } from '../lib/business.ts'
+import { fetchTeam, TeamLoadError, type Business, type TeamMember } from '../lib/business.ts'
+import { DEFAULT_BRANDING, type Branding } from '../lib/branding.ts'
+import { fetchBranding } from '../lib/branding-api.ts'
+import { calendarColorForProfessional } from '../lib/agenda-colors.ts'
 
 type View = 'day' | 'week'
 
@@ -55,15 +58,40 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
   const [notice, setNotice] = useState<string | null>(null)
   const [counts, setCounts] = useState<{ today: number; tomorrow: number } | null>(null)
   const [countsError, setCountsError] = useState(false)
+  const [team, setTeam] = useState<TeamMember[]>([])
+  const [branding, setBranding] = useState<Branding>(DEFAULT_BRANDING)
+  const [selectedProfessionalId, setSelectedProfessionalId] = useState('all')
+  const canManageTeam = business.role === 'owner' || business.role === 'admin'
   useEffect(() => {
     let active = true
     setCountsError(false)
-    fetchDayCounts(business.id, today).then(value => { if (active) setCounts(value) }).catch((error: unknown) => {
+    fetchDayCounts(business.id, today, selectedProfessionalId === 'all' ? undefined : selectedProfessionalId).then(value => { if (active) setCounts(value) }).catch((error: unknown) => {
       if (!(error instanceof AgendaLoadError)) throw error
       if (active) setCountsError(true)
     })
     return () => { active = false }
-  }, [business.id, today, reloadCount])
+  }, [business.id, today, reloadCount, selectedProfessionalId])
+
+  useEffect(() => {
+    let cancelled = false
+    fetchTeam(business.id).then(value => {
+      if (!cancelled) setTeam(value.members)
+    }).catch((error: unknown) => {
+      if (!(error instanceof TeamLoadError)) throw error
+      if (!cancelled) setTeam([])
+    })
+    return () => { cancelled = true }
+  }, [business.id, canManageTeam])
+
+  useEffect(() => {
+    let cancelled = false
+    fetchBranding(business.id).then(value => {
+      if (!cancelled) setBranding(value)
+    }).catch(() => {
+      if (!cancelled) setBranding(DEFAULT_BRANDING)
+    })
+    return () => { cancelled = true }
+  }, [business.id])
 
   const dates = view === 'day' ? [date] : weekDates(date)
   const firstDate = dates[0] ?? date
@@ -113,9 +141,21 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
     return () => window.clearTimeout(timer)
   }, [notice])
 
-  const appointments = load.status === 'ready' ? load.appointments : []
-  const blocks = load.status === 'ready' ? load.blocks : []
-  const itemsByDate = Object.fromEntries(dates.map(day => [day, dayItems(day, appointments, blocks)]))
+  const appointments = load.status === 'ready'
+    ? load.appointments.filter(item => selectedProfessionalId === 'all' || item.professional_id === selectedProfessionalId)
+    : []
+  const blocks = load.status === 'ready'
+    ? load.blocks.filter(item => selectedProfessionalId === 'all' || item.professional_id === null || item.professional_id === selectedProfessionalId)
+    : []
+  const appointmentsWithPresentation = appointments.map(appointment => {
+    const member = team.find(candidate => candidate.user_id === appointment.professional_id)
+    return {
+      ...appointment,
+      professional_name: member?.display_name || member?.email || 'Profesional',
+      professional_color: calendarColorForProfessional(appointment.professional_id, team, branding),
+    }
+  })
+  const itemsByDate = Object.fromEntries(dates.map(day => [day, dayItems(day, appointmentsWithPresentation, blocks)]))
   const range = visibleRange(dates, hours, Object.values(itemsByDate).flat())
   const reload = () => setReloadCount(count => count + 1)
 
@@ -177,6 +217,16 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
       <div className="natural-agenda-counts flex flex-wrap gap-6 text-base" aria-live="polite">
         {countsError ? <p className="text-muted">No pudimos cargar los contadores.</p> : counts ? <><p>Hoy <strong className="ml-2">{counts.today} {counts.today === 1 ? 'turno' : 'turnos'}</strong></p><p>Mañana <strong className="ml-2">{counts.tomorrow} {counts.tomorrow === 1 ? 'turno' : 'turnos'}</strong></p></> : <p role="status" className="text-muted">Cargando los turnos de hoy y mañana…</p>}
       </div>
+
+      {canManageTeam && team.length > 0 ? (
+        <label className="flex max-w-sm flex-col gap-2 text-sm font-semibold text-muted">
+          Agenda de
+          <select className="field" value={selectedProfessionalId} onChange={event => setSelectedProfessionalId(event.target.value)}>
+            <option value="all">Todo el equipo</option>
+            {team.map(member => <option key={member.user_id} value={member.user_id}>{member.display_name || member.email || 'Profesional'}</option>)}
+          </select>
+        </label>
+      ) : null}
 
 
       {services.length === 0 && !setupFailed ? (

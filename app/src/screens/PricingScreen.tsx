@@ -1,15 +1,16 @@
 import { ArrowRight, Check, Crown, Sparkle, WhatsappLogo } from '@phosphor-icons/react'
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../components/ui.ts'
+import { PRO_CHECKOUT_ENABLED } from '../lib/billing.ts'
 
 const plans = [
   {
     name: 'Gratis',
     eyebrow: 'Para empezar',
-    description: 'Todo lo necesario para ordenar tu agenda y recibir reservas online.',
+    description: 'La base para ordenar tu agenda y recibir reservas online.',
     price: '$0',
     cadence: 'para siempre',
     icon: Check,
-    features: ['Página pública y link de reservas', 'Agenda propia y turnos manuales', 'Servicios y horarios', 'Notificaciones de la app', 'Colores y logo de tu negocio'],
+    features: ['Página pública con link y QR para recibir reservas', 'Agenda para vos y tus profesionales', 'Servicios y horarios personalizables', 'Hasta 3 profesionales en tu equipo', 'Notificaciones dentro de Cale', 'Colores y logo de tu negocio'],
     action: 'Empezá Gratis',
     href: '/empezar?plan=gratis',
     featured: false,
@@ -17,11 +18,11 @@ const plans = [
   {
     name: 'Pro',
     eyebrow: 'Para crecer',
-    description: 'Pro está preparado para sumar funciones avanzadas cuando la conexión con WhatsApp esté disponible.',
+    description: 'Todo lo de Gratis, con más espacio para trabajar en equipo.',
     price: '$14.999',
     cadence: 'por mes',
     icon: WhatsappLogo,
-    features: ['Todo lo de Gratis', 'Recordatorios por WhatsApp · Próximamente', 'Avisos de nuevos turnos · Próximamente', 'Avisos de cancelaciones y cambios · Próximamente', 'Configuración de anticipación · Próximamente'],
+    features: ['Todo lo de Gratis', 'Profesionales ilimitados', 'Recordatorios automáticos por WhatsApp'],
     action: 'Elegir Pro',
     href: '/empezar?plan=pro',
     featured: true,
@@ -42,7 +43,7 @@ const plans = [
 
 export function PricingSection() {
   return <section id="precios" className="pricing-section">
-      <div className="pricing-intro"><p className="eyebrow">Planes claros para cada etapa</p><h2>Empezá gratis.<br /><span className="text-link">Crecé cuando quieras.</span></h2><p>Usá Cale para ordenar tus turnos desde el primer día. Las funciones automáticas de WhatsApp estarán disponibles próximamente.</p></div>
+      <div className="pricing-intro"><p className="eyebrow">Planes claros para cada etapa</p><h2>Empezá gratis.<br /><span className="text-link">Crecé cuando quieras.</span></h2><p>Usá Cale para ordenar tus turnos desde el primer día. Pro suma recordatorios automáticos por WhatsApp para acompañar cada reserva.</p></div>
       <section className="pricing-grid" aria-label="Planes de Cale">
         {plans.map(({ name, eyebrow, description, price, cadence, icon: Icon, features, action, href, featured }) => <article className={`pricing-card${featured ? ' is-featured' : ''}`} key={name}>
           {featured && <span className="pricing-badge"><Sparkle size={15} />Más elegido</span>}
@@ -50,9 +51,9 @@ export function PricingSection() {
           <p className="pricing-description">{description}</p>
           <p className="pricing-price">{price} {cadence && <small>{cadence}</small>}</p>
           <ul>{features.map(feature => <li key={feature}><Check size={18} weight="bold" aria-hidden="true" />{feature}</li>)}</ul>
-          <a className={featured ? PRIMARY_BUTTON : SECONDARY_BUTTON} href={href}>{action}<ArrowRight size={18} aria-hidden="true" /></a>
+          {featured && !PRO_CHECKOUT_ENABLED ? <button type="button" className={`${PRIMARY_BUTTON} cursor-not-allowed opacity-60`} disabled>{action}</button> : <a className={featured ? PRIMARY_BUTTON : SECONDARY_BUTTON} href={href}>{action}<ArrowRight size={18} aria-hidden="true" /></a>}
         </article>)}
       </section>
-      <p className="pricing-note"><strong>Importante:</strong> la versión Gratis no vence. Incluye todas las funciones de agenda y reservas; las funciones automáticas de WhatsApp están en preparación.</p>
+      <p className="pricing-note"><strong>Importante:</strong> la versión Gratis no vence e incluye todas las funciones de agenda y reservas.</p>
     </section>
 }

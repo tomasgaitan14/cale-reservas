@@ -7,6 +7,7 @@ const SLOT_UNAVAILABLE = { code: 'P0001', message: 'slot_unavailable' }
 const IN_THE_PAST = { code: 'P0001', message: 'in_the_past' }
 const TOO_FAR = { code: 'P0001', message: 'too_far' }
 const SERVICE_NOT_FOUND = { code: 'P0001', message: 'service_not_found' }
+const PROFESSIONAL_ASSIGNMENT_FORBIDDEN = { code: '42501', message: 'professional_assignment_forbidden' }
 const NAME_LENGTH = { code: '23514', message: 'new row for relation "appointments" violates check constraint "appointments_client_name_length"' }
 const PHONE_FORMAT = { code: '23514', message: 'new row for relation "appointments" violates check constraint "appointments_client_phone_format"' }
 const END_AFTER_START = { code: '23514', message: 'new row for relation "time_blocks" violates check constraint "time_blocks_end_after_start"' }
@@ -20,6 +21,7 @@ describe('describeAgendaError', () => {
     ['una fecha que ya pasó', IN_THE_PAST, 'time'],
     ['una fecha demasiado lejana', TOO_FAR, 'time'],
     ['un servicio que no existe', SERVICE_NOT_FOUND, 'service'],
+    ['un servicio de otro profesional', PROFESSIONAL_ASSIGNMENT_FORBIDDEN, 'service'],
     ['un nombre inválido', NAME_LENGTH, 'name'],
     ['un celular inválido', PHONE_FORMAT, 'phone'],
     ['un bloqueo que termina antes de empezar', END_AFTER_START, 'time'],
