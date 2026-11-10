@@ -9,7 +9,7 @@ import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../components/ui.ts'
 import { AgendaLoadError, fetchAgenda, fetchDayCounts, type AgendaData } from '../lib/agenda-api.ts'
 import { dayItems, minutesToTime, visibleRange, weekDates, type AgendaItem } from '../lib/agenda.ts'
 import { addDays, dayOfMonth, formatLongDate, monthName, todayInArgentina } from '../lib/dates.ts'
-import { emptyWeek, type WeekHours } from '../lib/hours.ts'
+import { emptyWeek, hasAnyHours, type WeekHours } from '../lib/hours.ts'
 import { fetchHours, HoursLoadError } from '../lib/hours-api.ts'
 import { fetchServices, ServiceLoadError, type Service } from '../lib/services.ts'
 import { fetchTeam, TeamLoadError, type Business, type TeamMember } from '../lib/business.ts'
@@ -62,6 +62,7 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
   const [branding, setBranding] = useState<Branding>(DEFAULT_BRANDING)
   const [selectedProfessionalId, setSelectedProfessionalId] = useState('all')
   const canManageTeam = business.role === 'owner' || business.role === 'admin'
+  const isProfessional = business.role === 'professional'
   useEffect(() => {
     let active = true
     setCountsError(false)
@@ -229,7 +230,13 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
       ) : null}
 
 
-      {services.length === 0 && !setupFailed ? (
+      {!setupFailed && isProfessional && (services.length === 0 || !hasAnyHours(hours)) ? (
+        <div className="flex flex-col gap-1 rounded-[12px] bg-tint p-3 text-base" role="status">
+          {services.length === 0 ? <p>Contactá al administrador del negocio para agregar servicios a tu agenda.</p> : null}
+          {!hasAnyHours(hours) ? <p>Contactá al administrador del negocio para agregar tus horarios de atención.</p> : null}
+        </div>
+      ) : null}
+      {!setupFailed && !isProfessional && services.length === 0 ? (
         <p className="rounded-[12px] bg-tint p-3 text-base">Para cargar turnos a mano, primero cargá un servicio.</p>
       ) : null}
 
