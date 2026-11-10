@@ -13,6 +13,9 @@ import { emptyWeek, type WeekHours } from '../lib/hours.ts'
 import { fetchHours, HoursLoadError } from '../lib/hours-api.ts'
 import { fetchServices, ServiceLoadError, type Service } from '../lib/services.ts'
 import { fetchTeam, TeamLoadError, type Business, type TeamMember } from '../lib/business.ts'
+import { DEFAULT_BRANDING, type Branding } from '../lib/branding.ts'
+import { fetchBranding } from '../lib/branding-api.ts'
+import { calendarColorForProfessional } from '../lib/agenda-colors.ts'
 
 type View = 'day' | 'week'
 
@@ -56,6 +59,7 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
   const [counts, setCounts] = useState<{ today: number; tomorrow: number } | null>(null)
   const [countsError, setCountsError] = useState(false)
   const [team, setTeam] = useState<TeamMember[]>([])
+  const [branding, setBranding] = useState<Branding>(DEFAULT_BRANDING)
   const [selectedProfessionalId, setSelectedProfessionalId] = useState('all')
   const canManageTeam = business.role === 'owner' || business.role === 'admin'
   useEffect(() => {
@@ -69,7 +73,6 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
   }, [business.id, today, reloadCount, selectedProfessionalId])
 
   useEffect(() => {
-    if (!canManageTeam) return
     let cancelled = false
     fetchTeam(business.id).then(value => {
       if (!cancelled) setTeam(value.members)
@@ -79,6 +82,16 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
     })
     return () => { cancelled = true }
   }, [business.id, canManageTeam])
+
+  useEffect(() => {
+    let cancelled = false
+    fetchBranding(business.id).then(value => {
+      if (!cancelled) setBranding(value)
+    }).catch(() => {
+      if (!cancelled) setBranding(DEFAULT_BRANDING)
+    })
+    return () => { cancelled = true }
+  }, [business.id])
 
   const dates = view === 'day' ? [date] : weekDates(date)
   const firstDate = dates[0] ?? date
@@ -134,7 +147,15 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
   const blocks = load.status === 'ready'
     ? load.blocks.filter(item => selectedProfessionalId === 'all' || item.professional_id === null || item.professional_id === selectedProfessionalId)
     : []
-  const itemsByDate = Object.fromEntries(dates.map(day => [day, dayItems(day, appointments, blocks)]))
+  const appointmentsWithPresentation = appointments.map(appointment => {
+    const member = team.find(candidate => candidate.user_id === appointment.professional_id)
+    return {
+      ...appointment,
+      professional_name: member?.display_name || member?.email || 'Profesional',
+      professional_color: calendarColorForProfessional(appointment.professional_id, team, branding),
+    }
+  })
+  const itemsByDate = Object.fromEntries(dates.map(day => [day, dayItems(day, appointmentsWithPresentation, blocks)]))
   const range = visibleRange(dates, hours, Object.values(itemsByDate).flat())
   const reload = () => setReloadCount(count => count + 1)
 

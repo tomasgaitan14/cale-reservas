@@ -10,6 +10,8 @@ export interface AgendaAppointment {
   status: string
   source: string
   professional_id?: string | null
+  professional_name?: string | null
+  professional_color?: string | null
   starts_at: string
   ends_at: string
 }
@@ -37,6 +39,8 @@ export interface AppointmentItem extends ItemBase {
   serviceName: string
   source: string
   professionalId: string | null
+  professionalName: string
+  professionalColor: string | null
 }
 
 export interface BlockItem extends ItemBase {
@@ -107,6 +111,8 @@ export function dayItems(date: string, appointments: AgendaAppointment[], blocks
       serviceName: appointment.service_name,
       source: appointment.source,
       professionalId: appointment.professional_id ?? null,
+      professionalName: appointment.professional_name ?? 'Profesional',
+      professionalColor: appointment.professional_color ?? null,
     })
   }
 

@@ -159,13 +159,20 @@ function AgendaItemButton({ item, range, onClick }: { item: AgendaItem; range: M
         event.stopPropagation()
         onClick()
       }}
-      aria-label={`Turno de ${time}: ${item.clientName}, ${item.serviceName}`}
+      aria-label={`Turno de ${time}: ${item.clientName}, ${item.serviceName} - ${item.professionalName}`}
       className={`natural-appointment ${item.status === 'confirmed' ? 'is-confirmed' : 'is-pending'} absolute inset-x-1 overflow-hidden rounded-[10px] border-l-4 bg-tint px-2 py-0.5 text-left text-[0.9375rem] leading-tight transition duration-200 hover:brightness-95 active:scale-[0.99] ${
         item.status === 'confirmed' ? 'border-ok' : 'border-pend'
       }`}
-      style={{ top, height }}
+      style={{
+        top,
+        height,
+        ...(item.professionalColor ? {
+          backgroundColor: `${item.professionalColor}1f`,
+          borderLeftColor: item.professionalColor,
+        } : {}),
+      }}
     >
-      <span className="natural-appointment-main"><span className="block truncate font-bold">{item.serviceName}</span>
+      <span className="natural-appointment-main"><span className="block truncate font-bold">{item.serviceName} - {item.professionalName}</span>
       {twoLines ? <span className="block truncate text-muted">{item.clientName}</span> : null}</span>
       {twoLines && <span className="natural-appointment-status">{item.status === 'confirmed' ? 'Confirmado' : item.status === 'pending' ? 'Pendiente' : 'Reservado'}</span>}
       <span className="natural-appointment-time">{minutesToTime(item.startMinutes)}</span>
