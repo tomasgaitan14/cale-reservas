@@ -29,6 +29,7 @@ Esta sección supersede los estados históricos que aparecen más abajo.
 
 - Mismo código en los dos: lo que cambia es configuración. Las Edge Functions leen `APP_URL`, `ALLOWED_ORIGINS`, `BOOKING_ALLOWED_ORIGINS` y `BOOKING_ALLOWED_HOSTNAMES` (`supabase/functions/_shared/environment.ts`). Sin ellas rigen los valores de producción, por eso un proyecto de desarrollo tiene que declararlas. Un test impide escribir dominios o proyectos de producción en funciones y migraciones.
 - El job del push (cron) lee su clave y la URL de las funciones de Vault (`cale_push_job_secret` y `cale_functions_base_url`) en cada proyecto. Detalle en `docs/migrations.md`.
+- Historial de migraciones reconciliado el 10/11/2026: producción conserva pendiente, de forma intencional, solo la migración que activa los cron de WhatsApp; el cron de push ya usa Vault en ambos entornos. No ejecutar `db push --include-all` en producción mientras WhatsApp siga en preparación.
 - Vercel: las variables `VITE_*` de Preview apuntan a `cale-dev` y las de Production a `cale-api`. Turnstile usa un widget distinto por entorno.
 - Antes de `supabase db push` o `supabase secrets set`, comprobar `supabase/.temp/project-ref` y pasar `--project-ref`.
 

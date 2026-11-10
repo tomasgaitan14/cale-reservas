@@ -19,12 +19,23 @@ Los dos repos comparten un único proyecto de Supabase y, por lo tanto, **un ún
 2. Probarla contra el Supabase local y con los tests de `tests/db/`.
 3. Correr `npm run check:migrations` (archivos bien formados, sin versiones ni nombres repetidos).
 4. Aplicarla al proyecto remoto **solo con aprobación explícita**, con `supabase db push` desde este repo.
-5. Correr `npm run check:migrations -- --remote` y comprobar que el historial remoto coincide con los archivos.
+5. Correr `npm run check:migrations -- --remote` y comprobar que el historial remoto no tenga migraciones aplicadas sin archivo ni versiones renombradas.
 
 **No aplicar cambios de esquema por otro camino** (el panel de Supabase o `apply_migration` del MCP): dejan una migración registrada en
 el remoto sin archivo acá, que es exactamente el descuadre que este control detecta.
 
 **Una migración ya aplicada no se edita.** Un cambio nuevo es una migración nueva.
+
+## Diferencias operativas intencionales
+
+El esquema y las migraciones son comunes a `cale-api` y `cale-dev`, pero no todos los jobs operativos tienen que estar activos en ambos
+entornos. Mientras WhatsApp siga en estado «Próximamente», `20261105170000_schedule_whatsapp_events_jobs.sql` está aplicada en `cale-dev`
+para probar el circuito, pero queda pendiente en `cale-api`: producción no debe crear `cale-whatsapp-events-process` ni
+`cale-whatsapp-events-purge` todavía. No se debe marcar esa migración como aplicada en producción ni ejecutar `db push --include-all`
+sin revisar este caso.
+
+La migración correctiva `20261109200000_push_job_url_from_vault.sql` sí está aplicada en ambos proyectos. El job `cale-push-delivery`
+de cada entorno obtiene su propia URL desde Vault y no contiene la URL de otro proyecto.
 
 **Única excepción (09/11/2026):** `20261104142607_schedule_push_delivery.sql` se editó después de aplicarse porque llevaba escrita la URL del
 proyecto de producción: en un proyecto de desarrollo el job del push llamaba a producción. La URL ahora sale de Vault (ver
