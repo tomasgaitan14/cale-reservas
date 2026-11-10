@@ -167,7 +167,7 @@ function AgendaItemButton({ item, range, onClick }: { item: AgendaItem; range: M
         top,
         height,
         ...(item.professionalColor ? {
-          backgroundColor: `${item.professionalColor}1f`,
+          backgroundColor: `${item.professionalColor}55`,
           borderLeftColor: item.professionalColor,
         } : {}),
       }}
