@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { ArrowRight, Bell, CalendarBlank, Clock, QrCode, Storefront } from '@phosphor-icons/react'
+import { ArrowRight, Bell, CalendarBlank, CheckCircle, QrCode, Storefront } from '@phosphor-icons/react'
 import { ReminderExample } from '../components/ReminderExample.tsx'
 import { BookingPreview } from '../components/BookingPreview.tsx'
 import { Brand } from '../components/Brand.tsx'
@@ -70,7 +70,7 @@ export function LandingScreen() {
           <h1>Tus reservas online, <span className="text-link">tu día en orden.</span></h1>
           <p className="max-w-lg text-lg text-muted">Tus clientes eligen su turno desde tu propio link o QR. Vos recibís las reservas y organizás tu día en una sola agenda.</p>
           <div className="flex w-full flex-wrap gap-3"><button className={`${PRIMARY_BUTTON} sm:w-auto`} onClick={panelAction}>{panelActionLabel}<ArrowRight size={20} aria-hidden="true" /></button><button className={SECONDARY_BUTTON} onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })}>Ver cómo funciona</button></div>
-          <p className="flex items-center gap-2 text-sm text-muted"><Clock size={18} aria-hidden="true" />Recordatorios automáticos por WhatsApp</p>
+          <p className="flex items-center gap-2 text-sm text-muted"><CheckCircle size={19} weight="fill" className="text-ok" aria-hidden="true" />Recordatorios automáticos por WhatsApp</p>
         </div>
         <BookingPreview />
       </section>
