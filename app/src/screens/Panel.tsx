@@ -28,7 +28,7 @@ const TABS = [
 ] as const
 function tabsForPlan(plan: string, role: Business['role'] = 'owner') {
   const isProfessional = role === 'professional'
-  return TABS.filter(tab => !isProfessional && tab.key === 'business' ? false : plan === 'pro' || tab.key !== 'reminders').filter(tab => !isProfessional || tab.key === 'agenda' || tab.key === 'settings')
+  return TABS.filter(tab => isProfessional && tab.key === 'business' ? false : plan === 'pro' || tab.key !== 'reminders').filter(tab => !isProfessional || tab.key === 'agenda' || tab.key === 'settings')
 }
 function currentTab(isPro = true, role: Business['role'] = 'owner'): Tab { return tabsForPlan(isPro ? 'pro' : 'gratis', role).find(tab => tab.path === window.location.pathname.replace(/\/+$/, ''))?.key ?? 'agenda' }
 
