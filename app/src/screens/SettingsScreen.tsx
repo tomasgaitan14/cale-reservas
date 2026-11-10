@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase.ts'
 import { SECONDARY_BUTTON } from '../components/ui.ts'
 import { Crown, ArrowRight, Clock } from '@phosphor-icons/react'
 import type { Business } from '../lib/business.ts'
-import { cancelProSubscription, startProSubscription } from '../lib/billing.ts'
+import { cancelProSubscription, PRO_CHECKOUT_ENABLED, startProSubscription } from '../lib/billing.ts'
 import { Modal } from '../components/Modal.tsx'
 import { TextField } from '../components/TextField.tsx'
 import { deleteAccount } from '../lib/account.ts'
@@ -93,7 +93,7 @@ export function SettingsScreen({ business }: { business: Business }) {
               </div> : null}
             </div>
           </div>
-          {isPro && !isCanceled ? <button type="button" className={`${SECONDARY_BUTTON} shrink-0`} onClick={() => setCancelOpen(true)} disabled={cancelBusy}>{cancelBusy ? 'Dando de baja…' : 'Dar de baja Pro'}</button> : !isPro && !isPending ? <button type="button" className={`${SECONDARY_BUTTON} shrink-0`} onClick={() => void upgradeToPro()} disabled={billingBusy}>{billingBusy ? 'Preparando pago…' : 'Mejorar a Pro'}{!billingBusy && <ArrowRight size={18} aria-hidden="true" />}</button> : null}
+          {isPro && !isCanceled ? <button type="button" className={`${SECONDARY_BUTTON} shrink-0`} onClick={() => setCancelOpen(true)} disabled={cancelBusy}>{cancelBusy ? 'Dando de baja…' : 'Dar de baja Pro'}</button> : PRO_CHECKOUT_ENABLED && !isPro && !isPending ? <button type="button" className={`${SECONDARY_BUTTON} shrink-0`} onClick={() => void upgradeToPro()} disabled={billingBusy}>{billingBusy ? 'Preparando pago…' : 'Mejorar a Pro'}{!billingBusy && <ArrowRight size={18} aria-hidden="true" />}</button> : null}
         </div>
       </section> : null}
       <section className="settings-section"><h2 className="text-xl">¿Necesitás una mano?</h2><p className="text-muted">Podés escribirnos por consultas sobre tu cuenta o tus reservas.</p><button className={SECONDARY_BUTTON} onClick={() => { window.location.href = 'mailto:cale.turnos@gmail.com' }}>Contactar a Cale</button></section>
