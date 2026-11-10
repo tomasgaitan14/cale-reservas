@@ -3,7 +3,7 @@ import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { SelectField } from '../components/SelectField.tsx'
 import { TextField } from '../components/TextField.tsx'
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../components/ui.ts'
-import type { Business } from '../lib/business.ts'
+import { fetchTeam, TeamLoadError, type Business, type TeamMember } from '../lib/business.ts'
 import { DEFAULT_DURATION_MINUTES, DURATION_OPTIONS_MINUTES, formatDuration } from '../lib/duration.ts'
 import type { ServiceFormErrors } from '../lib/service-errors.ts'
 import {
@@ -32,6 +32,9 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
   const [editingId, setEditingId] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [duration, setDuration] = useState(DEFAULT_DURATION_MINUTES)
+  const [professionalId, setProfessionalId] = useState('')
+  const [team, setTeam] = useState<TeamMember[]>([])
+  const [teamError, setTeamError] = useState(false)
   const [errors, setErrors] = useState<ServiceFormErrors>({})
   const [busy, setBusy] = useState(false)
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null)
@@ -39,13 +42,20 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
 
   useEffect(() => {
     let cancelled = false
-    fetchServices(business.id)
-      .then(services => {
-        if (!cancelled) setList({ status: 'ready', services })
+    Promise.all([fetchServices(business.id), fetchTeam(business.id)])
+      .then(([services, loadedTeam]) => {
+        if (!cancelled) {
+          setList({ status: 'ready', services })
+          setTeam(loadedTeam.members)
+          setProfessionalId(current => current || loadedTeam.members[0]?.user_id || '')
+        }
       })
       .catch((error: unknown) => {
-        if (!(error instanceof ServiceLoadError)) throw error
-        if (!cancelled) setList({ status: 'error' })
+        if (!(error instanceof ServiceLoadError || error instanceof TeamLoadError)) throw error
+        if (!cancelled) {
+          setList({ status: 'error' })
+          setTeamError(error instanceof TeamLoadError)
+        }
       })
     return () => {
       cancelled = true
@@ -58,6 +68,7 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
     setEditingId(null)
     setName('')
     setDuration(DEFAULT_DURATION_MINUTES)
+    setProfessionalId(team[0]?.user_id ?? '')
     setErrors({})
   }
 
@@ -65,7 +76,7 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
     event.preventDefault()
     setBusy(true)
     setErrors({})
-    const input = { name: name.trim(), duration_minutes: duration }
+    const input = { name: name.trim(), duration_minutes: duration, professional_id: professionalId }
     const result = editingId ? await updateService(editingId, input) : await createService(business.id, input)
     setBusy(false)
     if (result.ok) {
@@ -88,6 +99,7 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
     setEditingId(service.id)
     setName(service.name)
     setDuration(service.duration_minutes)
+    setProfessionalId(service.professional_id)
     setErrors({})
   }
 
@@ -127,13 +139,25 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
             }}
             error={errors.duration}
           />
+          <SelectField
+            id="service-professional"
+            label="Profesional responsable"
+            options={team.map(member => ({
+              value: member.user_id,
+              label: `${member.display_name || member.email || 'Profesional'}${member.role === 'professional' ? '' : ` · ${member.role === 'owner' ? 'Dueño' : 'Administrador'}`}`,
+            }))}
+            value={professionalId}
+            onChange={event => setProfessionalId(event.target.value)}
+            error={teamError ? 'No pudimos cargar el equipo.' : undefined}
+          />
+          <p className="-mt-3 text-sm text-muted">Este profesional atenderá los turnos de este servicio.</p>
           {errors.general ? (
             <p role="alert" className="rounded-[12px] bg-warn-bg p-3 text-[0.9375rem] font-medium text-warn">
               {errors.general}
             </p>
           ) : null}
           <div className="flex flex-wrap gap-3">
-            <button type="submit" className={`${PRIMARY_BUTTON} sm:w-auto sm:flex-1`} disabled={busy}>
+            <button type="submit" className={`${PRIMARY_BUTTON} sm:w-auto sm:flex-1`} disabled={busy || !professionalId}>
               {editingId ? <Check weight="bold" className="size-5" aria-hidden="true" /> : <Plus weight="bold" className="size-5" aria-hidden="true" />}
               {editingId ? 'Guardar cambios' : onContinue ? 'Guardar y continuar' : 'Agregar servicio'}
             </button>
@@ -204,7 +228,7 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex min-w-0 flex-col">
                       <p className="break-words font-head text-lg font-extrabold tracking-tight">{service.name}</p>
-                      <p className="text-base text-muted">{formatDuration(service.duration_minutes)}</p>
+                      <p className="text-base text-muted">{formatDuration(service.duration_minutes)} · {team.find(member => member.user_id === service.professional_id)?.display_name || 'Profesional asignado'}</p>
                     </div>
                     <button
                       type="button"

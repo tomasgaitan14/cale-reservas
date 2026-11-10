@@ -3,6 +3,7 @@ import { supabase } from './supabase.ts'
 
 export interface Service {
   id: string
+  professional_id: string
   name: string
   duration_minutes: number
   active: boolean
@@ -11,9 +12,10 @@ export interface Service {
 export interface ServiceInput {
   name: string
   duration_minutes: number
+  professional_id: string
 }
 
-const SERVICE_COLUMNS = 'id, name, duration_minutes, active'
+const SERVICE_COLUMNS = 'id, name, duration_minutes, active, professional_id'
 
 export class ServiceLoadError extends Error {
   constructor(detail: string) {

@@ -3,8 +3,8 @@ import { describeAgendaError, type AgendaFormErrors } from './agenda-errors.ts'
 import { addDays, dayStartInstant } from './dates.ts'
 import { supabase } from './supabase.ts'
 
-const APPOINTMENT_COLUMNS = 'id, client_name, client_phone, service_name, status, source, starts_at, ends_at'
-const BLOCK_COLUMNS = 'id, starts_at, ends_at, reason'
+const APPOINTMENT_COLUMNS = 'id, client_name, client_phone, service_name, status, source, starts_at, ends_at, professional_id'
+const BLOCK_COLUMNS = 'id, starts_at, ends_at, reason, professional_id'
 const CANCELLED = 'cancelled'
 
 export class AgendaLoadError extends Error {
@@ -101,11 +101,13 @@ export async function cancelAppointment(appointmentId: string): Promise<AgendaRe
 }
 
 // Conteos del inicio: cuentan inicios del día en Argentina, sin turnos cancelados.
-export async function fetchDayCounts(businessId: string, today: string): Promise<{ today: number; tomorrow: number }> {
+export async function fetchDayCounts(businessId: string, today: string, professionalId?: string): Promise<{ today: number; tomorrow: number }> {
   async function count(date: string): Promise<number> {
-    const { count, error } = await supabase.from('appointments').select('id', { head: true, count: 'exact' })
+    let query = supabase.from('appointments').select('id', { head: true, count: 'exact' })
       .eq('business_id', businessId).neq('status', CANCELLED)
       .gte('starts_at', dayStartInstant(date)).lt('starts_at', dayStartInstant(addDays(date, 1)))
+    if (professionalId) query = query.eq('professional_id', professionalId)
+    const { count, error } = await query
     if (error) throw new AgendaLoadError(error.message)
     return count ?? 0
   }
