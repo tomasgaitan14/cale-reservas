@@ -18,8 +18,9 @@
 .natural-shell-header { border-bottom: 1px solid var(--border); margin-bottom: 36px; }
 .natural-panel { max-width: 1480px; margin: auto; padding: 22px 32px 0; }
 .natural-panel-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 14px 20px; border: 1px solid var(--border); border-radius: 18px; }
-.natural-business-button { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; color: var(--text); font-size: 15px; font-weight: 650; min-height: 44px; max-width: 300px; }
+.natural-business-button { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; color: var(--text); font-size: 15px; font-weight: 650; min-height: 44px; min-width: 0; max-width: 300px; }
 .natural-business-button > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.natural-business-button > span:first-of-type { min-width: 0; flex: 1 1 auto; }
 .natural-business-button > .plan-badge { display: inline-flex; align-items: center; gap: 4px; flex: none; overflow: visible; border: 1px solid var(--border); border-radius: 999px; padding: 5px 8px; font-size: 11px; font-weight: 800; letter-spacing: .04em; line-height: 1; text-transform: uppercase; }
 .natural-business-button > .plan-badge-pro { border-color: color-mix(in srgb, var(--link) 35%, var(--border)); background: var(--tint); color: var(--link); }
 .natural-business-button > .plan-badge-gratis { color: var(--muted); }
@@ -240,7 +241,8 @@
   .natural-panel { padding: 0; }
   .natural-panel-header { margin: 0; padding: 18px 16px 0; border: 0; border-radius: 0; flex-wrap: wrap; gap: 18px; }
   .natural-panel-header > .cale-brand { order: 0; }
-  .natural-business-button { order: 1; margin-left: auto; font-size: 12px; max-width: 155px; }
+  .natural-business-button { order: 1; margin-left: 0; width: 100%; max-width: none; justify-content: flex-start; font-size: 12px; }
+  .natural-business-button > span:first-of-type { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
   .natural-panel-main { padding: 27px 16px 132px; }
   .natural-pro-offer { grid-template-columns: 1fr; gap: 20px; padding: 20px; }
   .natural-pro-offer-copy h2 { font-size: 24px; }
