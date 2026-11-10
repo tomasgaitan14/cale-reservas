@@ -8,10 +8,9 @@ import { normalizeWhatsapp } from '../lib/whatsapp.ts'
 import { TextField } from '../components/TextField.tsx'
 import { ShareBooking } from '../components/ShareBooking.tsx'
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../components/ui.ts'
-import { ProfessionalsSection } from '../components/ProfessionalsSection.tsx'
 
-export function BusinessScreen({ business, ready, onChanged, onServices, onHours }: {
-  business: Business; ready: boolean; onChanged: (value: Business) => void; onServices: () => void; onHours: () => void
+export function BusinessScreen({ business, ready, onChanged, onServices, onHours, onProfessionals }: {
+  business: Business; ready: boolean; onChanged: (value: Business) => void; onServices: () => void; onHours: () => void; onProfessionals?: () => void
 }) {
   const canManage = !business.role || business.role === 'owner' || business.role === 'admin'
   const [name, setName] = useState(business.name)
@@ -41,9 +40,9 @@ export function BusinessScreen({ business, ready, onChanged, onServices, onHours
     </form><div className="flex flex-col divide-y divide-line">
       <section className="pb-6"><h2 className="text-2xl">Tus servicios</h2><p className="my-3 text-muted">Qué ofrecés, cuánto dura y qué servicios están disponibles.</p><button className={SECONDARY_BUTTON} onClick={onServices}>Editar servicios</button></section>
       <section className="py-6"><h2 className="text-2xl">Tus horarios</h2><p className="my-3 text-muted">Días de atención, descansos y horarios de cada semana.</p><button className={SECONDARY_BUTTON} onClick={onHours}>Editar horarios</button></section>
+      <section className="border-t border-line py-6"><h2 className="text-2xl">Tus profesionales</h2><p className="my-3 text-muted">Servicios asignados, permisos y acceso de cada persona de tu equipo.</p><button className={SECONDARY_BUTTON} onClick={() => onProfessionals?.()}>Editar profesionales</button></section>
     </div></div>
     <BusinessBranding businessId={business.id} name={business.name} />
-    <ProfessionalsSection businessId={business.id} canManage={canManage} isOwner={business.role === 'owner'} />
     {ready ? <ShareBooking business={business} /> : <p className="rounded-xl bg-tint p-5">Tu link y QR van a aparecer cuando tengas al menos un servicio activo y horarios.</p>}
   </div>
 }
