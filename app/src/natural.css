@@ -30,6 +30,8 @@
 .natural-panel > .panel-nav button[aria-current="page"] { background: var(--tint); color: var(--link); }
 .natural-panel > .panel-nav button:active { transform: scale(.97); }
 .natural-panel-main { padding: 36px 8px 132px; display: flex; flex-direction: column; gap: 30px; }
+.business-management-list { display: flex; flex-direction: column; gap: 18px; }
+.business-management-section { padding: 26px 28px; border: 1px solid var(--border); border-radius: 22px; background: color-mix(in srgb, var(--surface) 72%, var(--bg)); }
 .natural-settings-plan-card { border: 1px solid var(--border); }
 .natural-settings-plan-card.is-free { border-color: #d6aaa5; background: #fce4e1; }
 .natural-settings-plan-card.is-pro { border-color: #a6c4dd; background: #e8f1f9; }
@@ -244,6 +246,8 @@
   .natural-business-button { order: 1; margin-left: 0; width: 100%; max-width: none; justify-content: flex-start; font-size: 12px; }
   .natural-business-button > span:first-of-type { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
   .natural-panel-main { padding: 28px 16px 132px; gap: 26px; }
+  .business-management-list { gap: 14px; }
+  .business-management-section { padding: 22px 20px; border-radius: 18px; }
   .natural-pro-offer { grid-template-columns: 1fr; gap: 20px; padding: 20px; }
   .natural-pro-offer-copy h2 { font-size: 24px; }
   .pro-nudge { right: 16px; bottom: 16px; }
