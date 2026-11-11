@@ -74,7 +74,7 @@ export function SettingsScreen({ business }: { business: Business }) {
   return <section className="settings-screen max-w-5xl">
     <p className="eyebrow">Ajustes</p>
     <h1 className="screen-title">Tu cuenta, a mano.</h1>
-    <div className="settings-sections divide-y divide-line">
+    <div className="settings-sections">
       <section className="settings-section">
         <h2 className="text-xl">Tu cuenta de Google</h2>
         <p className="break-words text-muted">{session?.user.email ?? 'Cargando tu cuenta…'}</p>

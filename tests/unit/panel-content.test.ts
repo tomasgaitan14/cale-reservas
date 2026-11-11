@@ -10,6 +10,8 @@ describe('contenido y honestidad del panel', () => {
   it('no expone un link ni QR antes de tener servicio y horarios', () => {
     const html = renderToStaticMarkup(createElement(BusinessScreen, { business, ready: false, onChanged: vi.fn(), onServices: vi.fn(), onHours: vi.fn() }))
     expect(html).toContain('cuando tengas al menos un servicio activo y horarios')
+    expect(html).toContain('Página y colores')
+    expect(html).toContain('Editar página')
     expect(html).not.toContain('Copiar link')
     expect(html).not.toContain('Guardar QR')
   })

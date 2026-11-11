@@ -10,8 +10,8 @@ import { ShareBooking } from '../components/ShareBooking.tsx'
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../components/ui.ts'
 import { defaultPreferences, savePreferences, type Preferences } from '../lib/preferences.ts'
 
-export function BusinessScreen({ business, ready, preferences, onPreferencesChanged, onChanged, onServices, onHours, onProfessionals }: {
-  business: Business; ready: boolean; preferences?: Preferences; onPreferencesChanged?: (value: Preferences) => void; onChanged: (value: Business) => void; onServices: () => void; onHours: () => void; onProfessionals?: () => void
+export function BusinessScreen({ business, ready, preferences, onPreferencesChanged, onChanged, onServices, onHours, onProfessionals, onBranding }: {
+  business: Business; ready: boolean; preferences?: Preferences; onPreferencesChanged?: (value: Preferences) => void; onChanged: (value: Business) => void; onServices: () => void; onHours: () => void; onProfessionals?: () => void; onBranding?: () => void
 }) {
   const canManage = !business.role || business.role === 'owner' || business.role === 'admin'
   const currentPreferences = preferences ?? defaultPreferences(business.id)
@@ -45,6 +45,7 @@ export function BusinessScreen({ business, ready, preferences, onPreferencesChan
       <section className="business-management-section"><h2 className="text-2xl">Tus servicios</h2><p className="my-4 text-muted">Qué ofrecés, cuánto dura y qué servicios están disponibles.</p><button className={SECONDARY_BUTTON} onClick={onServices}>Editar servicios</button></section>
       <section className="business-management-section"><h2 className="text-2xl">Tus horarios</h2><p className="my-4 text-muted">Días de atención, descansos y horarios de cada semana.</p><button className={SECONDARY_BUTTON} onClick={onHours}>Editar horarios</button></section>
       <section className="business-management-section"><h2 className="text-2xl">Tus profesionales</h2><p className="my-4 text-muted">Servicios asignados, permisos y acceso de cada persona de tu equipo.</p><button className={SECONDARY_BUTTON} onClick={() => onProfessionals?.()}>Editar profesionales</button></section>
+      <section className="business-management-section"><h2 className="text-2xl">Página y colores</h2><p className="my-4 text-muted">Personalizá el logo y los colores que ven tus clientes al reservar.</p><button className={SECONDARY_BUTTON} onClick={() => onBranding?.()}>Editar página</button></section>
       <section className="business-management-section"><h2 className="text-2xl">Agenda del equipo</h2><p className="my-4 text-muted">Definí si dos profesionales pueden tener turnos en el mismo horario.</p><label className="flex items-start gap-3 text-base"><input type="checkbox" className="mt-1 size-5 accent-[var(--color-link)]" checked={currentPreferences.allow_cross_professional_overlap} disabled={overlapBusy} onChange={async event => {
         const next = event.target.checked
         const previous = currentPreferences
@@ -54,7 +55,6 @@ export function BusinessScreen({ business, ready, preferences, onPreferencesChan
         finally { setOverlapBusy(false) }
       }} /><span><strong>Superponer turnos entre profesionales</strong><span className="mt-1 block text-sm text-muted">Si está activo, cada profesional puede recibir turnos simultáneos. Si lo desactivás, Cale reservará un solo turno por horario en todo el negocio.</span></span></label>{overlapError && <p role="alert" className="mt-3 text-warn">{overlapError}</p>}</section>
     </div></div>
-    <BusinessBranding businessId={business.id} name={business.name} />
     {ready ? <ShareBooking business={business} /> : <p className="rounded-xl bg-tint p-5">Tu link y QR van a aparecer cuando tengas al menos un servicio activo y horarios.</p>}
   </div>
 }
