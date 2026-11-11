@@ -1,4 +1,3 @@
-import { BusinessBranding } from '../components/BusinessBranding.tsx'
 import { useState, type FormEvent } from 'react'
 import type { Business } from '../lib/business.ts'
 import { supabase } from '../lib/supabase.ts'
