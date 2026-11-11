@@ -74,7 +74,8 @@ export function SettingsScreen({ business }: { business: Business }) {
   return <section className="settings-screen max-w-5xl">
     <p className="eyebrow">Ajustes</p>
     <h1 className="screen-title">Tu cuenta, a mano.</h1>
-    <div className="settings-sections divide-y divide-line">
+    <div className="settings-sections">
+      <div className="settings-column">
       <section className="settings-section">
         <h2 className="text-xl">Tu cuenta de Google</h2>
         <p className="break-words text-muted">{session?.user.email ?? 'Cargando tu cuenta…'}</p>
@@ -97,10 +98,13 @@ export function SettingsScreen({ business }: { business: Business }) {
         </div>
       </section> : null}
       <section className="settings-section"><h2 className="text-xl">¿Necesitás una mano?</h2><p className="text-muted">Podés escribirnos por consultas sobre tu cuenta o tus reservas.</p><button className={SECONDARY_BUTTON} onClick={() => { window.location.href = 'mailto:cale.turnos@gmail.com' }}>Contactar a Cale</button></section>
-      <section className="settings-section"><h2 className="text-xl">Notificaciones</h2><PushSettings businessId={business.id} /></section>
       <section className="settings-section"><h2 className="text-xl">Instalar Cale</h2><InstallPanel /></section>
+      </div>
+      <div className="settings-column">
+      <section className="settings-section"><h2 className="text-xl">Notificaciones</h2><PushSettings businessId={business.id} /></section>
       {canManage ? <section className="settings-section"><h2 className="text-xl">Eliminar cuenta y datos</h2><p className="text-muted">Eliminá tu cuenta, tu negocio, turnos, horarios, preferencias, logos y demás datos asociados de Cale.</p><button type="button" className={DELETE_BUTTON} onClick={() => { setDeleteError(''); setDeleteOpen(true) }}>Eliminar mi cuenta</button></section> : null}
       <section className="settings-section"><h2 className="text-xl">Privacidad y condiciones</h2><LegalLinks /></section>
+      </div>
     </div>
     {error && <p role="alert" className="text-warn">{error}</p>}
     {deleteOpen && <Modal title="Eliminar cuenta y datos" onClose={closeDelete}>
