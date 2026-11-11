@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const api=vi.hoisted(()=>({progress:vi.fn(),preferences:vi.fn(),savePreferences:vi.fn(),createService:vi.fn(),services:vi.fn(),hours:vi.fn(),saveHours:vi.fn()}))
 vi.mock('../../app/src/lib/supabase.ts',()=>({supabase:{auth:{signOut:vi.fn()}}}))
+vi.mock('../../app/src/lib/business.ts',()=>({fetchTeam:async()=>({members:[{user_id:'owner-demo',display_name:'Dueño de prueba',role:'owner'}],invitations:[]}),TeamLoadError:class extends Error{}}))
 vi.mock('../../app/src/lib/setup.ts',()=>({fetchSetupProgress:api.progress,SetupLoadError:class extends Error{}}))
 vi.mock('../../app/src/lib/preferences.ts',()=>({fetchPreferences:api.preferences,savePreferences:api.savePreferences,PreferencesError:class extends Error{}}))
 vi.mock('../../app/src/lib/services.ts',()=>({fetchServices:api.services,createService:api.createService,updateService:vi.fn(),deleteService:vi.fn(),ServiceLoadError:class extends Error{}}))
@@ -47,7 +48,7 @@ describe('alta guiada con avance persistido',()=>{
   await render();expect(container.textContent).toContain('Empecemos por un servicio')
   await addService();expect(container.textContent).toContain('Tus horarios')
   await click('Guardar y continuar')
-  expect(api.saveHours).toHaveBeenCalledWith(BUSINESS.id,expect.objectContaining({1:[{start:'09:00',end:'18:00'}],5:[{start:'09:00',end:'18:00'}],0:[],6:[]}))
+  expect(api.saveHours).toHaveBeenCalledWith(BUSINESS.id,'owner-demo',expect.objectContaining({1:[{start:'09:00',end:'18:00'}],5:[{start:'09:00',end:'18:00'}],0:[],6:[]}))
   expect(container.textContent).not.toContain('Un recordatorio,menos olvidos.')
   expect(preferences.reminders_reviewed).toBe(false)
   expect(container.textContent).toContain('Tu agenda ya tiene su lugar')
