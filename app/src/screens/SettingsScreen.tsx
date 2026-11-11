@@ -71,7 +71,7 @@ export function SettingsScreen({ business }: { business: Business }) {
     try { await deleteAccount(); window.location.assign('/') }
     catch (cause) { setDeleteError(cause instanceof Error ? cause.message : 'No pudimos eliminar tu cuenta. Probá nuevamente.'); setDeleteBusy(false) }
   }
-  return <section className="settings-screen max-w-2xl">
+  return <section className="settings-screen max-w-5xl">
     <p className="eyebrow">Ajustes</p>
     <h1 className="screen-title">Tu cuenta, a mano.</h1>
     <div className="settings-sections divide-y divide-line">

@@ -6,9 +6,10 @@ export interface Preferences {
   whatsapp_waitlist: boolean
   reminders_reviewed: boolean
   onboarding_completed: boolean
+  allow_cross_professional_overlap: boolean
 }
 export function defaultPreferences(businessId: string): Preferences {
-  return { business_id: businessId, reminder_hours: 24, whatsapp_waitlist: false, reminders_reviewed: false, onboarding_completed: false }
+  return { business_id: businessId, reminder_hours: 24, whatsapp_waitlist: false, reminders_reviewed: false, onboarding_completed: false, allow_cross_professional_overlap: true }
 }
 export class PreferencesError extends Error {
   constructor(detail: string) { super(detail); this.name = 'PreferencesError' }

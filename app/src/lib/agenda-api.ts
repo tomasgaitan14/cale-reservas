@@ -76,6 +76,7 @@ export interface TimeBlockInput {
   endDate: string
   endTime: string
   reason: string
+  professionalId?: string
 }
 
 export async function createTimeBlock(businessId: string, input: TimeBlockInput): Promise<AgendaResult> {
@@ -85,6 +86,7 @@ export async function createTimeBlock(businessId: string, input: TimeBlockInput)
     p_start_time: input.startTime,
     p_end_date: input.endDate,
     p_end_time: input.endTime,
+    p_professional_id: input.professionalId,
     p_reason: input.reason,
   })
   return toResult(error)

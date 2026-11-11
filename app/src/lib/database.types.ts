@@ -279,6 +279,7 @@ export type Database = {
         Row: {
           business_id: string
           onboarding_completed: boolean
+          allow_cross_professional_overlap: boolean
           reminder_hours: number
           reminders_reviewed: boolean
           whatsapp_waitlist: boolean
@@ -286,6 +287,7 @@ export type Database = {
         Insert: {
           business_id: string
           onboarding_completed?: boolean
+          allow_cross_professional_overlap?: boolean
           reminder_hours?: number
           reminders_reviewed?: boolean
           whatsapp_waitlist?: boolean
@@ -293,6 +295,7 @@ export type Database = {
         Update: {
           business_id?: string
           onboarding_completed?: boolean
+          allow_cross_professional_overlap?: boolean
           reminder_hours?: number
           reminders_reviewed?: boolean
           whatsapp_waitlist?: boolean
@@ -743,6 +746,7 @@ export type Database = {
           day_of_week: number
           end_time: string
           id: string
+          professional_id: string
           start_time: string
         }
         Insert: {
@@ -750,6 +754,7 @@ export type Database = {
           day_of_week: number
           end_time: string
           id?: string
+          professional_id: string
           start_time: string
         }
         Update: {
@@ -757,6 +762,7 @@ export type Database = {
           day_of_week?: number
           end_time?: string
           id?: string
+          professional_id?: string
           start_time?: string
         }
         Relationships: [
@@ -766,6 +772,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "businesses"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "working_hours_business_professional_fk"
+            columns: ["business_id", "professional_id"]
+            isOneToOne: false
+            referencedRelation: "business_members"
+            referencedColumns: ["business_id", "user_id"]
           },
         ]
       }
@@ -926,7 +939,7 @@ export type Database = {
         Returns: undefined
       }
       replace_working_hours: {
-        Args: { p_business_id: string; p_ranges: Json }
+        Args: { p_business_id: string; p_professional_id?: string; p_ranges: Json }
         Returns: undefined
       }
       request_push_test: { Args: { p_endpoint: string }; Returns: undefined }

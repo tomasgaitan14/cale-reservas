@@ -12,7 +12,7 @@ beforeEach(() => {
 describe('preferencias persistidas por negocio', () => {
   it('una cuenta nueva empieza sin lista de espera ni alta completada', async () => {
     api.maybeSingle.mockResolvedValue({ data: null, error: null })
-    expect(await fetchPreferences('business-demo')).toEqual({ business_id: 'business-demo', reminder_hours: 24, whatsapp_waitlist: false, reminders_reviewed: false, onboarding_completed: false })
+    expect(await fetchPreferences('business-demo')).toEqual({ business_id: 'business-demo', reminder_hours: 24, whatsapp_waitlist: false, reminders_reviewed: false, onboarding_completed: false, allow_cross_professional_overlap: true })
     expect(api.eq).toHaveBeenCalledWith('business_id', 'business-demo')
   })
   it('retoma las preferencias guardadas sin reemplazarlas por los valores iniciales', async () => {

@@ -12,8 +12,8 @@
 .natural-theme button.border-2.border-ink { border-width: 1px; border-color: var(--border); border-radius: 14px; }
 .natural-theme .screen-title { font-size: clamp(30px,3.2vw,38px); line-height: 1.12; }
 .natural-theme .eyebrow { font-size: 13px; letter-spacing: .08em; margin-bottom: 12px; }
-.natural-theme .warm-form { border-color: var(--border); border-radius: 16px; padding: 28px; gap: 22px; }
-.natural-theme .warm-split { gap: 70px; }
+.natural-theme .warm-form { border-color: var(--border); border-radius: 16px; padding: 30px; gap: 24px; }
+.natural-theme .warm-split { gap: 82px; }
 .natural-shell { max-width: 1250px; }
 .natural-shell-header { border-bottom: 1px solid var(--border); margin-bottom: 36px; }
 .natural-panel { max-width: 1480px; margin: auto; padding: 22px 32px 0; }
@@ -29,7 +29,9 @@
 .natural-panel > .panel-nav button { display: flex; flex: 1 1 0; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; min-height: 56px; padding: 8px 10px; border-radius: 15px; color: var(--muted); font-size: 12px; font-weight: 750; line-height: 1.1; cursor: pointer; transition: background-color .2s ease, color .2s ease, transform .2s ease; }
 .natural-panel > .panel-nav button[aria-current="page"] { background: var(--tint); color: var(--link); }
 .natural-panel > .panel-nav button:active { transform: scale(.97); }
-.natural-panel-main { padding: 34px 8px 132px; display: flex; flex-direction: column; gap: 24px; }
+.natural-panel-main { padding: 36px 8px 132px; display: flex; flex-direction: column; gap: 30px; }
+.business-management-list { display: flex; flex-direction: column; gap: 18px; }
+.business-management-section { padding: 26px 28px; border: 1px solid var(--border); border-radius: 22px; background: color-mix(in srgb, var(--surface) 72%, var(--bg)); }
 .natural-settings-plan-card { border: 1px solid var(--border); }
 .natural-settings-plan-card.is-free { border-color: #d6aaa5; background: #fce4e1; }
 .natural-settings-plan-card.is-pro { border-color: #a6c4dd; background: #e8f1f9; }
@@ -222,7 +224,7 @@
   .natural-panel { padding: 16px 22px 0; }
   .natural-panel-header { gap: 12px; padding: 14px; }
   .natural-business-button { font-size: 13px; max-width: 160px; }
-  .natural-panel-main { padding: 28px 3px 45px; }
+  .natural-panel-main { padding: 28px 3px 132px; }
   .natural-agenda-layout { grid-template-columns: minmax(0,1fr) 255px; gap: 20px; }
   .natural-agenda-heading { align-items: start; }
   .natural-agenda-actions { max-width: 210px; }
@@ -235,15 +237,17 @@
 }
 @media (max-width:767px) {
   .natural-theme .screen-title { font-size: 29px; }
-  .natural-theme .warm-split { grid-template-columns: 1fr; gap: 28px; }
-  .natural-theme .warm-form { padding: 22px 18px; gap: 20px; }
+  .natural-theme .warm-split { grid-template-columns: 1fr; gap: 40px; }
+  .natural-theme .warm-form { padding: 24px 20px; gap: 22px; }
   .natural-shell-header { margin-bottom: 28px; }
   .natural-panel { padding: 0; }
   .natural-panel-header { margin: 0; padding: 18px 16px 0; border: 0; border-radius: 0; flex-wrap: wrap; gap: 18px; }
   .natural-panel-header > .cale-brand { order: 0; }
   .natural-business-button { order: 1; margin-left: 0; width: 100%; max-width: none; justify-content: flex-start; font-size: 12px; }
   .natural-business-button > span:first-of-type { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
-  .natural-panel-main { padding: 27px 16px 132px; }
+  .natural-panel-main { padding: 28px 16px 132px; gap: 26px; }
+  .business-management-list { gap: 14px; }
+  .business-management-section { padding: 22px 20px; border-radius: 18px; }
   .natural-pro-offer { grid-template-columns: 1fr; gap: 20px; padding: 20px; }
   .natural-pro-offer-copy h2 { font-size: 24px; }
   .pro-nudge { right: 16px; bottom: 16px; }
@@ -338,4 +342,45 @@
   .natural-flow-message { max-width: 100%; }
   .natural-flow-message p { font-size: 14px; }
   .natural-flow-confirmed { font-size: 14px; }
+}
+
+/* Agenda: encabezado de trabajo compacto y controles agrupados por tarea. */
+.agenda-workspace { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.agenda-workspace .natural-agenda-heading { gap: 20px; }
+.agenda-workspace .agenda-heading-copy { display: flex; flex-direction: column; gap: 6px; }
+.natural-theme .agenda-workspace .screen-title { font-size: 28px; line-height: 1.2; letter-spacing: -.035em; }
+.agenda-workspace .agenda-heading-copy .agenda-today { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
+.agenda-overview { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; padding: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.agenda-workspace .natural-agenda-counts { margin: 0; gap: 20px; font-size: 14px; }
+.agenda-workspace .natural-agenda-counts p { display: flex; align-items: baseline; gap: 8px; }
+.agenda-workspace .natural-agenda-counts strong { margin: 0; font-size: 15px; }
+.agenda-workspace .natural-agenda-counts > p + p { padding-left: 20px; }
+.agenda-team-filter { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--muted); font-size: 14px; font-weight: 600; }
+.agenda-team-filter select { width: 220px; min-width: 0; min-height: 44px; padding: 10px 36px 10px 12px; border: 1px solid var(--border); border-radius: 10px; background-color: var(--surface); color: var(--text); font-size: 16px; cursor: pointer; }
+.agenda-workspace .natural-agenda-toolbar { gap: 12px; padding: 14px 16px; }
+.agenda-workspace .natural-agenda-toolbar button { min-height: 44px; height: 44px; }
+.agenda-workspace .natural-agenda-toolbar > div:first-child { flex: none; min-width: 0; flex-wrap: nowrap; }
+.agenda-workspace .natural-agenda-toolbar .agenda-visible-date { flex: 1; margin: 0; line-height: 1.4; }
+.agenda-workspace .natural-agenda-sheet > .flex.flex-col { padding: 24px; }
+@media (max-width: 1100px) {
+  .agenda-workspace .natural-agenda-actions { max-width: none; }
+  .agenda-workspace .natural-agenda-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 767px) {
+  .agenda-workspace { gap: 16px; }
+  .agenda-workspace .natural-agenda-heading { gap: 16px; }
+  .natural-theme .agenda-workspace .screen-title { font-size: 26px; }
+  .agenda-workspace .natural-agenda-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); width: 100%; gap: 10px; }
+  .agenda-workspace .natural-agenda-actions > button { width: 100%; padding: 10px 8px; min-height: 46px; height: auto; font-size: 14px; border-radius: 12px; }
+  .agenda-workspace .natural-agenda-actions > span { grid-column: 1 / -1; }
+  .agenda-overview { align-items: stretch; gap: 14px; padding: 14px 0; }
+  .agenda-team-filter { justify-content: space-between; width: 100%; }
+  .agenda-team-filter select { flex: 1; max-width: 240px; width: 0; }
+  .agenda-workspace .natural-agenda-counts { gap: 16px; }
+  .agenda-workspace .natural-agenda-counts > p + p { padding-left: 16px; }
+  .agenda-workspace .natural-agenda-toolbar { padding: 12px; }
+  .agenda-workspace .natural-agenda-toolbar > div:first-child { gap: 6px; }
+  .agenda-workspace .natural-agenda-toolbar .agenda-visible-date { order: -1; flex: 1 1 100%; width: 100%; font-size: 15px; }
+  .agenda-workspace .natural-agenda-toolbar [aria-label="Vista de la agenda"] { margin-left: auto; }
+  .agenda-workspace .natural-agenda-toolbar [aria-label="Vista de la agenda"] button { padding: 6px 8px; font-size: 14px; }
 }

@@ -9,7 +9,7 @@ import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../components/ui.ts'
 import { AgendaLoadError, fetchAgenda, fetchDayCounts, type AgendaData } from '../lib/agenda-api.ts'
 import { dayItems, minutesToTime, visibleRange, weekDates, type AgendaItem } from '../lib/agenda.ts'
 import { addDays, dayOfMonth, formatLongDate, monthName, todayInArgentina } from '../lib/dates.ts'
-import { emptyWeek, type WeekHours } from '../lib/hours.ts'
+import { emptyWeek, hasAnyHours, type WeekHours } from '../lib/hours.ts'
 import { fetchHours, HoursLoadError } from '../lib/hours-api.ts'
 import { fetchServices, ServiceLoadError, type Service } from '../lib/services.ts'
 import { fetchTeam, TeamLoadError, type Business, type TeamMember } from '../lib/business.ts'
@@ -62,6 +62,7 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
   const [branding, setBranding] = useState<Branding>(DEFAULT_BRANDING)
   const [selectedProfessionalId, setSelectedProfessionalId] = useState('all')
   const canManageTeam = business.role === 'owner' || business.role === 'admin'
+  const isProfessional = business.role === 'professional'
   useEffect(() => {
     let active = true
     setCountsError(false)
@@ -100,7 +101,7 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
   // El horario y los servicios se leen una vez: sirven para dibujar la grilla y para los formularios
   useEffect(() => {
     let cancelled = false
-    Promise.all([fetchHours(business.id), fetchServices(business.id)])
+    Promise.all([fetchHours(business.id, selectedProfessionalId === 'all' ? undefined : selectedProfessionalId), fetchServices(business.id)])
       .then(([loadedHours, loadedServices]) => {
         if (cancelled) return
         setHours(loadedHours)
@@ -113,7 +114,7 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
     return () => {
       cancelled = true
     }
-  }, [business.id])
+  }, [business.id, selectedProfessionalId])
 
   useEffect(() => {
     let cancelled = false
@@ -181,9 +182,9 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
       : `${dayOfMonth(firstDate)} al ${dayOfMonth(lastDate)} de ${monthName(lastDate)}`
 
   return (
-    <div className="flex flex-col gap-6 pt-2 md:pt-6">
+    <div className="agenda-workspace">
       <div className="natural-agenda-heading rise-in flex flex-wrap items-center justify-between gap-4" style={{ '--i': 0 } as CSSProperties}>
-        <div><p className="eyebrow">{capitalize(formatLongDate(today))}</p><h1 className="screen-title">Tu día, en orden.</h1><p className="mt-3 text-lg text-muted">Todo lo que necesitás para atender, en un lugar.</p></div>
+        <div className="agenda-heading-copy"><h1 className="screen-title">Tu agenda</h1><p className="agenda-today">{capitalize(formatLongDate(today))}</p></div>
       <div className="natural-agenda-actions flex flex-wrap items-center gap-3" style={{ '--i': 1 } as CSSProperties}>
         <button
           type="button"
@@ -214,12 +215,13 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
         </button>}
       </div>
 
+      <div className="agenda-overview">
       <div className="natural-agenda-counts flex flex-wrap gap-6 text-base" aria-live="polite">
         {countsError ? <p className="text-muted">No pudimos cargar los contadores.</p> : counts ? <><p>Hoy <strong className="ml-2">{counts.today} {counts.today === 1 ? 'turno' : 'turnos'}</strong></p><p>Mañana <strong className="ml-2">{counts.tomorrow} {counts.tomorrow === 1 ? 'turno' : 'turnos'}</strong></p></> : <p role="status" className="text-muted">Cargando los turnos de hoy y mañana…</p>}
       </div>
 
       {canManageTeam && team.length > 0 ? (
-        <label className="flex max-w-sm flex-col gap-2 text-sm font-semibold text-muted">
+        <label className="agenda-team-filter">
           Agenda de
           <select className="field" value={selectedProfessionalId} onChange={event => setSelectedProfessionalId(event.target.value)}>
             <option value="all">Todo el equipo</option>
@@ -227,9 +229,15 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
           </select>
         </label>
       ) : null}
+      </div>
 
-
-      {services.length === 0 && !setupFailed ? (
+      {!setupFailed && isProfessional && (services.length === 0 || !hasAnyHours(hours)) ? (
+        <div className="flex flex-col gap-1 rounded-[12px] bg-tint p-3 text-base" role="status">
+          {services.length === 0 ? <p>Contactá al administrador del negocio para agregar servicios a tu agenda.</p> : null}
+          {!hasAnyHours(hours) ? <p>Contactá al administrador del negocio para agregar tus horarios de atención.</p> : null}
+        </div>
+      ) : null}
+      {!setupFailed && !isProfessional && services.length === 0 ? (
         <p className="rounded-[12px] bg-tint p-3 text-base">Para cargar turnos a mano, primero cargá un servicio.</p>
       ) : null}
 
@@ -245,10 +253,8 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
           <button type="button" className={SECONDARY_BUTTON} onClick={() => setDate(today)}>
             Hoy
           </button>
-          <p className="ml-2 font-head text-lg font-extrabold tracking-tight" aria-live="polite">
-            {title}
-          </p>
         </div>
+        <p className="agenda-visible-date font-head font-extrabold tracking-tight" aria-live="polite">{title}</p>
         <div className="flex gap-1 rounded-[14px] bg-line p-1" role="group" aria-label="Vista de la agenda">
           {(['day', 'week'] as const).map(option => (
             <button
@@ -318,6 +324,9 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
             businessId={business.id}
             initialDate={dialog.date}
             initialTime={dialog.time}
+            team={team}
+            canManageTeam={canManageTeam}
+            initialProfessionalId={selectedProfessionalId === 'all' ? undefined : selectedProfessionalId}
             onSaved={() => done('Horario bloqueado.')}
             onCancel={() => setDialog(null)}
           />
