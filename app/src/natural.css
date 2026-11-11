@@ -224,7 +224,7 @@
   .natural-panel { padding: 16px 22px 0; }
   .natural-panel-header { gap: 12px; padding: 14px; }
   .natural-business-button { font-size: 13px; max-width: 160px; }
-  .natural-panel-main { padding: 28px 3px 45px; }
+  .natural-panel-main { padding: 28px 3px 132px; }
   .natural-agenda-layout { grid-template-columns: minmax(0,1fr) 255px; gap: 20px; }
   .natural-agenda-heading { align-items: start; }
   .natural-agenda-actions { max-width: 210px; }
@@ -342,4 +342,45 @@
   .natural-flow-message { max-width: 100%; }
   .natural-flow-message p { font-size: 14px; }
   .natural-flow-confirmed { font-size: 14px; }
+}
+
+/* Agenda: encabezado de trabajo compacto y controles agrupados por tarea. */
+.agenda-workspace { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.agenda-workspace .natural-agenda-heading { gap: 20px; }
+.agenda-workspace .agenda-heading-copy { display: flex; flex-direction: column; gap: 6px; }
+.natural-theme .agenda-workspace .screen-title { font-size: 28px; line-height: 1.2; letter-spacing: -.035em; }
+.agenda-workspace .agenda-heading-copy .agenda-today { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
+.agenda-overview { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; padding: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.agenda-workspace .natural-agenda-counts { margin: 0; gap: 20px; font-size: 14px; }
+.agenda-workspace .natural-agenda-counts p { display: flex; align-items: baseline; gap: 8px; }
+.agenda-workspace .natural-agenda-counts strong { margin: 0; font-size: 15px; }
+.agenda-workspace .natural-agenda-counts > p + p { padding-left: 20px; }
+.agenda-team-filter { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--muted); font-size: 14px; font-weight: 600; }
+.agenda-team-filter select { width: 220px; min-width: 0; min-height: 44px; padding: 10px 36px 10px 12px; border: 1px solid var(--border); border-radius: 10px; background-color: var(--surface); color: var(--text); font-size: 16px; cursor: pointer; }
+.agenda-workspace .natural-agenda-toolbar { gap: 12px; padding: 14px 16px; }
+.agenda-workspace .natural-agenda-toolbar button { min-height: 44px; height: 44px; }
+.agenda-workspace .natural-agenda-toolbar > div:first-child { flex: 1; min-width: 0; }
+.agenda-workspace .natural-agenda-toolbar p { margin: 0 0 0 8px; line-height: 1.4; }
+.agenda-workspace .natural-agenda-sheet > .flex.flex-col { padding: 24px; }
+@media (max-width: 1100px) {
+  .agenda-workspace .natural-agenda-actions { max-width: none; }
+  .agenda-workspace .natural-agenda-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 767px) {
+  .agenda-workspace { gap: 16px; }
+  .agenda-workspace .natural-agenda-heading { gap: 16px; }
+  .natural-theme .agenda-workspace .screen-title { font-size: 26px; }
+  .agenda-workspace .natural-agenda-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); width: 100%; gap: 10px; }
+  .agenda-workspace .natural-agenda-actions > button { width: 100%; padding: 10px 8px; min-height: 46px; height: auto; font-size: 14px; border-radius: 12px; }
+  .agenda-workspace .natural-agenda-actions > span { grid-column: 1 / -1; }
+  .agenda-overview { align-items: stretch; gap: 14px; padding: 14px 0; }
+  .agenda-team-filter { justify-content: space-between; width: 100%; }
+  .agenda-team-filter select { flex: 1; max-width: 240px; width: 0; }
+  .agenda-workspace .natural-agenda-counts { gap: 16px; }
+  .agenda-workspace .natural-agenda-counts > p + p { padding-left: 16px; }
+  .agenda-workspace .natural-agenda-toolbar { padding: 12px; }
+  .agenda-workspace .natural-agenda-toolbar > div:first-child { display: grid; grid-template-columns: 44px 44px auto; flex: 1 1 100%; gap: 8px; }
+  .agenda-workspace .natural-agenda-toolbar p { grid-column: 1 / -1; margin: 4px 0 0; width: auto; font-size: 15px; }
+  .agenda-workspace .natural-agenda-toolbar [aria-label="Vista de la agenda"] { width: 100%; }
+  .agenda-workspace .natural-agenda-toolbar [aria-label="Vista de la agenda"] button { flex: 1; font-size: 14px; }
 }

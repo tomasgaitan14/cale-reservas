@@ -182,9 +182,9 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
       : `${dayOfMonth(firstDate)} al ${dayOfMonth(lastDate)} de ${monthName(lastDate)}`
 
   return (
-    <div className="flex flex-col gap-6 pt-2 md:pt-6">
+    <div className="agenda-workspace">
       <div className="natural-agenda-heading rise-in flex flex-wrap items-center justify-between gap-4" style={{ '--i': 0 } as CSSProperties}>
-        <div><p className="eyebrow">{capitalize(formatLongDate(today))}</p><h1 className="screen-title">Tu día, en orden.</h1><p className="mt-3 text-lg text-muted">Todo lo que necesitás para atender, en un lugar.</p></div>
+        <div className="agenda-heading-copy"><h1 className="screen-title">Tu agenda</h1><p className="agenda-today">{capitalize(formatLongDate(today))}</p></div>
       <div className="natural-agenda-actions flex flex-wrap items-center gap-3" style={{ '--i': 1 } as CSSProperties}>
         <button
           type="button"
@@ -215,12 +215,13 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
         </button>}
       </div>
 
+      <div className="agenda-overview">
       <div className="natural-agenda-counts flex flex-wrap gap-6 text-base" aria-live="polite">
         {countsError ? <p className="text-muted">No pudimos cargar los contadores.</p> : counts ? <><p>Hoy <strong className="ml-2">{counts.today} {counts.today === 1 ? 'turno' : 'turnos'}</strong></p><p>Mañana <strong className="ml-2">{counts.tomorrow} {counts.tomorrow === 1 ? 'turno' : 'turnos'}</strong></p></> : <p role="status" className="text-muted">Cargando los turnos de hoy y mañana…</p>}
       </div>
 
       {canManageTeam && team.length > 0 ? (
-        <label className="flex max-w-sm flex-col gap-2 text-sm font-semibold text-muted">
+        <label className="agenda-team-filter">
           Agenda de
           <select className="field" value={selectedProfessionalId} onChange={event => setSelectedProfessionalId(event.target.value)}>
             <option value="all">Todo el equipo</option>
@@ -228,7 +229,7 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
           </select>
         </label>
       ) : null}
-
+      </div>
 
       {!setupFailed && isProfessional && (services.length === 0 || !hasAnyHours(hours)) ? (
         <div className="flex flex-col gap-1 rounded-[12px] bg-tint p-3 text-base" role="status">
