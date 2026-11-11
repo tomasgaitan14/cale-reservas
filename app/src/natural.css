@@ -359,8 +359,8 @@
 .agenda-team-filter select { width: 220px; min-width: 0; min-height: 44px; padding: 10px 36px 10px 12px; border: 1px solid var(--border); border-radius: 10px; background-color: var(--surface); color: var(--text); font-size: 16px; cursor: pointer; }
 .agenda-workspace .natural-agenda-toolbar { gap: 12px; padding: 14px 16px; }
 .agenda-workspace .natural-agenda-toolbar button { min-height: 44px; height: 44px; }
-.agenda-workspace .natural-agenda-toolbar > div:first-child { flex: 1; min-width: 0; }
-.agenda-workspace .natural-agenda-toolbar p { margin: 0 0 0 8px; line-height: 1.4; }
+.agenda-workspace .natural-agenda-toolbar > div:first-child { flex: none; min-width: 0; flex-wrap: nowrap; }
+.agenda-workspace .natural-agenda-toolbar .agenda-visible-date { flex: 1; margin: 0; line-height: 1.4; }
 .agenda-workspace .natural-agenda-sheet > .flex.flex-col { padding: 24px; }
 @media (max-width: 1100px) {
   .agenda-workspace .natural-agenda-actions { max-width: none; }
@@ -379,8 +379,8 @@
   .agenda-workspace .natural-agenda-counts { gap: 16px; }
   .agenda-workspace .natural-agenda-counts > p + p { padding-left: 16px; }
   .agenda-workspace .natural-agenda-toolbar { padding: 12px; }
-  .agenda-workspace .natural-agenda-toolbar > div:first-child { display: grid; grid-template-columns: 44px 44px auto; flex: 1 1 100%; gap: 8px; }
-  .agenda-workspace .natural-agenda-toolbar p { grid-column: 1 / -1; margin: 4px 0 0; width: auto; font-size: 15px; }
-  .agenda-workspace .natural-agenda-toolbar [aria-label="Vista de la agenda"] { width: 100%; }
-  .agenda-workspace .natural-agenda-toolbar [aria-label="Vista de la agenda"] button { flex: 1; font-size: 14px; }
+  .agenda-workspace .natural-agenda-toolbar > div:first-child { gap: 6px; }
+  .agenda-workspace .natural-agenda-toolbar .agenda-visible-date { order: -1; flex: 1 1 100%; width: 100%; font-size: 15px; }
+  .agenda-workspace .natural-agenda-toolbar [aria-label="Vista de la agenda"] { margin-left: auto; }
+  .agenda-workspace .natural-agenda-toolbar [aria-label="Vista de la agenda"] button { padding: 6px 8px; font-size: 14px; }
 }

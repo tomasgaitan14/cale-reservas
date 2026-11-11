@@ -253,10 +253,8 @@ export function AgendaScreen({ business, onBack, aside }: AgendaScreenProps) {
           <button type="button" className={SECONDARY_BUTTON} onClick={() => setDate(today)}>
             Hoy
           </button>
-          <p className="ml-2 font-head text-lg font-extrabold tracking-tight" aria-live="polite">
-            {title}
-          </p>
         </div>
+        <p className="agenda-visible-date font-head font-extrabold tracking-tight" aria-live="polite">{title}</p>
         <div className="flex gap-1 rounded-[14px] bg-line p-1" role="group" aria-label="Vista de la agenda">
           {(['day', 'week'] as const).map(option => (
             <button
