@@ -101,6 +101,7 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
     setDuration(service.duration_minutes)
     setProfessionalId(service.professional_id)
     setErrors({})
+    window.requestAnimationFrame(() => document.getElementById('service-name')?.focus())
   }
 
   const durationOptions = [...new Set([...DURATION_OPTIONS_MINUTES, duration])]

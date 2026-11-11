@@ -119,7 +119,7 @@ export function HoursScreen({ business, onBack, onContinue }: HoursScreenProps) 
           {canManage && team.length > 0 ? (
             <label className="hours-professional-filter flex flex-col gap-2 text-sm font-semibold text-muted">
               Horarios de
-              <select className="field" value={professionalId} onChange={event => { setProfessionalId(event.target.value); setMessage(null) }}>
+              <select className="field" value={professionalId} onChange={event => { setProfessionalId(event.target.value); setMessage(null); setProblems({}) }}>
                 {team.map(member => <option key={member.user_id} value={member.user_id}>{member.display_name || member.email || 'Profesional'}</option>)}
               </select>
             </label>

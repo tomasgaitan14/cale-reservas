@@ -152,7 +152,7 @@ function BookingFlow({ slug, info, onBookAgain }: BookingFlowProps) {
 
   const bookable = info.services.length > 0 && info.open_days.length > 0
 
-  return <div className="warm-split pt-4 md:pt-10">
+  return <div className="public-booking-flow warm-split pt-4 md:pt-10">
     <aside className="flex flex-col gap-6 md:sticky md:top-8">
       <p className="eyebrow">{info.name}</p>
       <h1 className={`screen-title ${serviceId ? 'hidden md:block' : ''}`}>Un turno que te quede bien.</h1>
