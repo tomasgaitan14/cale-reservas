@@ -19,7 +19,7 @@ export function TextField({ id, label, hint, error, prefix, preview, ...inputPro
   const describedBy = [hint ? hintId : null, preview ? `${id}-preview` : null, error ? errorId : null].filter(Boolean).join(' ') || undefined
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="form-field flex min-w-0 flex-col gap-2">
       <label htmlFor={id} className="font-head text-base font-extrabold tracking-tight">
         {label}
       </label>

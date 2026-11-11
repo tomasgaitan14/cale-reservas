@@ -81,7 +81,7 @@ export function AppointmentForm({ businessId, services, initialDate, initialTime
       />
 
       <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-end gap-3">
+        <div className="date-time-row flex flex-wrap items-end gap-3">
           <div className="min-w-[11rem] flex-1">
             <TextField
               id="appointment-date"

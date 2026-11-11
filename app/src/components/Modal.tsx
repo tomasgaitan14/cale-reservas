@@ -26,10 +26,10 @@ export function Modal({ title, onClose, children }: ModalProps) {
       onClick={event => {
         if (event.target === dialogRef.current) onClose()
       }}
-      className="m-auto max-h-[90dvh] w-[min(34rem,calc(100vw-2rem))] overflow-y-auto rounded-[1.75rem] bg-bg p-0 text-fg shadow-soft backdrop:bg-ink/50"
+      className="panel-dialog m-auto max-h-[90dvh] w-[min(34rem,calc(100vw-2rem))] overflow-y-auto rounded-[1.75rem] bg-bg p-0 text-fg shadow-soft backdrop:bg-ink/50"
     >
-      <div className="flex flex-col gap-5 p-6 md:p-8">
-        <div className="flex items-start justify-between gap-4">
+      <div className="dialog-body flex flex-col gap-5 p-6 md:p-8">
+        <div className="dialog-heading flex items-start justify-between gap-4">
           <h2 id={titleId} className="text-[1.5rem]">
             {title}
           </h2>

@@ -79,7 +79,7 @@ export function ProfessionalsSection({ businessId, plan, canManage, isOwner }: P
     } finally { setBusy(false) }
   }
 
-  return <section className="professionals-section min-w-0 border-t border-line pt-8" aria-labelledby="professionals-title">
+  return <section className="professionals-section min-w-0" aria-labelledby="professionals-title">
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div>
         <p className="eyebrow">Equipo</p>
@@ -92,7 +92,7 @@ export function ProfessionalsSection({ businessId, plan, canManage, isOwner }: P
       </button>
     </div>
 
-    {canManage ? <form className="mt-6 grid gap-4 rounded-[1.25rem] border border-line bg-surface p-5 md:grid-cols-[1fr_1fr_0.8fr_auto] md:items-end" onSubmit={submit}>
+    {canManage ? <form className="team-invite-form mt-6 grid gap-4 rounded-[1.25rem] border border-line bg-surface p-5" onSubmit={submit}>
       <TextField id="professional-name" label="Nombre" placeholder="Nombre del profesional" value={name} onChange={event => setName(event.target.value)} required />
       <TextField id="professional-email" label="Correo de Google" type="email" placeholder="nombre@correo.com" value={email} onChange={event => setEmail(event.target.value)} required />
       {isOwner ? <SelectField id="professional-role" label="Permisos" value={role} options={[{ value: 'professional', label: 'Profesional' }, { value: 'admin', label: 'Administrador' }]} onChange={event => setRole(event.target.value as Exclude<TeamRole, 'owner'>)} /> : <input type="hidden" value="professional" readOnly />}

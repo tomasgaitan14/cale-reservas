@@ -1,5 +1,14 @@
 # Cale: contexto para sesiones enfocadas
 
+## Revisión UX/UI del 11/11/2026
+
+La auditoría visual abarca editores de servicios, horarios, profesionales,
+personalización, compartir/QR, Ajustes y modales, además de Agenda y recorrido
+público. Se trabaja en dev antes de promover a producción. Cobertura, hallazgos
+y limitaciones documentados en `docs/qa-ui-2026-11-11.md`: distinguir QA visual
+real de revisión por código, especialmente en roles y estados Pro no disponibles.
+No afirmar que se probaron todos los estados por revisar solo la pantalla inicial.
+
 Actualizado: 10/11/2026. Leer también las preferencias de colaboración en CLAUDE.md (archivo local, fuera de Git).
 
 ## Estado consolidado al 10/11/2026
