@@ -406,6 +406,9 @@
 .natural-panel .natural-settings-plan-card svg { flex: none; }
 .natural-panel .natural-settings-plan-card p { font-size: 14px; }
 .natural-panel .settings-section:has(button.bg-warn) { border-color: #d6aaa5; }
+@media (min-width: 768px) {
+  .natural-panel .settings-section:has(.install-settings) { display: none; }
+}
 .natural-panel .business-management-section { display: flex; flex-direction: column; align-items: start; gap: 12px; padding: 24px; border-radius: 16px; }
 .natural-panel .business-management-section h2 { font-size: 21px; }
 .natural-panel .business-management-section > p { margin: 0; font-size: 15px; line-height: 1.6; }
