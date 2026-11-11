@@ -43,6 +43,7 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
   const [skipped, setSkipped] = useState(false)
   const [finishing, setFinishing] = useState(false)
   useEffect(() => { setBusiness(initialBusiness) }, [initialBusiness])
+  useEffect(() => { window.scrollTo(0, 0) }, [tab, editor])
   useEffect(() => {
     const isPro = business.plan === 'pro'
     setTab(previous => previous === 'reminders' && !isPro ? 'agenda' : currentTab(isPro, business.role))

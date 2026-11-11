@@ -182,8 +182,8 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
   </section>
 
   return (
-    <div className="flex flex-col gap-8 pt-2 md:pt-6">
-      <div className="rise-in flex flex-wrap items-center justify-between gap-4" style={{ '--i': 0 } as CSSProperties}>
+    <div className="panel-editor services-editor">
+      <div className="panel-page-header rise-in flex flex-wrap items-center justify-between gap-4" style={{ '--i': 0 } as CSSProperties}>
         <h1 className="text-[1.875rem] md:text-[2.5rem]">{onContinue ? 'Empecemos por un servicio.' : 'Tus servicios'}</h1>
         <button type="button" className={SECONDARY_BUTTON} onClick={onBack}>
           <ArrowLeft weight="bold" className="size-5" aria-hidden="true" />
@@ -191,7 +191,7 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
         </button>
       </div>
 
-      <div className="grid items-start gap-8 md:grid-cols-[0.9fr_1.1fr] md:gap-14">
+      <div className="services-layout">
         {editorForm}
 
         <section className="rise-in flex flex-col" style={{ '--i': 2 } as CSSProperties} aria-labelledby="services-title">

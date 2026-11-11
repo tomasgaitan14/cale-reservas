@@ -46,6 +46,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+@layer base {
 h1,
 h2,
 h3 {
@@ -60,6 +61,7 @@ h3 {
 p {
   margin: 0;
   text-wrap: pretty;
+}
 }
 
 :focus-visible {

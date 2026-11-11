@@ -101,8 +101,8 @@ export function HoursScreen({ business, onBack, onContinue }: HoursScreenProps) 
   }
 
   return (
-    <div className="flex flex-col gap-8 pt-2 md:pt-6">
-      <div className="rise-in flex flex-wrap items-center justify-between gap-4" style={{ '--i': 0 } as CSSProperties}>
+    <div className="panel-editor hours-editor">
+      <div className="panel-page-header rise-in flex flex-wrap items-center justify-between gap-4" style={{ '--i': 0 } as CSSProperties}>
         <h1 className="text-[1.875rem] md:text-[2.5rem]">Tus horarios</h1>
         <button type="button" className={SECONDARY_BUTTON} onClick={onBack}>
           <ArrowLeft weight="bold" className="size-5" aria-hidden="true" />
@@ -110,14 +110,14 @@ export function HoursScreen({ business, onBack, onContinue }: HoursScreenProps) 
         </button>
       </div>
 
-      <div className="grid items-start gap-8 md:grid-cols-[0.7fr_1.3fr] md:gap-14">
-        <p className="rise-in max-w-[32ch] text-[1.1875rem] text-muted" style={{ '--i': 1 } as CSSProperties}>
+      <div className="hours-layout">
+        <p className="editor-description rise-in text-muted" style={{ '--i': 1 } as CSSProperties}>
           Marcá los días que atendés y a qué hora. Si cortás al mediodía, agregá otro horario para ese día.
         </p>
 
         <section className="rise-in flex flex-col gap-5" style={{ '--i': 2 } as CSSProperties} aria-label="Horarios de la semana">
           {canManage && team.length > 0 ? (
-            <label className="flex max-w-md flex-col gap-2 text-sm font-semibold text-muted">
+            <label className="hours-professional-filter flex flex-col gap-2 text-sm font-semibold text-muted">
               Horarios de
               <select className="field" value={professionalId} onChange={event => { setProfessionalId(event.target.value); setMessage(null) }}>
                 {team.map(member => <option key={member.user_id} value={member.user_id}>{member.display_name || member.email || 'Profesional'}</option>)}
@@ -159,15 +159,15 @@ export function HoursScreen({ business, onBack, onContinue }: HoursScreenProps) 
                 </div>
               ) : null}
 
-              <ul className="divide-y-2 divide-line rounded-[2rem] bg-surface px-5 shadow-soft md:px-8">
+              <ul className="hours-week">
                 {DAYS.map(day => {
                   const ranges = week[day.value] ?? []
                   const open = ranges.length > 0
                   const addable = nextRange(ranges)
                   const problem = problems[day.value]
                   return (
-                    <li key={day.value} className="flex flex-col gap-3 py-5">
-                      <div className="flex items-center justify-between gap-4">
+                    <li key={day.value} className="hours-day">
+                      <div className="hours-day-heading flex items-center justify-between gap-4">
                         <p className="font-head text-lg font-extrabold tracking-tight">{day.label}</p>
                         <button
                           type="button"
@@ -183,8 +183,10 @@ export function HoursScreen({ business, onBack, onContinue }: HoursScreenProps) 
                         </button>
                       </div>
 
+                      <div className="hours-day-ranges">
+                      {!open && <p className="hours-day-closed">Sin atención este día</p>}
                       {ranges.map((range, index) => (
-                        <div key={index} className="flex flex-wrap items-end gap-3">
+                        <div key={index} className="hours-range flex flex-wrap items-end gap-3">
                           <TimeSelect
                             id={`${day.value}-${index}-start`}
                             label="Desde"
@@ -230,6 +232,7 @@ export function HoursScreen({ business, onBack, onContinue }: HoursScreenProps) 
                           {problem}
                         </p>
                       ) : null}
+                      </div>
                     </li>
                   )
                 })}

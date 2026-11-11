@@ -13,7 +13,7 @@ export function SelectField({ id, label, error, options, ...selectProps }: Selec
   const errorId = `${id}-error`
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="form-field flex min-w-0 flex-col gap-2">
       <label htmlFor={id} className="font-head text-base font-extrabold tracking-tight">
         {label}
       </label>

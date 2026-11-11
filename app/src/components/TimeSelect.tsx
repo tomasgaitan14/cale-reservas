@@ -13,7 +13,7 @@ interface TimeSelectProps {
 // Lista de horas en formato de 24 h, de a 15 minutos: se ve igual en cualquier navegador, a diferencia del selector de hora nativo
 export function TimeSelect({ id, label, role, value, invalid = false, onChange }: TimeSelectProps) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="time-field flex min-w-0 flex-col gap-2">
       <label htmlFor={id} className="text-[0.9375rem] font-bold text-muted">
         {label}
       </label>
