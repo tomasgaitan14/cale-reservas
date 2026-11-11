@@ -8,17 +8,21 @@ import { normalizeWhatsapp } from '../lib/whatsapp.ts'
 import { TextField } from '../components/TextField.tsx'
 import { ShareBooking } from '../components/ShareBooking.tsx'
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../components/ui.ts'
+import { defaultPreferences, savePreferences, type Preferences } from '../lib/preferences.ts'
 
-export function BusinessScreen({ business, ready, onChanged, onServices, onHours, onProfessionals }: {
-  business: Business; ready: boolean; onChanged: (value: Business) => void; onServices: () => void; onHours: () => void; onProfessionals?: () => void
+export function BusinessScreen({ business, ready, preferences, onPreferencesChanged, onChanged, onServices, onHours, onProfessionals }: {
+  business: Business; ready: boolean; preferences?: Preferences; onPreferencesChanged?: (value: Preferences) => void; onChanged: (value: Business) => void; onServices: () => void; onHours: () => void; onProfessionals?: () => void
 }) {
   const canManage = !business.role || business.role === 'owner' || business.role === 'admin'
+  const currentPreferences = preferences ?? defaultPreferences(business.id)
   const [name, setName] = useState(business.name)
   const [slug, setSlug] = useState(business.slug)
   const [phone, setPhone] = useState(business.whatsapp)
   const [busy, setBusy] = useState(false)
   const [errors, setErrors] = useState<BusinessFormErrors>({})
   const [notice, setNotice] = useState('')
+  const [overlapBusy, setOverlapBusy] = useState(false)
+  const [overlapError, setOverlapError] = useState('')
   async function submit(event: FormEvent) {
     event.preventDefault(); setBusy(true); setErrors({}); setNotice('')
     const value = { name: name.trim(), slug, whatsapp: normalizeWhatsapp(phone) }
@@ -41,6 +45,14 @@ export function BusinessScreen({ business, ready, onChanged, onServices, onHours
       <section className="pb-6"><h2 className="text-2xl">Tus servicios</h2><p className="my-3 text-muted">Qué ofrecés, cuánto dura y qué servicios están disponibles.</p><button className={SECONDARY_BUTTON} onClick={onServices}>Editar servicios</button></section>
       <section className="py-6"><h2 className="text-2xl">Tus horarios</h2><p className="my-3 text-muted">Días de atención, descansos y horarios de cada semana.</p><button className={SECONDARY_BUTTON} onClick={onHours}>Editar horarios</button></section>
       <section className="border-t border-line py-6"><h2 className="text-2xl">Tus profesionales</h2><p className="my-3 text-muted">Servicios asignados, permisos y acceso de cada persona de tu equipo.</p><button className={SECONDARY_BUTTON} onClick={() => onProfessionals?.()}>Editar profesionales</button></section>
+      <section className="border-t border-line py-6"><h2 className="text-2xl">Agenda del equipo</h2><p className="my-3 text-muted">Definí si dos profesionales pueden tener turnos en el mismo horario.</p><label className="flex items-start gap-3 text-base"><input type="checkbox" className="mt-1 size-5 accent-[var(--color-link)]" checked={currentPreferences.allow_cross_professional_overlap} disabled={overlapBusy} onChange={async event => {
+        const next = event.target.checked
+        const previous = currentPreferences
+        setOverlapError(''); setOverlapBusy(true); onPreferencesChanged?.({ ...previous, allow_cross_professional_overlap: next })
+        try { await savePreferences({ ...previous, allow_cross_professional_overlap: next }) }
+        catch (cause) { onPreferencesChanged?.(previous); setOverlapError(cause instanceof Error ? cause.message : 'No pudimos guardar este ajuste.') }
+        finally { setOverlapBusy(false) }
+      }} /><span><strong>Superponer turnos entre profesionales</strong><span className="mt-1 block text-sm text-muted">Si está activo, cada profesional puede recibir turnos simultáneos. Si lo desactivás, Cale reservará un solo turno por horario en todo el negocio.</span></span></label>{overlapError && <p role="alert" className="mt-3 text-warn">{overlapError}</p>}</section>
     </div></div>
     <BusinessBranding businessId={business.id} name={business.name} />
     {ready ? <ShareBooking business={business} /> : <p className="rounded-xl bg-tint p-5">Tu link y QR van a aparecer cuando tengas al menos un servicio activo y horarios.</p>}

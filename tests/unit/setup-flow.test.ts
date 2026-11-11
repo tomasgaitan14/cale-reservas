@@ -20,7 +20,7 @@ const BUSINESS={id:'business-demo',name:'Negocio demo',slug:'negocio-demo',whats
 beforeEach(()=>{
  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT',true);vi.resetAllMocks();window.history.replaceState({},'','/panel')
  progress={serviceCount:0,hasHours:false,upcomingCount:0}
- preferences={business_id:BUSINESS.id,reminder_hours:24,whatsapp_waitlist:false,reminders_reviewed:false,onboarding_completed:false}
+ preferences={business_id:BUSINESS.id,reminder_hours:24,whatsapp_waitlist:false,reminders_reviewed:false,onboarding_completed:false,allow_cross_professional_overlap:true}
  api.progress.mockImplementation(async()=>({...progress}))
  api.preferences.mockImplementation(async()=>({...preferences}))
  api.savePreferences.mockImplementation(async(value:Preferences)=>{preferences={...value}})

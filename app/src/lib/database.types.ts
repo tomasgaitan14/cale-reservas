@@ -279,6 +279,7 @@ export type Database = {
         Row: {
           business_id: string
           onboarding_completed: boolean
+          allow_cross_professional_overlap: boolean
           reminder_hours: number
           reminders_reviewed: boolean
           whatsapp_waitlist: boolean
@@ -286,6 +287,7 @@ export type Database = {
         Insert: {
           business_id: string
           onboarding_completed?: boolean
+          allow_cross_professional_overlap?: boolean
           reminder_hours?: number
           reminders_reviewed?: boolean
           whatsapp_waitlist?: boolean
@@ -293,6 +295,7 @@ export type Database = {
         Update: {
           business_id?: string
           onboarding_completed?: boolean
+          allow_cross_professional_overlap?: boolean
           reminder_hours?: number
           reminders_reviewed?: boolean
           whatsapp_waitlist?: boolean
