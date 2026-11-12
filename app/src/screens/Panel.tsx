@@ -2,7 +2,7 @@ import { PushInvitation } from '../components/PushInvitation.tsx'
 import { signOutWithPush } from '../lib/push.ts'
 import { InstallPanel } from '../components/InstallPanel.tsx'
 import { useCallback, useEffect, useState } from 'react'
-import { Bell, CalendarBlank, Clock, Crown, GearSix, Storefront } from '@phosphor-icons/react'
+import { Bell, CalendarBlank, Clock, Crown, GearSix, Storefront, UsersThree } from '@phosphor-icons/react'
 import type { Business } from '../lib/business.ts'
 import { fetchSetupProgress, SetupLoadError, type SetupProgress } from '../lib/setup.ts'
 import { fetchPreferences, PreferencesError, savePreferences, type Preferences } from '../lib/preferences.ts'
@@ -22,23 +22,24 @@ import { ProfessionalsSection } from '../components/ProfessionalsSection.tsx'
 import { BusinessBranding } from '../components/BusinessBranding.tsx'
 import { ClientsScreen } from './ClientsScreen.tsx'
 
-type Tab = 'agenda' | 'business' | 'reminders' | 'settings'
+type Tab = 'agenda' | 'clients' | 'business' | 'reminders' | 'settings'
 const TABS = [
   { key: 'agenda', path: '/panel', label: 'Agenda', icon: CalendarBlank },
+  { key: 'clients', path: '/panel/clientes', label: 'Clientes', icon: UsersThree },
   { key: 'business', path: '/panel/negocio', label: 'Negocio', icon: Storefront },
   { key: 'reminders', path: '/panel/avisos', label: 'Avisos', icon: Bell },
   { key: 'settings', path: '/panel/ajustes', label: 'Ajustes', icon: GearSix },
 ] as const
 function tabsForPlan(plan: string, role: Business['role'] = 'owner') {
   const isProfessional = role === 'professional'
-  return TABS.filter(tab => isProfessional && tab.key === 'business' ? false : plan === 'pro' || tab.key !== 'reminders').filter(tab => !isProfessional || tab.key === 'agenda' || tab.key === 'settings')
+  return TABS.filter(tab => isProfessional && (tab.key === 'business' || tab.key === 'clients') ? false : plan === 'pro' || tab.key !== 'reminders').filter(tab => !isProfessional || tab.key === 'agenda' || tab.key === 'settings')
 }
 function currentTab(isPro = true, role: Business['role'] = 'owner'): Tab { return tabsForPlan(isPro ? 'pro' : 'gratis', role).find(tab => tab.path === window.location.pathname.replace(/\/+$/, ''))?.key ?? 'agenda' }
 
 export function Panel({ business: initialBusiness }: { business: Business }) {
   const [business, setBusiness] = useState(initialBusiness)
   const [tab, setTab] = useState<Tab>(() => currentTab(initialBusiness.plan === 'pro', initialBusiness.role))
-  const [editor, setEditor] = useState<'services' | 'hours' | 'professionals' | 'branding' | 'clients' | null>(null)
+  const [editor, setEditor] = useState<'services' | 'hours' | 'professionals' | 'branding' | null>(null)
   const [progress, setProgress] = useState<SetupProgress | null>(null)
   const [preferences, setPreferences] = useState<Preferences | null>(null)
   const [error, setError] = useState('')
@@ -49,7 +50,7 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
   useEffect(() => {
     const isPro = business.plan === 'pro'
     setTab(previous => previous === 'reminders' && !isPro ? 'agenda' : currentTab(isPro, business.role))
-    if ((!isPro || business.role === 'professional') && (window.location.pathname === '/panel/avisos' || window.location.pathname === '/panel/negocio')) window.history.replaceState({}, '', '/panel')
+    if ((!isPro || business.role === 'professional') && (window.location.pathname === '/panel/avisos' || window.location.pathname === '/panel/negocio' || window.location.pathname === '/panel/clientes')) window.history.replaceState({}, '', '/panel')
   }, [business.plan, business.role])
   const refresh = useCallback(() => {
     setError('')
@@ -115,7 +116,8 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
     </div>}
     {preferences.onboarding_completed && tab === 'agenda' && !editor && <InstallPanel invitation />}
     {tab === 'agenda'  && <AgendaScreen business={business} aside={ready ? <ShareBooking business={business} compact /> : undefined} />}
-    {tab === 'business' && business.role !== 'professional' && (editor === 'services' ? <ServicesScreen business={business} onBack={() => { setEditor(null); refresh() }} /> : editor === 'hours' ? <HoursScreen business={business} onBack={() => { setEditor(null); refresh() }} /> : editor === 'professionals' ? <div className="flex flex-col gap-6"><button type="button" className={`${SECONDARY_BUTTON} self-start`} onClick={() => setEditor(null)}>Volver a Negocio</button><ProfessionalsSection businessId={business.id} plan={business.plan} canManage={business.role === 'owner' || business.role === 'admin'} isOwner={business.role === 'owner'} /></div> : editor === 'branding' ? <div className="flex flex-col gap-6"><button type="button" className={`${SECONDARY_BUTTON} self-start`} onClick={() => setEditor(null)}>Volver a Negocio</button><BusinessBranding businessId={business.id} name={business.name} /></div> : editor === 'clients' ? <ClientsScreen business={business} onBack={() => setEditor(null)} /> : <BusinessScreen business={business} ready={ready} preferences={preferences} onPreferencesChanged={setPreferences} onChanged={setBusiness} onServices={() => setEditor('services')} onHours={() => setEditor('hours')} onProfessionals={() => setEditor('professionals')} onBranding={() => setEditor('branding')} onClients={() => setEditor('clients')} />)}
+    {tab === 'clients' && business.role !== 'professional' && <ClientsScreen business={business} />}
+    {tab === 'business' && business.role !== 'professional' && (editor === 'services' ? <ServicesScreen business={business} onBack={() => { setEditor(null); refresh() }} /> : editor === 'hours' ? <HoursScreen business={business} onBack={() => { setEditor(null); refresh() }} /> : editor === 'professionals' ? <div className="flex flex-col gap-6"><button type="button" className={`${SECONDARY_BUTTON} self-start`} onClick={() => setEditor(null)}>Volver a Negocio</button><ProfessionalsSection businessId={business.id} plan={business.plan} canManage={business.role === 'owner' || business.role === 'admin'} isOwner={business.role === 'owner'} /></div> : editor === 'branding' ? <div className="flex flex-col gap-6"><button type="button" className={`${SECONDARY_BUTTON} self-start`} onClick={() => setEditor(null)}>Volver a Negocio</button><BusinessBranding businessId={business.id} name={business.name} /></div> : <BusinessScreen business={business} ready={ready} preferences={preferences} onPreferencesChanged={setPreferences} onChanged={setBusiness} onServices={() => setEditor('services')} onHours={() => setEditor('hours')} onProfessionals={() => setEditor('professionals')} onBranding={() => setEditor('branding')} />)}
     {tab === 'reminders' && <RemindersScreen business={business} />}
     {tab === 'settings' && <SettingsScreen business={business} />}
   </main><nav aria-label="Secciones del panel" className="panel-nav">{tabsForPlan(business.plan ?? 'gratis', business.role).map(({ key, label, icon: Icon }) => { const comingSoon = key === 'reminders'; return <button type="button" key={key} aria-current={tab === key ? 'page' : undefined} aria-label={comingSoon ? `${label}, próximamente` : label} title={comingSoon ? 'Recordatorios por WhatsApp próximamente' : undefined} onClick={() => navigate(key)}><Icon size={22} aria-hidden="true" />{label}{comingSoon && <Clock size={14} weight="bold" aria-hidden="true" />}</button> })}</nav></div>

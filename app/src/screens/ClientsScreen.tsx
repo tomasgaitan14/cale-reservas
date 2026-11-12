@@ -5,7 +5,7 @@ import { ClientLoadError, fetchClients, type Client } from '../lib/clients.ts'
 import { formatLongDate, localParts } from '../lib/dates.ts'
 import { SECONDARY_BUTTON } from '../components/ui.ts'
 
-export function ClientsScreen({ business, onBack }: { business: Business; onBack: () => void }) {
+export function ClientsScreen({ business, onBack }: { business: Business; onBack?: () => void }) {
   const [clients, setClients] = useState<Client[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [query, setQuery] = useState('')
@@ -36,7 +36,7 @@ export function ClientsScreen({ business, onBack }: { business: Business; onBack
 
   return <section className="panel-editor clients-editor">
     <header className="panel-page-header">
-      <button type="button" className={SECONDARY_BUTTON} onClick={onBack}><ArrowLeft weight="bold" aria-hidden="true" />Volver a Negocio</button>
+      {onBack && <button type="button" className={SECONDARY_BUTTON} onClick={onBack}><ArrowLeft weight="bold" aria-hidden="true" />Volver a Negocio</button>}
       <p className="eyebrow">Tu negocio</p>
       <h1>Tus clientes</h1>
       <p className="editor-description text-muted">Toda la información de las personas que reservaron en tu negocio, con su historial de turnos.</p>

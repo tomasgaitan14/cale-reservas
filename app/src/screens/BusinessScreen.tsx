@@ -9,8 +9,8 @@ import { ShareBooking } from '../components/ShareBooking.tsx'
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../components/ui.ts'
 import { defaultPreferences, savePreferences, type Preferences } from '../lib/preferences.ts'
 
-export function BusinessScreen({ business, ready, preferences, onPreferencesChanged, onChanged, onServices, onHours, onProfessionals, onBranding, onClients }: {
-  business: Business; ready: boolean; preferences?: Preferences; onPreferencesChanged?: (value: Preferences) => void; onChanged: (value: Business) => void; onServices: () => void; onHours: () => void; onProfessionals?: () => void; onBranding?: () => void; onClients?: () => void
+export function BusinessScreen({ business, ready, preferences, onPreferencesChanged, onChanged, onServices, onHours, onProfessionals, onBranding }: {
+  business: Business; ready: boolean; preferences?: Preferences; onPreferencesChanged?: (value: Preferences) => void; onChanged: (value: Business) => void; onServices: () => void; onHours: () => void; onProfessionals?: () => void; onBranding?: () => void
 }) {
   const canManage = !business.role || business.role === 'owner' || business.role === 'admin'
   const currentPreferences = preferences ?? defaultPreferences(business.id)
@@ -45,7 +45,6 @@ export function BusinessScreen({ business, ready, preferences, onPreferencesChan
       <section className="business-management-section"><h2 className="text-2xl">Tus horarios</h2><p className="my-4 text-muted">Días de atención, descansos y horarios de cada semana.</p><button className={SECONDARY_BUTTON} onClick={onHours}>Editar horarios</button></section>
       <section className="business-management-section"><h2 className="text-2xl">Tus profesionales</h2><p className="my-4 text-muted">Servicios asignados, permisos y acceso de cada persona de tu equipo.</p><button className={SECONDARY_BUTTON} onClick={() => onProfessionals?.()}>Editar profesionales</button></section>
       <section className="business-management-section"><h2 className="text-2xl">Página y colores</h2><p className="my-4 text-muted">Personalizá el logo y los colores que ven tus clientes al reservar.</p><button className={SECONDARY_BUTTON} onClick={() => onBranding?.()}>Editar página</button></section>
-      <section className="business-management-section"><h2 className="text-2xl">Tus clientes</h2><p className="my-4 text-muted">Consultá sus datos e historial de turnos en un solo lugar.</p><button className={SECONDARY_BUTTON} onClick={() => onClients?.()}>Ver clientes</button></section>
       <section className="business-management-section"><h2 className="text-2xl">Agenda del equipo</h2><p className="my-4 text-muted">Definí si dos profesionales pueden tener turnos en el mismo horario.</p><label className="flex items-start gap-3 text-base"><input type="checkbox" className="mt-1 size-5 accent-[var(--color-link)]" checked={currentPreferences.allow_cross_professional_overlap} disabled={overlapBusy} onChange={async event => {
         const next = event.target.checked
         const previous = currentPreferences

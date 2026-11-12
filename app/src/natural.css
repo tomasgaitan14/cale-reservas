@@ -29,6 +29,7 @@
 .natural-panel > .panel-nav button { display: flex; flex: 1 1 0; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; min-height: 56px; padding: 8px 10px; border-radius: 15px; color: var(--muted); font-size: 12px; font-weight: 750; line-height: 1.1; cursor: pointer; transition: background-color .2s ease, color .2s ease, transform .2s ease; }
 .natural-panel > .panel-nav button[aria-current="page"] { background: var(--tint); color: var(--link); }
 .natural-panel > .panel-nav button:active { transform: scale(.97); }
+.natural-panel > .panel-nav button:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
 .natural-panel-main { padding: 36px 8px 132px; display: flex; flex-direction: column; gap: 30px; }
 .business-management-list { display: flex; flex-direction: column; gap: 18px; }
 .business-management-section { padding: 26px 28px; border: 1px solid var(--border); border-radius: 22px; background: color-mix(in srgb, var(--surface) 72%, var(--bg)); }
@@ -413,6 +414,11 @@
 .natural-panel .business-management-section h2 { font-size: 21px; }
 .natural-panel .business-management-section > p { margin: 0; font-size: 15px; line-height: 1.6; }
 .natural-panel .business-management-section > button { margin-top: 4px; }
+.appointment-client-suggestions { position: absolute; z-index: 20; top: calc(100% - 4px); left: 0; right: 0; display: flex; flex-direction: column; gap: 2px; padding: 6px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: 0 12px 24px rgba(39,55,43,.12); }
+.appointment-client-suggestion { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; border-radius: 8px; text-align: left; cursor: pointer; }
+.appointment-client-suggestion:hover, .appointment-client-suggestion:focus-visible { background: var(--tint); outline: none; }
+.appointment-client-suggestion strong, .appointment-client-suggestion span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.appointment-client-suggestion span { color: var(--muted); font-size: 13px; }
 .clients-editor { max-width: 1120px; }
 .clients-loading { min-height: 280px; border-radius: 16px; }
 .clients-layout { display: grid; grid-template-columns: minmax(260px,.75fr) minmax(0,1.25fr); gap: 20px; align-items: start; }
@@ -473,6 +479,9 @@
   .hours-day { grid-template-columns: 170px minmax(0,1fr); gap: 20px; }
 }
 @media (max-width: 600px) {
+  .natural-panel > .panel-nav { width: min(calc(100% - 16px), 760px); gap: 2px; padding: 5px; border-radius: 18px; }
+  .natural-panel > .panel-nav button { min-height: 54px; padding: 7px 4px; border-radius: 13px; font-size: 11px; }
+  .natural-panel > .panel-nav button svg { width: 21px; height: 21px; }
   .natural-panel-main > :not(.agenda-workspace) h1 { font-size: 26px; }
   .panel-page-header { gap: 12px; padding-bottom: 16px; }
   .panel-page-header > button { min-height: 44px; height: 44px; font-size: 14px; }

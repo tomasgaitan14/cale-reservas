@@ -41,3 +41,14 @@ export async function fetchClients(businessId: string): Promise<Client[]> {
   }
   return (clients.data ?? []).map(client => ({ ...client, appointments: history.get(client.id) ?? [] })) as Client[]
 }
+
+export async function fetchClientDirectory(businessId: string): Promise<Pick<Client, 'id' | 'name' | 'phone' | 'email'>[]> {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('id, name, phone, email')
+    .eq('business_id', businessId)
+    .order('name', { ascending: true })
+    .limit(100)
+  if (error) throw new ClientLoadError(error.message)
+  return (data ?? []) as Pick<Client, 'id' | 'name' | 'phone' | 'email'>[]
+}
