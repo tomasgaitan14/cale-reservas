@@ -31,6 +31,7 @@ export function AppointmentForm({ businessId, services, initialDate, initialTime
   const [time, setTime] = useState(initialTime)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const [selectedClientName, setSelectedClientName] = useState<string | null>(null)
   const [clients, setClients] = useState<Pick<Client, 'id' | 'name' | 'phone' | 'email'>[]>([])
   const [showClientSuggestions, setShowClientSuggestions] = useState(false)
   const [reminders, setReminders] = useState(false)
@@ -141,7 +142,13 @@ export function AppointmentForm({ businessId, services, initialDate, initialTime
           aria-autocomplete="list"
           aria-expanded={showClientSuggestions && clientSuggestions.length > 0}
           onChange={event => {
-            setName(event.target.value)
+            const nextName = event.target.value
+            if (selectedClientName !== null && nextName !== selectedClientName) {
+              setSelectedClientName(null)
+              setPhone('')
+              setReminders(false)
+            }
+            setName(nextName)
             setShowClientSuggestions(true)
             clear('name')
           }}
@@ -152,6 +159,7 @@ export function AppointmentForm({ businessId, services, initialDate, initialTime
           {clientSuggestions.map(client => <button type="button" role="option" key={client.id} className="appointment-client-suggestion" onMouseDown={event => event.preventDefault()} onClick={() => {
             setName(client.name)
             setPhone(client.phone ?? '')
+            setSelectedClientName(client.name)
             setShowClientSuggestions(false)
             clear('name'); clear('phone')
           }}><strong>{client.name}</strong><span>{client.phone ?? client.email ?? 'Sin datos de contacto'}</span></button>)}
