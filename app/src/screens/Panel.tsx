@@ -32,7 +32,7 @@ const TABS = [
 ] as const
 function tabsForPlan(plan: string, role: Business['role'] = 'owner') {
   const isProfessional = role === 'professional'
-  return TABS.filter(tab => isProfessional && (tab.key === 'business' || tab.key === 'clients') ? false : plan === 'pro' || tab.key !== 'reminders').filter(tab => !isProfessional || tab.key === 'agenda' || tab.key === 'settings')
+  return TABS.filter(tab => plan === 'pro' || tab.key !== 'reminders').filter(tab => !isProfessional || tab.key === 'agenda' || tab.key === 'clients' || tab.key === 'business' || tab.key === 'settings')
 }
 function currentTab(isPro = true, role: Business['role'] = 'owner'): Tab { return tabsForPlan(isPro ? 'pro' : 'gratis', role).find(tab => tab.path === window.location.pathname.replace(/\/+$/, ''))?.key ?? 'agenda' }
 
@@ -50,7 +50,7 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
   useEffect(() => {
     const isPro = business.plan === 'pro'
     setTab(previous => previous === 'reminders' && !isPro ? 'agenda' : currentTab(isPro, business.role))
-    if ((!isPro || business.role === 'professional') && (window.location.pathname === '/panel/avisos' || window.location.pathname === '/panel/negocio' || window.location.pathname === '/panel/clientes')) window.history.replaceState({}, '', '/panel')
+    if ((!isPro || business.role === 'professional') && window.location.pathname === '/panel/avisos') window.history.replaceState({}, '', '/panel')
   }, [business.plan, business.role])
   const refresh = useCallback(() => {
     setError('')
@@ -116,8 +116,8 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
     </div>}
     {preferences.onboarding_completed && tab === 'agenda' && !editor && <InstallPanel invitation />}
     {tab === 'agenda'  && <AgendaScreen business={business} aside={ready ? <ShareBooking business={business} compact /> : undefined} />}
-    {tab === 'clients' && business.role !== 'professional' && <ClientsScreen business={business} />}
-    {tab === 'business' && business.role !== 'professional' && <BusinessScreen business={business} ready={ready} onChanged={setBusiness} />}
+    {tab === 'clients' && <ClientsScreen business={business} />}
+    {tab === 'business' && <BusinessScreen business={business} ready={ready} onChanged={setBusiness} />}
     {tab === 'settings' && (business.role === 'professional' ? <SettingsScreen business={business} preferences={preferences} onPreferencesChanged={setPreferences} onServices={() => undefined} onHours={() => undefined} onProfessionals={() => undefined} onBranding={() => undefined} /> : editor === 'services' ? <div className="flex flex-col gap-6"><button type="button" className={`${SECONDARY_BUTTON} self-start`} onClick={() => setEditor(null)}>Volver a Ajustes</button><ServicesScreen business={business} onBack={() => { setEditor(null); refresh() }} /></div> : editor === 'hours' ? <div className="flex flex-col gap-6"><button type="button" className={`${SECONDARY_BUTTON} self-start`} onClick={() => setEditor(null)}>Volver a Ajustes</button><HoursScreen business={business} onBack={() => { setEditor(null); refresh() }} /></div> : editor === 'professionals' ? <div className="flex flex-col gap-6"><button type="button" className={`${SECONDARY_BUTTON} self-start`} onClick={() => setEditor(null)}>Volver a Ajustes</button><ProfessionalsSection businessId={business.id} plan={business.plan} canManage={business.role === 'owner' || business.role === 'admin'} isOwner={business.role === 'owner'} /></div> : editor === 'branding' ? <div className="flex flex-col gap-6"><button type="button" className={`${SECONDARY_BUTTON} self-start`} onClick={() => setEditor(null)}>Volver a Ajustes</button><BusinessBranding businessId={business.id} name={business.name} /></div> : <SettingsScreen business={business} preferences={preferences} onPreferencesChanged={setPreferences} onServices={() => setEditor('services')} onHours={() => setEditor('hours')} onProfessionals={() => setEditor('professionals')} onBranding={() => setEditor('branding')} />)}
     {tab === 'reminders' && <RemindersScreen business={business} />}
   </main><nav aria-label="Secciones del panel" className="panel-nav">{tabsForPlan(business.plan ?? 'gratis', business.role).map(({ key, label, icon: Icon }) => { const comingSoon = key === 'reminders'; return <button type="button" key={key} aria-current={tab === key ? 'page' : undefined} aria-label={comingSoon ? `${label}, próximamente` : label} title={comingSoon ? 'Recordatorios por WhatsApp próximamente' : undefined} onClick={() => navigate(key)}><Icon size={22} aria-hidden="true" />{label}{comingSoon && <Clock size={14} weight="bold" aria-hidden="true" />}</button> })}</nav></div>

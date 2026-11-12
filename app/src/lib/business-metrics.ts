@@ -14,14 +14,23 @@ function nextMonthStart(date: string) {
   return `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`
 }
 
-export async function fetchBusinessMetrics(businessId: string): Promise<BusinessMetrics> {
+export async function fetchBusinessMetrics(businessId: string, role: 'owner' | 'admin' | 'professional' | undefined): Promise<BusinessMetrics> {
   const today = todayInArgentina()
   const monthStart = `${today.slice(0, 8)}01`
   const nextStart = nextMonthStart(today)
+  const professionalId = role === 'professional' ? (await supabase.auth.getUser()).data.user?.id ?? null : null
+  const upcomingQuery = supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('business_id', businessId).neq('status', 'cancelled').gte('starts_at', dayStartInstant(today))
+  const monthQuery = supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('business_id', businessId).neq('status', 'cancelled').gte('starts_at', dayStartInstant(monthStart)).lt('starts_at', dayStartInstant(nextStart))
+  const clientsQuery = supabase.from('clients').select('id', { count: 'exact', head: true }).eq('business_id', businessId)
+  if (professionalId) {
+    upcomingQuery.eq('professional_id', professionalId)
+    monthQuery.eq('professional_id', professionalId)
+    clientsQuery.eq('professional_id', professionalId)
+  }
   const [upcoming, month, clients] = await Promise.all([
-    supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('business_id', businessId).neq('status', 'cancelled').gte('starts_at', dayStartInstant(today)),
-    supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('business_id', businessId).neq('status', 'cancelled').gte('starts_at', dayStartInstant(monthStart)).lt('starts_at', dayStartInstant(nextStart)),
-    supabase.from('clients').select('id', { count: 'exact', head: true }).eq('business_id', businessId),
+    upcomingQuery,
+    monthQuery,
+    clientsQuery,
   ])
   if (upcoming.error) throw upcoming.error
   if (month.error) throw month.error
