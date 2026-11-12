@@ -12,9 +12,10 @@ import { cancelProSubscription, PRO_CHECKOUT_ENABLED, startProSubscription } fro
 import { Modal } from '../components/Modal.tsx'
 import { TextField } from '../components/TextField.tsx'
 import { deleteAccount } from '../lib/account.ts'
+import { defaultPreferences, savePreferences, type Preferences } from '../lib/preferences.ts'
 
 const DELETE_BUTTON = 'inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-warn px-4 font-head text-base font-extrabold tracking-tight text-on-ink transition duration-200 hover:brightness-95 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60'
-export function SettingsScreen({ business }: { business: Business }) {
+export function SettingsScreen({ business, preferences, onPreferencesChanged, onServices, onHours, onProfessionals, onBranding }: { business: Business; preferences: Preferences; onPreferencesChanged: (value: Preferences) => void; onServices: () => void; onHours: () => void; onProfessionals: () => void; onBranding: () => void }) {
   const isPro = business.plan === 'pro'
   const canManage = business.role === 'owner' || business.role === 'admin'
   const isCanceled = isPro && business.billing_status === 'canceled'
@@ -30,6 +31,9 @@ export function SettingsScreen({ business }: { business: Business }) {
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const [deleteBusy, setDeleteBusy] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [overlapBusy, setOverlapBusy] = useState(false)
+  const [overlapError, setOverlapError] = useState('')
+  const currentPreferences = preferences ?? defaultPreferences(business.id)
   useEffect(() => {
     let active = true
     supabase.auth.getSession().then(({ data, error }) => { if (active) { setSession(data.session); if (error) setError('No pudimos leer tu cuenta.') } })
@@ -71,11 +75,19 @@ export function SettingsScreen({ business }: { business: Business }) {
     try { await deleteAccount(); window.location.assign('/') }
     catch (cause) { setDeleteError(cause instanceof Error ? cause.message : 'No pudimos eliminar tu cuenta. Probá nuevamente.'); setDeleteBusy(false) }
   }
+  async function changeOverlap(value: boolean) {
+    const previous = currentPreferences
+    setOverlapError(''); setOverlapBusy(true); onPreferencesChanged({ ...previous, allow_cross_professional_overlap: value })
+    try { await savePreferences({ ...previous, allow_cross_professional_overlap: value }) }
+    catch (cause) { onPreferencesChanged(previous); setOverlapError(cause instanceof Error ? cause.message : 'No pudimos guardar este ajuste.') }
+    finally { setOverlapBusy(false) }
+  }
   return <section className="settings-screen max-w-5xl">
     <p className="eyebrow">Ajustes</p>
     <h1 className="screen-title">Tu cuenta, a mano.</h1>
     <div className="settings-sections">
       <div className="settings-column">
+      {canManage ? <section className="settings-section settings-business-tools"><p className="eyebrow">Tu negocio</p><h2 className="text-xl">Configuración del negocio</h2><p className="text-muted">Organizá lo que ofrecés y la disponibilidad que ven tus clientes.</p><div className="business-management-list"><section className="business-management-section"><h3>Tus servicios</h3><p>Qué ofrecés, cuánto dura y qué servicios están disponibles.</p><button className={SECONDARY_BUTTON} onClick={onServices}>Editar servicios</button></section><section className="business-management-section"><h3>Tus horarios</h3><p>Días de atención, descansos y horarios de cada semana.</p><button className={SECONDARY_BUTTON} onClick={onHours}>Editar horarios</button></section><section className="business-management-section"><h3>Tus profesionales</h3><p>Servicios asignados, permisos y acceso de cada persona de tu equipo.</p><button className={SECONDARY_BUTTON} onClick={onProfessionals}>Editar profesionales</button></section><section className="business-management-section"><h3>Página y colores</h3><p>Personalizá el logo y los colores que ven tus clientes al reservar.</p><button className={SECONDARY_BUTTON} onClick={onBranding}>Editar página</button></section><section className="business-management-section"><h3>Agenda del equipo</h3><p>Definí si dos profesionales pueden tener turnos en el mismo horario.</p><label className="flex items-start gap-3 text-base"><input type="checkbox" className="mt-1 size-5 accent-[var(--color-link)]" checked={currentPreferences.allow_cross_professional_overlap} disabled={overlapBusy} onChange={event => void changeOverlap(event.target.checked)} /><span><strong>Superponer turnos entre profesionales</strong><span className="mt-1 block text-sm text-muted">Si está activo, cada profesional puede recibir turnos simultáneos. Si lo desactivás, Cale reservará un solo turno por horario en todo el negocio.</span></span></label>{overlapError && <p role="alert" className="mt-3 text-warn">{overlapError}</p>}</section></div></section> : null}
       <section className="settings-section">
         <h2 className="text-xl">Tu cuenta de Google</h2>
         <p className="break-words text-muted">{session?.user.email ?? 'Cargando tu cuenta…'}</p>

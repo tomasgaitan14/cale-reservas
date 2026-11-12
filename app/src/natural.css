@@ -32,6 +32,12 @@
 .natural-panel > .panel-nav button:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
 .natural-panel-main { padding: 36px 8px 132px; display: flex; flex-direction: column; gap: 30px; }
 .business-management-list { display: flex; flex-direction: column; gap: 18px; }
+.business-metrics { display: flex; flex-direction: column; gap: 18px; padding: 24px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.business-metrics h2 { font-size: 24px; letter-spacing: -.035em; }
+.business-metrics-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.business-metrics-grid > div { display: flex; min-height: 104px; flex-direction: column; justify-content: space-between; gap: 12px; padding: 18px; border: 1px solid var(--border); border-radius: 16px; background: color-mix(in srgb, var(--surface) 72%, var(--bg)); }
+.business-metrics-grid span { color: var(--muted); font-size: 14px; }
+.business-metrics-grid strong { font-family: var(--font-head); font-size: 30px; letter-spacing: -.04em; }
 .business-management-section { padding: 26px 28px; border: 1px solid var(--border); border-radius: 22px; background: color-mix(in srgb, var(--surface) 72%, var(--bg)); }
 .natural-settings-plan-card { border: 1px solid var(--border); }
 .natural-settings-plan-card.is-free { border-color: #d6aaa5; background: #fce4e1; }
@@ -505,6 +511,7 @@
   .natural-panel .settings-section:has(.natural-settings-plan-card) { padding: 0; }
   .natural-panel .settings-screen { padding: 0; }
   .natural-panel .business-management-section { padding: 20px; }
+  .business-metrics-grid { grid-template-columns: 1fr; }
   .natural-panel .clients-list-panel, .natural-panel .client-detail { padding: 20px; }
   .natural-panel .warm-split { gap: 24px; }
   .natural-panel .branding-preview { width: 100%; }
