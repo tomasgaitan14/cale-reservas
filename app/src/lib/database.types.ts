@@ -42,6 +42,7 @@ export type Database = {
       appointments: {
         Row: {
           business_id: string
+          client_id: string | null
           client_name: string
           client_phone: string | null
           consented_at: string | null
@@ -57,6 +58,7 @@ export type Database = {
         }
         Insert: {
           business_id: string
+          client_id?: string | null
           client_name: string
           client_phone?: string | null
           consented_at?: string | null
@@ -72,6 +74,7 @@ export type Database = {
         }
         Update: {
           business_id?: string
+          client_id?: string | null
           client_name?: string
           client_phone?: string | null
           consented_at?: string | null
@@ -98,6 +101,47 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          business_id: string
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]
