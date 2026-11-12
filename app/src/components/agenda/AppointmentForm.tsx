@@ -5,7 +5,7 @@ import type { AgendaFormErrors } from '../../lib/agenda-errors.ts'
 import { INVALID_PHONE_MESSAGE } from '../../lib/booking-errors.ts'
 import { todayInArgentina } from '../../lib/dates.ts'
 import { formatDuration } from '../../lib/duration.ts'
-import { normalizePhone } from '../../lib/phone.ts'
+import { formatPhoneForInput, normalizePhone } from '../../lib/phone.ts'
 import type { Service } from '../../lib/services.ts'
 import { fetchClientDirectory, type Client } from '../../lib/clients.ts'
 import { SelectField } from '../SelectField.tsx'
@@ -41,7 +41,7 @@ export function AppointmentForm({ businessId, services, initialDate, initialTime
   const hasPhone = phone.trim() !== ''
   const clientSuggestions = useMemo(() => {
     const normalized = name.trim().toLocaleLowerCase('es-AR')
-    if (!normalized) return clients.slice(0, 6)
+    if (!normalized) return []
     return clients.filter(client => [client.name, client.phone ?? '', client.email ?? ''].some(value => value.toLocaleLowerCase('es-AR').includes(normalized))).slice(0, 6)
   }, [clients, name])
 
@@ -149,7 +149,7 @@ export function AppointmentForm({ businessId, services, initialDate, initialTime
               setReminders(false)
             }
             setName(nextName)
-            setShowClientSuggestions(true)
+            setShowClientSuggestions(nextName.trim() !== '')
             clear('name')
           }}
           error={errors.name}
@@ -158,7 +158,7 @@ export function AppointmentForm({ businessId, services, initialDate, initialTime
         {showClientSuggestions && clientSuggestions.length > 0 ? <div className="appointment-client-suggestions" role="listbox" aria-label="Clientes existentes">
           {clientSuggestions.map(client => <button type="button" role="option" key={client.id} className="appointment-client-suggestion" onMouseDown={event => event.preventDefault()} onClick={() => {
             setName(client.name)
-            setPhone(client.phone ?? '')
+            setPhone(client.phone ? formatPhoneForInput(client.phone) : '')
             setSelectedClientName(client.name)
             setShowClientSuggestions(false)
             clear('name'); clear('phone')
