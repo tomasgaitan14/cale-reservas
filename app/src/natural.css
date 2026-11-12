@@ -21,6 +21,7 @@
 .natural-business-button { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; color: var(--text); font-size: 15px; font-weight: 650; min-height: 44px; min-width: 0; max-width: 300px; }
 .natural-business-button > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .natural-business-button > span:first-of-type { min-width: 0; flex: 1 1 auto; }
+.natural-business-button > .role-badge { display: inline-flex; align-items: center; flex: none; overflow: visible; border: 1px solid var(--tint-border); border-radius: 999px; padding: 5px 8px; background: var(--tint); color: var(--link); font-size: 11px; font-weight: 800; letter-spacing: .02em; line-height: 1; }
 .natural-business-button > .plan-badge { display: inline-flex; align-items: center; gap: 4px; flex: none; overflow: visible; border: 1px solid var(--border); border-radius: 999px; padding: 5px 8px; font-size: 11px; font-weight: 800; letter-spacing: .04em; line-height: 1; text-transform: uppercase; }
 .natural-business-button > .plan-badge-pro { border-color: color-mix(in srgb, var(--link) 35%, var(--border)); background: var(--tint); color: var(--link); }
 .natural-business-button > .plan-badge-gratis { color: var(--muted); }

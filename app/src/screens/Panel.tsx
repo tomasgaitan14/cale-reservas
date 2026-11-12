@@ -35,6 +35,11 @@ function tabsForPlan(plan: string, role: Business['role'] = 'owner') {
   return TABS.filter(tab => plan === 'pro' || tab.key !== 'reminders').filter(tab => !isProfessional || tab.key === 'agenda' || tab.key === 'clients' || tab.key === 'business' || tab.key === 'settings')
 }
 function currentTab(isPro = true, role: Business['role'] = 'owner'): Tab { return tabsForPlan(isPro ? 'pro' : 'gratis', role).find(tab => tab.path === window.location.pathname.replace(/\/+$/, ''))?.key ?? 'agenda' }
+function roleLabel(role: Business['role'] = 'owner'): string {
+  if (role === 'professional') return 'Profesional'
+  if (role === 'admin') return 'Admin'
+  return 'Dueño'
+}
 
 export function Panel({ business: initialBusiness }: { business: Business }) {
   const [business, setBusiness] = useState(initialBusiness)
@@ -102,7 +107,7 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
   </div></Shell>
   return <div className="natural-panel">
     <PushInvitation businessId={business.id} />
-    <header className="natural-panel-header"><Brand /><button className="natural-business-button" onClick={() => { if (business.role !== 'professional') navigate('business') }} disabled={business.role === 'professional'}><Storefront size={22} aria-hidden="true" /><span>{business.name}</span><span className={`plan-badge ${business.plan === 'pro' ? 'plan-badge-pro' : 'plan-badge-gratis'}`} title={business.plan === 'pro' ? 'Plan Pro activo' : 'Plan Gratis'}>{business.plan === 'pro' && <Crown size={14} weight="bold" aria-hidden="true" />}{business.plan === 'pro' ? 'Pro' : 'Gratis'}</span></button></header><main className="natural-panel-main">
+    <header className="natural-panel-header"><Brand /><button className="natural-business-button" aria-label={`${business.name}. Rol: ${roleLabel(business.role)}. ${business.plan === 'pro' ? 'Plan Pro' : 'Plan Gratis'}`} onClick={() => { if (business.role !== 'professional') navigate('business') }} disabled={business.role === 'professional'}><Storefront size={22} aria-hidden="true" /><span>{business.name}</span><span className="role-badge" title={`Rol: ${roleLabel(business.role)}`}>{roleLabel(business.role)}</span><span className={`plan-badge ${business.plan === 'pro' ? 'plan-badge-pro' : 'plan-badge-gratis'}`} title={business.plan === 'pro' ? 'Plan Pro activo' : 'Plan Gratis'}>{business.plan === 'pro' && <Crown size={14} weight="bold" aria-hidden="true" />}{business.plan === 'pro' ? 'Pro' : 'Gratis'}</span></button></header><main className="natural-panel-main">
     {!preferences.onboarding_completed && <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-tint p-5"><p>Terminemos de preparar tu negocio. Retomás donde lo dejaste.</p><button className={SECONDARY_BUTTON} onClick={() => setSkipped(false)}>Continuar configuración</button></div>}
     {error && <p role="alert" className="text-warn">{error}</p>}
     {preferences.onboarding_completed && !ready && <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-tint p-5" role="status">
