@@ -441,6 +441,15 @@
 .clients-empty svg { color: var(--link); }
 .clients-empty h2 { color: var(--text); font-size: 20px; }
 .client-detail { display: flex; flex-direction: column; gap: 26px; }
+.client-detail-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.client-delete-button { min-height: 48px; padding: 10px 14px; border: 1px solid #d6aaa5; border-radius: 14px; background: transparent; color: #a92d28; font-weight: 800; cursor: pointer; }
+.client-delete-button:hover { background: #fce4e1; }
+.client-edit-form { display: grid; gap: 14px; padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: color-mix(in srgb, var(--surface) 70%, var(--bg)); }
+.client-edit-form label { display: flex; flex-direction: column; gap: 6px; font-weight: 750; }
+.client-edit-form input, .client-edit-form textarea { width: 100%; border: 1px solid var(--field-border); border-radius: 10px; padding: 11px 12px; background: var(--surface); color: var(--text); font: inherit; }
+.client-edit-form textarea { resize: vertical; }
+.client-edit-form input:focus-visible, .client-edit-form textarea:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+.client-notes { white-space: pre-wrap; padding: 14px; border-radius: 12px; background: var(--tint); line-height: 1.55; }
 .client-detail-heading { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .client-detail-heading h2 { font-size: 24px; overflow-wrap: anywhere; }
 .client-detail-summary { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; padding: 16px; border-radius: 12px; background: var(--tint); }

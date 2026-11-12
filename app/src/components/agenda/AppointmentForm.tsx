@@ -40,7 +40,7 @@ export function AppointmentForm({ businessId, services, initialDate, initialTime
   const hasPhone = phone.trim() !== ''
   const clientSuggestions = useMemo(() => {
     const normalized = name.trim().toLocaleLowerCase('es-AR')
-    if (!normalized) return []
+    if (!normalized) return clients.slice(0, 6)
     return clients.filter(client => [client.name, client.phone ?? '', client.email ?? ''].some(value => value.toLocaleLowerCase('es-AR').includes(normalized))).slice(0, 6)
   }, [clients, name])
 
@@ -132,11 +132,14 @@ export function AppointmentForm({ businessId, services, initialDate, initialTime
       <div className="relative">
         <TextField
           id="appointment-name"
-          label="Nombre del cliente"
+          label="Buscar o agregar cliente"
           autoComplete="off"
+          placeholder="Escribí un nombre para buscar"
           maxLength={MAX_NAME_LENGTH}
           value={name}
           onFocus={() => setShowClientSuggestions(true)}
+          aria-autocomplete="list"
+          aria-expanded={showClientSuggestions && clientSuggestions.length > 0}
           onChange={event => {
             setName(event.target.value)
             setShowClientSuggestions(true)
@@ -153,7 +156,7 @@ export function AppointmentForm({ businessId, services, initialDate, initialTime
             clear('name'); clear('phone')
           }}><strong>{client.name}</strong><span>{client.phone ?? client.email ?? 'Sin datos de contacto'}</span></button>)}
         </div> : null}
-        {clients.length > 0 && !clientSuggestions.length && name.trim() ? <p className="mt-2 text-sm text-muted">No encontramos ese cliente. Podés cargarlo como nuevo.</p> : null}
+        <p className="mt-2 text-sm text-muted">{clients.length > 0 ? 'Buscá un cliente existente o escribí uno nuevo.' : 'Todavía no hay clientes guardados. Escribí el nombre para cargarlo.'}</p>
       </div>
       <TextField
         id="appointment-phone"

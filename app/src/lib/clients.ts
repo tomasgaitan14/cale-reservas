@@ -25,6 +25,13 @@ export class ClientLoadError extends Error {
   }
 }
 
+export class ClientMutationError extends Error {
+  constructor(detail: string) {
+    super(`No se pudo actualizar el cliente: ${detail}`)
+    this.name = 'ClientMutationError'
+  }
+}
+
 export async function fetchClients(businessId: string): Promise<Client[]> {
   const [clients, appointments] = await Promise.all([
     supabase.from('clients').select('id, name, phone, email, notes, created_at, updated_at').eq('business_id', businessId).order('updated_at', { ascending: false }),
@@ -51,4 +58,15 @@ export async function fetchClientDirectory(businessId: string): Promise<Pick<Cli
     .limit(100)
   if (error) throw new ClientLoadError(error.message)
   return (data ?? []) as Pick<Client, 'id' | 'name' | 'phone' | 'email'>[]
+}
+
+export async function updateClient(businessId: string, clientId: string, value: Pick<Client, 'name' | 'phone' | 'email' | 'notes'>): Promise<Client> {
+  const { data, error } = await supabase.from('clients').update(value).eq('business_id', businessId).eq('id', clientId).select('id, name, phone, email, notes, created_at, updated_at').single()
+  if (error) throw new ClientMutationError(error.message)
+  return { ...data, appointments: [] } as Client
+}
+
+export async function deleteClient(businessId: string, clientId: string): Promise<void> {
+  const { error } = await supabase.from('clients').delete().eq('business_id', businessId).eq('id', clientId)
+  if (error) throw new ClientMutationError(error.message)
 }
