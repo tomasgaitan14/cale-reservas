@@ -95,14 +95,10 @@ describe('reserva completa desde la interfaz',()=>{
   await submit()
   expect(api.book).toHaveBeenLastCalledWith(expect.objectContaining({time:'14:00',name:'Cliente demo',consent:true}))
  })
- it('sin consentimiento explica qué falta, enfoca la opción y no envía la reserva',async()=>{
+ it('permite reservar sin aceptar recordatorios y transmite consentimiento falso',async()=>{
   await openDetails();await enter('client-name','Cliente demo');await enter('client-phone','3445 55-0142');await submit()
-  expect(api.book).not.toHaveBeenCalled()
-  expect(container.textContent).toContain('Marcá la opción de recordatorios por WhatsApp para continuar.')
-  expect(document.activeElement?.id).toBe('client-consent')
-  await act(async()=>container.querySelector<HTMLInputElement>('#client-consent')!.click())
-  expect(container.textContent).not.toContain('Marcá la opción')
-  await submit();expect(api.book).toHaveBeenCalledTimes(1)
+  expect(api.book).toHaveBeenCalledTimes(1)
+  expect(api.book).toHaveBeenCalledWith(expect.objectContaining({consent:false}))
  })
  it('sin nombre muestra el campo pendiente y conserva los demás datos',async()=>{
   await openDetails();await enter('client-phone','3445 55-0142');await submit()

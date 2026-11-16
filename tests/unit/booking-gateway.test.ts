@@ -27,10 +27,15 @@ describe('booking gateway', () => {
     expect((await bookingHandler(config, network)(request())).status).toBe(503)
     expect(network).toHaveBeenCalledTimes(1)
   })
-  it.each([{ ...payload, consent: false }, { ...payload, token: '' }, { ...payload, phone: 'invalid' }])('rechaza datos inválidos sin llamadas externas', async body => {
+  it.each([{ ...payload, consent: null }, { ...payload, token: '' }, { ...payload, phone: 'invalid' }])('rechaza datos inválidos sin llamadas externas', async body => {
     const network = vi.fn<typeof fetch>()
     expect((await bookingHandler(config, network)(request(body))).status).toBe(400)
     expect(network).not.toHaveBeenCalled()
+  })
+  it('acepta reservar sin consentimiento de recordatorios', async () => {
+    const network = vi.fn<typeof fetch>().mockResolvedValueOnce(Response.json({ success: true, hostname: 'cale.com.ar', action: 'booking' })).mockResolvedValueOnce(Response.json({ service_name: 'Corte' }))
+    expect((await bookingHandler(config, network)(request({ ...payload, consent: false }))).status).toBe(200)
+    expect(JSON.parse(network.mock.calls[1]![1]!.body as string).p_consent).toBe(false)
   })
   it('rechaza otro origen sin llamadas externas', async () => {
     const network = vi.fn<typeof fetch>()

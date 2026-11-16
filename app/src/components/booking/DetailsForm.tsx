@@ -45,8 +45,8 @@ export function DetailsForm({ draft, onDraftChange, errors, busy, verification, 
     const validName = name.trim().length > 0
     setNameError(validName ? null : 'Escribí tu nombre.')
     setPhoneError(normalized ? null : INVALID_PHONE_MESSAGE)
-    setConsentError(consent ? null : 'Marcá la opción de recordatorios por WhatsApp para continuar.')
-    if (!validName || !normalized || !consent) {
+    setConsentError(null)
+    if (!validName || !normalized) {
       const invalidId = !validName ? 'client-name' : !normalized ? 'client-phone' : 'client-consent'
       document.getElementById(invalidId)?.focus()
       return
@@ -111,7 +111,7 @@ export function DetailsForm({ draft, onDraftChange, errors, busy, verification, 
           >
             {consent ? <Check weight="bold" className="size-4" /> : null}
           </span>
-          <span>Acepto que me manden por WhatsApp recordatorios de este turno.</span>
+          <span>Quiero recibir recordatorios de este turno por WhatsApp (opcional). Podés reservar sin aceptar.</span>
         </label>
         {consentError || errors.consent ? (
           <p id="consent-error" role="alert" className="flex items-start gap-1.5 text-[0.9375rem] font-medium text-warn">

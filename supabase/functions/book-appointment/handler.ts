@@ -39,7 +39,7 @@ export function bookingHandler(config: Config, requestFetch: typeof fetch = fetc
           typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
           typeof time !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time) ||
           typeof name !== 'string' || !name.trim() || name.trim().length > 80 ||
-          typeof phone !== 'string' || !/^\d{10,15}$/.test(phone) || consent !== true ||
+          typeof phone !== 'string' || !/^\d{10,15}$/.test(phone) || typeof consent !== 'boolean' ||
           typeof token !== 'string' || !token || token.length > 2048) return reply(400, { error: 'invalid_request' })
       const verification = await requestFetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
         method: 'POST', body: new URLSearchParams({ secret: config.secret, response: token }), signal: AbortSignal.timeout(8000),
