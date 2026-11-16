@@ -9,7 +9,14 @@ export default defineConfig(({ command, mode }) => {
   return {
     root: 'app',
     envDir: '..',
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), {
+      name: 'production-home-indexing',
+      transformIndexHtml(html) {
+        return process.env.VERCEL_ENV === 'production'
+          ? html.replace('<meta name="robots" content="noindex" />', '<meta name="robots" content="index, follow" />')
+          : html
+      },
+    }],
     build: { outDir: '../dist', emptyOutDir: true },
     server: { host: '127.0.0.1', port: 5174, strictPort: true },
     preview: { host: '127.0.0.1', port: 5174, strictPort: true },
