@@ -566,3 +566,13 @@
   .agenda-workspace .natural-agenda-toolbar [aria-label="Vista de la agenda"] { margin-left: auto; }
   .agenda-workspace .natural-agenda-toolbar [aria-label="Vista de la agenda"] button { padding: 6px 8px; font-size: 14px; }
 }
+.guided-setup { display: flex; flex-direction: column; gap: 24px; min-width: 0; padding-bottom: 32px; }
+.guided-setup-progress { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.guided-setup-meter { width: 100%; height: 8px; accent-color: var(--link); border: 0; }
+.guided-setup-hint { display: flex; flex-direction: column; gap: 8px; border-left: 4px solid var(--link); background: var(--tint); border-radius: 12px; padding: 20px; line-height: 1.6; }
+.guided-setup-target { border: 2px solid var(--tint-border); border-radius: 20px; padding: 24px; min-width: 0; }
+@media(max-width: 767px) {
+  .guided-setup-progress { align-items: flex-start; }
+  .guided-setup-progress button { font-size: 14px; padding-inline: 12px; }
+  .guided-setup-target { padding: 12px; }
+}

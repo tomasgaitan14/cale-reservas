@@ -4,7 +4,7 @@ import { BRAND_PALETTES, DEFAULT_BRANDING, brandingStyle, validColor, type Brand
 import { fetchBranding, logoUrl, prepareLogo, removeLogo, saveBranding, uploadLogo } from '../lib/branding-api.ts'
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from './ui.ts'
 
-export function BusinessBranding({businessId,name}:{businessId:string;name:string}) {
+export function BusinessBranding({businessId,name,onSaved}:{businessId:string;name:string;onSaved?:()=>void}) {
   const [draft,setDraft]=useState<Branding>({...DEFAULT_BRANDING})
   const [saved,setSaved]=useState<Branding|null>(null)
   const [image,setImage]=useState<Blob|null>(null)
@@ -24,6 +24,7 @@ export function BusinessBranding({businessId,name}:{businessId:string;name:strin
       await saveBranding(businessId,value);committed=true
       setSaved(value);setDraft(value);setImage(null);setNotice('Diseño guardado. Ya se ve en tu página de reservas.')
       if(saved.logo_path && saved.logo_path!==value.logo_path)await removeLogo(saved.logo_path)
+      onSaved?.()
     }catch(cause){
       if(uploaded&&!committed){try{const current=await fetchBranding(businessId);if(current.logo_path!==uploaded)await removeLogo(uploaded)}catch{/* Ante un resultado incierto se conserva el archivo, para no borrar un logo que sí quedó guardado. */}}
       setNotice((cause as Error).message)
