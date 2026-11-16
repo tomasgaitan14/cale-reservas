@@ -1,4 +1,4 @@
-export type Route = { kind: 'landing' } | { kind: 'panel' } | { kind: 'booking'; slug: string } | { kind: 'not-found' }
+export type Route = { kind: 'landing' } | { kind: 'panel' } | { kind: 'booking'; slug: string } | { kind: 'not-found' } | { kind: 'legal'; page: 'privacidad' | 'terminos' | 'eliminar-datos' }
 
 const PANEL_PATHS = ['/empezar', '/panel', '/panel/negocio', '/panel/avisos', '/panel/ajustes']
 // Un tramo con el mismo formato que los slugs de la base: minúsculas, números y guiones sueltos entre palabras
@@ -8,6 +8,7 @@ const BOOKING_PATH = /^\/([a-z0-9]+(?:-[a-z0-9]+)*)$/
 export function parseRoute(pathname: string): Route {
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname
   if (path === '/') return { kind: 'landing' }
+  if (path === '/privacidad' || path === '/terminos' || path === '/eliminar-datos') return { kind: 'legal', page: path.slice(1) as 'privacidad' | 'terminos' | 'eliminar-datos' }
   if (PANEL_PATHS.includes(path)) return { kind: 'panel' }
 
   const slug = BOOKING_PATH.exec(path)?.[1]
