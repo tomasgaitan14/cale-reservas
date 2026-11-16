@@ -134,8 +134,8 @@
 .pricing-note { max-width: 850px; margin: 28px 0 80px; color: var(--muted); font-size: 14px; line-height: 1.5; }
 @media (max-width: 900px) { .pricing-grid { grid-template-columns: 1fr; max-width: 620px; } .pricing-card ul { min-height: 0; } }
 @media (max-width: 767px) { .pricing-shell { padding: 0 20px; } .pricing-header { padding: 18px 0; } .pricing-header > a:last-child { font-size: 12px; padding: 10px 12px; } .pricing-intro { padding: 52px 0 34px; } .pricing-intro h1 { font-size: 46px; } .pricing-intro > p:last-child { font-size: 16px; } .pricing-card, .pricing-card.is-featured { padding: 23px; } }
-.natural-theme .marketing-header { padding: 24px 0; }
-.natural-marketing-navigation { gap: 22px; }
+.natural-theme .marketing-header { position: relative; padding: 24px 0; }
+.natural-marketing-links { position: absolute; left: 50%; display: flex; align-items: center; gap: 22px; transform: translateX(-50%); }
 .natural-how-link { min-height: 44px; background: transparent; font-size: 15px; font-weight: 600; padding: 8px 0; }
 .natural-theme .landing-hero { grid-template-columns: 1.07fr .93fr; gap: 72px; min-height: 630px; padding: 54px 0 64px; }
 .natural-theme .landing-hero h1 { font-size: clamp(38px,4vw,60px); max-width: 18ch; line-height: 1.1; letter-spacing: -.045em; }
@@ -277,7 +277,7 @@
   .natural-appointment-status { font-size: 11px; }
   .natural-theme .marketing-shell { padding: 0 20px; }
   .natural-theme .marketing-header { padding: 18px 0; gap: 14px; }
-  .natural-marketing-navigation { gap: 10px; }
+  .natural-marketing-links { display: none; }
   .natural-how-link { display: none; }
   .natural-theme .landing-hero { grid-template-columns: 1fr; gap: 35px; min-height: 0; padding: 36px 0; }
   .natural-theme .landing-hero h1 { font-size: 38px; max-width: 16ch; }

@@ -61,7 +61,7 @@ export function LandingScreen() {
   const panelActionLabel = signedIn ? 'Ir a mi negocio' : 'Empezá Gratis'
   const authError = new URLSearchParams(window.location.hash.slice(1)).has('error')
   return <div className="marketing-shell">
-    <header className="marketing-header"><a href="/" aria-label="Cale"><Brand /></a><div className="natural-marketing-navigation flex items-center gap-3"><a className="natural-how-link" href="#precios">Precios</a><button className="natural-how-link" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({behavior:'instant'})}>Cómo funciona</button><button className="landing-small-cta" onClick={panelAction}>{panelActionLabel}</button></div></header>
+    <header className="marketing-header"><a href="/" aria-label="Cale"><Brand /></a><nav className="natural-marketing-links" aria-label="Navegación principal"><a className="natural-how-link" href="#precios">Precios</a><button className="natural-how-link" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({behavior:'instant'})}>Cómo funciona</button></nav><button className="landing-small-cta" onClick={panelAction}>{panelActionLabel}</button></header>
     {authError && <p role="alert" className="rounded-xl bg-warn-bg p-4 text-warn">No pudimos completar el ingreso con Google. Tocá Empezá Gratis para volver a intentarlo.</p>}
     <main>
       <section className="landing-hero">
