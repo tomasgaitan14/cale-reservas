@@ -13,7 +13,8 @@ const FAQ = [
   ['¿Necesito otra agenda?', 'No. Cale tiene su propia agenda dentro del panel. Ahí ves las reservas, cargás turnos a mano y bloqueás horarios.'],
   ['¿Cómo reservan mis clientes?', 'Compartís el link de tu negocio o tu QR. Tus clientes eligen un servicio, un día y un horario disponible. El turno aparece en tu agenda.'],
   ['¿Puedo cargar turnos a mano y bloquear horarios?', 'Sí. Podés cargar los turnos que te pidan por fuera de la página y bloquear descansos, vacaciones o cualquier horario en el que no atiendas.'],
-  ['¿Tengo que cambiar mi número de WhatsApp?', 'No. La conexión usa el número que ya usás en WhatsApp Business, para que puedas seguir viendo y respondiendo tus mensajes.'],
+  ['¿Cómo activo WhatsApp?', 'El equipo de Cale te acompaña con la configuración de tu WhatsApp Business. Conservás la propiedad de tu número y tu cuenta comercial. Los recordatorios requieren configuración previa.'],
+  ['¿Puedo seguir usando WhatsApp Business en el teléfono?', 'Revisamos con vos la compatibilidad de tu cuenta para usar la app y los recordatorios automáticos con el mismo número. Esta posibilidad se confirma durante la configuración con Meta.'],
 ] as const
 function TrustedBusinesses() {
   const [businesses, setBusinesses] = useState<PublicBusiness[] | null>(null)
@@ -70,7 +71,7 @@ export function LandingScreen() {
           <h1>Tus reservas online, <span className="text-link">tu día en orden.</span></h1>
           <p className="max-w-lg text-lg text-muted">Tus clientes eligen su turno desde tu propio link o QR. Vos recibís las reservas y organizás tu día en una sola agenda.</p>
           <div className="flex w-full flex-wrap gap-3"><button className={`${PRIMARY_BUTTON} sm:w-auto`} onClick={panelAction}>{panelActionLabel}<ArrowRight size={20} aria-hidden="true" /></button><button className={SECONDARY_BUTTON} onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })}>Ver cómo funciona</button></div>
-          <p className="flex items-center gap-2 text-sm text-muted"><CheckCircle size={19} weight="fill" className="text-ok" aria-hidden="true" />Recordatorios automáticos por WhatsApp</p>
+          <p className="flex items-center gap-2 text-sm text-muted"><CheckCircle size={19} weight="fill" className="text-ok" aria-hidden="true" />Recordatorios automáticos por WhatsApp desde el número de tu negocio.</p>
         </div>
         <BookingPreview />
       </section>
@@ -81,7 +82,7 @@ export function LandingScreen() {
         {title:'Tu agenda',text:'Recibí notificaciones de nuevos turnos y gestioná tus reservas.'},
       ].map(({title,text},index)=><li key={title}><span>0{index+1}</span><h3>{title}</h3><p>{text}</p></li>)}</ol></section>
       <section className="landing-band"><div><p className="eyebrow">Todo en un mismo lugar</p><h2>Tu agenda.<br />Tu link. Tu ritmo.</h2></div><dl className="landing-facts"><div><dt><CalendarBlank aria-hidden="true" />Agenda propia</dt><dd>Turnos online y cargados a mano.</dd></div><div><dt><QrCode aria-hidden="true" />Link y QR</dt><dd>Una página de reservas para tu negocio.</dd></div><div><dt><Bell aria-hidden="true" />Recordatorios</dt><dd>Nuevos turnos, cancelaciones y cambios de horario, siempre al tanto.</dd></div></dl></section>
-      <section className="natural-reminder-section"><div><p className="eyebrow">Recordatorios automáticos por WhatsApp</p><h2>Un recordatorio,<br />menos olvidos.</h2><p>Tus clientes pueden confirmar o cancelar desde el mensaje. Los avisos salen del número que tu negocio ya usa.</p></div><ReminderExample businessName="Negocio demo" /></section>
+      <section className="natural-reminder-section"><div><p className="eyebrow">Recordatorios automáticos por WhatsApp</p><h2>Un recordatorio,<br />menos olvidos.</h2><p>Configuramos la conexión por vos. Tus clientes reciben sus recordatorios desde el número de tu negocio y vos consultás el estado de cada envío desde Cale.</p><p className="mt-4 text-sm text-muted">Disponible con Pro. Requiere configuración previa.</p></div><ReminderExample businessName="Negocio demo" /></section>
       <PricingSection />
       <section className="landing-section faq-section"><div className="section-heading"><p className="eyebrow">Preguntas que aparecen</p><h2>Lo importante,<br />sin vueltas.</h2></div><div>{FAQ.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div></section>
       <section className="landing-closing"><p className="eyebrow">Empezá por tu negocio</p><h2>Dale un lugar a tus turnos.</h2><p className="mt-4 text-muted">Una agenda clara para vos. Una forma simple de reservar para tus clientes.</p><button className={`${PRIMARY_BUTTON} mt-6 sm:w-auto`} onClick={panelAction}>{panelActionLabel}<ArrowRight aria-hidden="true" /></button></section>
