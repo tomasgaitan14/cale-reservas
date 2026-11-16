@@ -3,7 +3,8 @@ import { act, createElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const api=vi.hoisted(()=>({progress:vi.fn(),preferences:vi.fn(),savePreferences:vi.fn(),createService:vi.fn(),services:vi.fn(),hours:vi.fn(),saveHours:vi.fn()}))
-vi.mock('../../app/src/lib/supabase.ts',()=>({supabase:{auth:{signOut:vi.fn()}}}))
+vi.mock('../../app/src/lib/supabase.ts',()=>({supabase:{auth:{signOut:vi.fn(),getUser:async()=>({data:{user:{id:'owner-demo'}}})}}}))
+vi.mock('../../app/src/components/Modal.tsx',()=>({Modal:({title,children}:{title:string;children:import('react').ReactNode})=>createElement('section',{},createElement('h2',{},title),children)}))
 vi.mock('../../app/src/lib/business.ts',()=>({fetchTeam:async()=>({members:[{user_id:'owner-demo',display_name:'Dueño de prueba',role:'owner'}],invitations:[]}),TeamLoadError:class extends Error{}}))
 vi.mock('../../app/src/lib/setup.ts',()=>({fetchSetupProgress:api.progress,SetupLoadError:class extends Error{}}))
 vi.mock('../../app/src/lib/preferences.ts',()=>({fetchPreferences:api.preferences,savePreferences:api.savePreferences,PreferencesError:class extends Error{}}))
@@ -20,6 +21,8 @@ let preferences:Preferences
 const BUSINESS={id:'business-demo',name:'Negocio demo',slug:'negocio-demo',whatsapp:'540000000000'}
 beforeEach(()=>{
  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT',true);vi.resetAllMocks();window.history.replaceState({},'','/panel')
+ localStorage.clear()
+ vi.spyOn(window,'scrollTo').mockImplementation(()=>{})
  progress={serviceCount:0,hasHours:false,upcomingCount:0}
  preferences={business_id:BUSINESS.id,reminder_hours:24,whatsapp_waitlist:false,reminders_reviewed:false,onboarding_completed:false,allow_cross_professional_overlap:true}
  api.progress.mockImplementation(async()=>({...progress}))
@@ -42,29 +45,30 @@ async function addService(){await act(async()=>{
  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(input,'Servicio de prueba')
  input.dispatchEvent(new Event('input',{bubbles:true}))
 });await act(async()=>container.querySelector('form')!.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})))}
+async function startService(){await render();await click('Empezar');await click('Crear mi servicio')}
 async function remount(){await act(async()=>root.unmount());root=createRoot(container);await render()}
 describe('alta guiada con avance persistido',()=>{
  it('completa servicio y horarios y llega a la agenda sin configurar funciones futuras',async()=>{
-  await render();expect(container.textContent).toContain('Empecemos por un servicio')
+  await startService();expect(container.textContent).toContain('Empecemos por un servicio')
   await addService();expect(container.textContent).toContain('Tus horarios')
   await click('Guardar y continuar')
   expect(api.saveHours).toHaveBeenCalledWith(BUSINESS.id,'owner-demo',expect.objectContaining({1:[{start:'09:00',end:'18:00'}],5:[{start:'09:00',end:'18:00'}],0:[],6:[]}))
   expect(container.textContent).not.toContain('Un recordatorio,menos olvidos.')
   expect(preferences.reminders_reviewed).toBe(false)
-  expect(container.textContent).toContain('Tu agenda ya tiene su lugar')
+  await click('Personalizar mi página');await click('Hacerlo después');await click('Ver mi link');await click('Conocer mi agenda')
   await click('Ir a mi agenda');expect(preferences.onboarding_completed).toBe(true)
   expect(container.textContent).toContain('Agenda del negocio')
   expect(api.progress).toHaveBeenCalledWith(BUSINESS.id)
  })
  it('después de salir retoma horarios sin volver a crear el servicio',async()=>{
-  await render();await addService();await remount()
+  await startService();await addService();await remount()
   expect(container.textContent).toContain('Tus horarios')
   expect(api.createService).toHaveBeenCalledTimes(1)
   expect(container.textContent).not.toContain('Empecemos por un servicio')
  })
  it('un rechazo al guardar el servicio conserva el paso y muestra el motivo',async()=>{
   api.createService.mockResolvedValue({ok:false,errors:{name:'Ya existe un servicio con ese nombre.'}})
-  await render();await addService()
+  await startService();await addService()
   expect(container.textContent).toContain('Ya existe un servicio con ese nombre')
   expect(container.textContent).toContain('Empecemos por un servicio')
   expect(api.saveHours).not.toHaveBeenCalled()
@@ -72,7 +76,7 @@ describe('alta guiada con avance persistido',()=>{
  it('un rechazo de horarios no avanza a recordatorios',async()=>{
   progress.serviceCount=1
   api.saveHours.mockResolvedValue({ok:false,message:'No pudimos guardar los horarios.'})
-  await render();await click('Guardar y continuar')
+  await render();await click('Empezar');await click('Configurar horarios');await click('Guardar y continuar')
   expect(container.textContent).toContain('No pudimos guardar los horarios')
   expect(container.textContent).toContain('Tus horarios')
   expect(api.savePreferences).not.toHaveBeenCalled()

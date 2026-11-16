@@ -128,7 +128,7 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
         {!progress.hasHours ? <p>Contactá al administrador del negocio para agregar tus horarios de atención.</p> : null}
       </div> : <>
         <p>{progress.serviceCount < 1 ? 'Tu página necesita al menos un servicio activo para recibir reservas.' : 'Cargá tus horarios para que tu página pueda recibir reservas.'}</p>
-        <button className={SECONDARY_BUTTON} onClick={() => { navigate('business'); setEditor(progress.serviceCount < 1 ? 'services' : 'hours') }}>{progress.serviceCount < 1 ? 'Revisar servicios' : 'Cargar horarios'}</button>
+        <button className={SECONDARY_BUTTON} onClick={() => { navigate('settings'); setEditor(progress.serviceCount < 1 ? 'services' : 'hours') }}>{progress.serviceCount < 1 ? 'Revisar servicios' : 'Cargar horarios'}</button>
       </>}
     </div>}
     {preferences.onboarding_completed && tab === 'agenda' && !editor && <InstallPanel invitation />}
