@@ -55,7 +55,7 @@ function TrustedBusinesses() {
 export function LandingScreen() {
   const session = useSession()
   useEffect(() => {
-    document.title = 'Reservas online y agenda para tu negocio · Cale'
+    document.title = 'Recordatorios de turnos por WhatsApp'
   }, [])
   const signedIn = session.status === 'signed-in'
   const panelAction = () => window.location.assign(signedIn ? '/panel' : '/#precios')
