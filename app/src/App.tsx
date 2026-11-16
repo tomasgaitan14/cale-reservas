@@ -12,6 +12,7 @@ import { supabase } from './lib/supabase.ts'
 import { BookingPage } from './screens/BookingPage.tsx'
 import { CreateBusinessScreen } from './screens/CreateBusinessScreen.tsx'
 import { LoginScreen } from './screens/LoginScreen.tsx'
+import { LegalScreen } from './screens/LegalScreen.tsx'
 const DesignPreview = import.meta.env.DEV ? lazy(() => import('./designs/DesignPreview.tsx').then(module => ({ default: module.DesignPreview }))) : null
 const LandingScreen = lazy(() => import('./screens/LandingScreen.tsx').then(module => ({ default: module.LandingScreen })))
 const Panel = lazy(() => import('./screens/Panel.tsx').then(module => ({ default: module.Panel })))
@@ -133,6 +134,7 @@ export function App() {
   const variant = import.meta.env.DEV ? designVariant(window.location.pathname) : null
   if (variant && DesignPreview) return <Suspense fallback={<Shell><LoadingPanel /></Shell>}><DesignPreview key={variant} variant={variant} /></Suspense>
   const route = parseRoute(window.location.pathname)
+  if (route.kind === 'legal') return <LegalScreen page={route.page} />
   if (route.kind === 'landing') return <Suspense fallback={<Shell><LoadingPanel /></Shell>}><LandingScreen /></Suspense>
   if (route.kind === 'booking') return <BookingPage slug={route.slug} />
   if (route.kind === 'not-found') return <NotFound />

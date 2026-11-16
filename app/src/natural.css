@@ -576,3 +576,12 @@
   .guided-setup-progress button { font-size: 14px; padding-inline: 12px; }
   .guided-setup-target { padding: 12px; }
 }
+.legal-shell { width: min(100% - 40px, 900px); margin-inline: auto; }
+.legal-shell main { padding-block: 48px; overflow-wrap: anywhere; }
+.legal-shell h1 { font-size: clamp(30px, 5vw, 48px); margin-block: 16px 24px; line-height: 1.15; }
+.legal-shell main > section { padding-top: 32px; scroll-margin-top: 24px; }
+.legal-shell h2 { font-size: 22px; line-height: 1.4; margin-bottom: 16px; }
+.legal-shell section p { line-height: 1.8; margin-block: 12px; max-width: 75ch; }
+.legal-shell section a, .legal-index a { text-decoration: underline; text-underline-offset: 4px; color: var(--link); }
+.legal-index { display: flex; flex-direction: column; align-items: flex-start; margin-top: 32px; padding-block: 16px; border-block: 1px solid var(--border); }
+.legal-index a { display: flex; align-items: center; min-height: 44px; line-height: 1.5; }

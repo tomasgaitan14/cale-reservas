@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { parseRoute } from '../../app/src/lib/route.ts'
 
 describe('parseRoute', () => {
+  it.each(['privacidad', 'terminos', 'eliminar-datos'])('reserva la ruta legal %s sin consultar negocios', page => {
+    expect(parseRoute('/' + page)).toEqual({ kind: 'legal', page })
+    expect(parseRoute('/' + page + '/')).toEqual({ kind: 'legal', page })
+  })
   it('la raíz es la portada de Cale', () => { expect(parseRoute('/')).toEqual({ kind: 'landing' }) })
   it.each(['/empezar', '/panel', '/panel/', '/panel/negocio', '/panel/avisos', '/panel/ajustes/'])('%s es el panel del negocio', pathname => {
     expect(parseRoute(pathname)).toEqual({ kind: 'panel' })
