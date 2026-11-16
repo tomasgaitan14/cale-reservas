@@ -98,8 +98,13 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
   }
   async function replayTour() {
     const { data } = await supabase.auth.getUser()
-    if (data.user) { try { localStorage.removeItem('cale:guided-setup:v1:' + data.user.id + ':' + business.id) } catch { /* Sin almacenamiento. */ } }
+    if (data.user) { try { localStorage.removeItem('cale:guided-setup:v1:' + data.user.id + ':' + business.id); localStorage.removeItem('cale:tour-paused:' + data.user.id + ':' + business.id) } catch { /* Sin almacenamiento. */ } }
     setSkipped(false); setTourReplay(true)
+  }
+  async function resumeTour() {
+    const { data } = await supabase.auth.getUser()
+    if (data.user) { try { localStorage.removeItem('cale:tour-paused:' + data.user.id + ':' + business.id) } catch { /* Sin almacenamiento. */ } }
+    setSkipped(false)
   }
   async function pauseTour() {
     setSkipped(true); setTourReplay(false); refresh()
@@ -115,7 +120,7 @@ export function Panel({ business: initialBusiness }: { business: Business }) {
   return <div className="natural-panel">
     <PushInvitation businessId={business.id} />
     <header className="natural-panel-header"><Brand /><button className="natural-business-button" aria-label={`${business.name}. Rol: ${roleLabel(business.role)}. ${business.plan === 'pro' ? 'Plan Pro' : 'Plan Gratis'}`} onClick={() => { if (business.role !== 'professional') navigate('business') }} disabled={business.role === 'professional'}><Storefront size={22} aria-hidden="true" /><span>{business.name}</span><span className="role-badge" title={`Rol: ${roleLabel(business.role)}`}>{roleLabel(business.role)}</span><span className={`plan-badge ${business.plan === 'pro' ? 'plan-badge-pro' : 'plan-badge-gratis'}`} title={business.plan === 'pro' ? 'Plan Pro activo' : 'Plan Gratis'}>{business.plan === 'pro' && <Crown size={14} weight="bold" aria-hidden="true" />}{business.plan === 'pro' ? 'Pro' : 'Gratis'}</span></button></header><main className="natural-panel-main">
-    {!preferences.onboarding_completed && <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-tint p-5"><p>Terminemos de preparar tu negocio. Retomás donde lo dejaste.</p><button className={SECONDARY_BUTTON} onClick={() => setSkipped(false)}>Continuar configuración</button></div>}
+    {!preferences.onboarding_completed && <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-tint p-5"><p>Terminemos de preparar tu negocio. Retomás donde lo dejaste.</p><button className={SECONDARY_BUTTON} onClick={() => void resumeTour()}>Continuar configuración</button></div>}
     {error && <p role="alert" className="text-warn">{error}</p>}
     {preferences.onboarding_completed && !ready && <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-tint p-5" role="status">
       {business.role === 'professional' ? <div className="flex flex-col gap-1">
