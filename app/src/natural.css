@@ -136,7 +136,7 @@
 @media (max-width: 767px) { .pricing-shell { padding: 0 20px; } .pricing-header { padding: 18px 0; } .pricing-header > a:last-child { font-size: 12px; padding: 10px 12px; } .pricing-intro { padding: 52px 0 34px; } .pricing-intro h1 { font-size: 46px; } .pricing-intro > p:last-child { font-size: 16px; } .pricing-card, .pricing-card.is-featured { padding: 23px; } }
 .natural-theme .marketing-header { position: relative; padding: 24px 0; }
 .natural-marketing-links { position: absolute; left: 50%; display: flex; align-items: center; gap: 22px; transform: translateX(-50%); }
-.natural-how-link { min-height: 44px; background: transparent; font-size: 15px; font-weight: 600; padding: 8px 0; }
+.natural-how-link { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; background: transparent; font-size: 15px; font-weight: 600; line-height: 1.2; padding: 8px 0; }
 .natural-theme .landing-hero { grid-template-columns: 1.07fr .93fr; gap: 72px; min-height: 630px; padding: 54px 0 64px; }
 .natural-theme .landing-hero h1 { font-size: clamp(38px,4vw,60px); max-width: 18ch; line-height: 1.1; letter-spacing: -.045em; }
 .natural-hero-copy > p:not(.eyebrow) { font-size: 19px; line-height: 1.6; max-width: 49ch; }
