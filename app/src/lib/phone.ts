@@ -38,3 +38,10 @@ export function normalizePhone(raw: string): string | null {
   if (!NATIONAL_NUMBER_PATTERN_AR.test(digits)) return null
   return COUNTRY_CODE_AR + MOBILE_PREFIX_AR + digits
 }
+
+// Formato visible para cargar turnos: código de área y abonado, sin 54 ni 9.
+// La base sigue guardando el formato canónico 549..., pero la interfaz muestra 3446XXXXXX.
+export function formatPhoneForInput(raw: string): string {
+  const normalized = normalizePhone(raw)
+  return normalized?.startsWith(COUNTRY_CODE_AR + MOBILE_PREFIX_AR) ? normalized.slice(3) : raw.replace(/\D/g, '')
+}

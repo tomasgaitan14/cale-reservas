@@ -3,7 +3,7 @@ import { useEffect, useState, type CSSProperties, type FormEvent } from 'react'
 import { SelectField } from '../components/SelectField.tsx'
 import { TextField } from '../components/TextField.tsx'
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '../components/ui.ts'
-import { fetchTeam, TeamLoadError, type Business, type TeamMember } from '../lib/business.ts'
+import type { Business } from '../lib/business.ts'
 import { DEFAULT_DURATION_MINUTES, DURATION_OPTIONS_MINUTES, formatDuration } from '../lib/duration.ts'
 import type { ServiceFormErrors } from '../lib/service-errors.ts'
 import {
@@ -15,6 +15,7 @@ import {
   type Service,
   type ServiceResult,
 } from '../lib/services.ts'
+import { supabase } from '../lib/supabase.ts'
 
 const MAX_NAME_LENGTH = 80
 
@@ -33,8 +34,6 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
   const [name, setName] = useState('')
   const [duration, setDuration] = useState(DEFAULT_DURATION_MINUTES)
   const [professionalId, setProfessionalId] = useState('')
-  const [team, setTeam] = useState<TeamMember[]>([])
-  const [teamError, setTeamError] = useState(false)
   const [errors, setErrors] = useState<ServiceFormErrors>({})
   const [busy, setBusy] = useState(false)
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null)
@@ -42,19 +41,17 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
 
   useEffect(() => {
     let cancelled = false
-    Promise.all([fetchServices(business.id), fetchTeam(business.id)])
-      .then(([services, loadedTeam]) => {
+    Promise.all([fetchServices(business.id), supabase.auth.getUser()])
+      .then(([services, { data: { user } }]) => {
         if (!cancelled) {
           setList({ status: 'ready', services })
-          setTeam(loadedTeam.members)
-          setProfessionalId(current => current || loadedTeam.members[0]?.user_id || '')
+          setProfessionalId(user?.id ?? '')
         }
       })
       .catch((error: unknown) => {
-        if (!(error instanceof ServiceLoadError || error instanceof TeamLoadError)) throw error
+        if (!(error instanceof ServiceLoadError)) throw error
         if (!cancelled) {
           setList({ status: 'error' })
-          setTeamError(error instanceof TeamLoadError)
         }
       })
     return () => {
@@ -68,7 +65,7 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
     setEditingId(null)
     setName('')
     setDuration(DEFAULT_DURATION_MINUTES)
-    setProfessionalId(team[0]?.user_id ?? '')
+    setProfessionalId('')
     setErrors({})
   }
 
@@ -140,18 +137,7 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
             }}
             error={errors.duration}
           />
-          <SelectField
-            id="service-professional"
-            label="Profesional responsable"
-            options={team.map(member => ({
-              value: member.user_id,
-              label: `${member.display_name || member.email || 'Profesional'}${member.role === 'professional' ? '' : ` · ${member.role === 'owner' ? 'Dueño' : 'Administrador'}`}`,
-            }))}
-            value={professionalId}
-            onChange={event => setProfessionalId(event.target.value)}
-            error={teamError ? 'No pudimos cargar el equipo.' : undefined}
-          />
-          <p className="-mt-3 text-sm text-muted">Este profesional atenderá los turnos de este servicio.</p>
+          <div className="rounded-[12px] bg-tint p-3 text-base text-muted">Este servicio quedará asociado a tu agenda. Cada profesional administra sus propios servicios.</div>
           {errors.general ? (
             <p role="alert" className="rounded-[12px] bg-warn-bg p-3 text-[0.9375rem] font-medium text-warn">
               {errors.general}
@@ -229,7 +215,7 @@ export function ServicesScreen({ business, onBack, onContinue }: ServicesScreenP
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex min-w-0 flex-col">
                       <p className="break-words font-head text-lg font-extrabold tracking-tight">{service.name}</p>
-                      <p className="text-base text-muted">{formatDuration(service.duration_minutes)} · {team.find(member => member.user_id === service.professional_id)?.display_name || 'Profesional asignado'}</p>
+                      <p className="text-base text-muted">{formatDuration(service.duration_minutes)} · Tu agenda</p>
                     </div>
                     <button
                       type="button"

@@ -15,7 +15,7 @@ import {
   type WeekHours,
 } from '../lib/hours.ts'
 import { fetchHours, HoursLoadError, saveHours } from '../lib/hours-api.ts'
-import { fetchTeam, TeamLoadError, type TeamMember } from '../lib/business.ts'
+import { supabase } from '../lib/supabase.ts'
 
 type LoadState = { status: 'loading' } | { status: 'error' } | { status: 'ready' }
 type SaveMessage = { kind: 'ok' | 'error'; text: string }
@@ -28,29 +28,18 @@ interface HoursScreenProps {
 
 export function HoursScreen({ business, onBack, onContinue }: HoursScreenProps) {
   const [load, setLoad] = useState<LoadState>({ status: 'loading' })
-  const [team, setTeam] = useState<TeamMember[]>([])
   const [professionalId, setProfessionalId] = useState('')
   const [reloadCount, setReloadCount] = useState(0)
   const [week, setWeek] = useState<WeekHours>(emptyWeek())
   const [problems, setProblems] = useState<Record<number, string>>({})
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<SaveMessage | null>(null)
-  const canManage = !business.role || business.role === 'owner' || business.role === 'admin'
-
   useEffect(() => {
-    let cancelled = false
-    fetchTeam(business.id)
-      .then(({ members }) => {
-        if (cancelled) return
-        setTeam(members)
-        const preferred = members.find(member => member.role === 'owner') ?? members[0]
-        setProfessionalId(current => current && members.some(member => member.user_id === current) ? current : preferred?.user_id ?? '')
-      })
-      .catch((error: unknown) => {
-        if (!(error instanceof TeamLoadError)) throw error
-        if (!cancelled) setLoad({ status: 'error' })
-      })
-    return () => { cancelled = true }
+    let active = true
+    void supabase.auth.getUser().then(({ data: { user } }) => {
+      if (active) setProfessionalId(user?.id ?? '')
+    })
+    return () => { active = false }
   }, [business.id])
 
   useEffect(() => {
@@ -116,14 +105,7 @@ export function HoursScreen({ business, onBack, onContinue }: HoursScreenProps) 
         </p>
 
         <section className="rise-in flex flex-col gap-5" style={{ '--i': 2 } as CSSProperties} aria-label="Horarios de la semana">
-          {canManage && team.length > 0 ? (
-            <label className="hours-professional-filter flex flex-col gap-2 text-sm font-semibold text-muted">
-              Horarios de
-              <select className="field" value={professionalId} onChange={event => { setProfessionalId(event.target.value); setMessage(null); setProblems({}) }}>
-                {team.map(member => <option key={member.user_id} value={member.user_id}>{member.display_name || member.email || 'Profesional'}</option>)}
-              </select>
-            </label>
-          ) : null}
+          <p className="rounded-[12px] bg-tint p-3 text-base text-muted">Estos son tus horarios. Cada profesional administra su propia disponibilidad.</p>
           {load.status === 'loading' ? (
             <div className="flex flex-col gap-3" role="status" aria-label="Cargando tus horarios">
               {DAYS.map(day => (

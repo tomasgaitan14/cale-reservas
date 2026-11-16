@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const api=vi.hoisted(()=>({agenda:vi.fn(),counts:vi.fn(),cancel:vi.fn(),services:vi.fn(),hours:vi.fn()}))
 vi.mock('../../app/src/lib/supabase.ts',()=>({supabase:{}}))
+vi.mock('../../app/src/lib/business.ts',()=>({fetchTeam:async()=>({members:[],invitations:[]}),TeamLoadError:class extends Error{}}))
 vi.mock('../../app/src/lib/agenda-api.ts',()=>({fetchAgenda:api.agenda,fetchDayCounts:api.counts,cancelAppointment:api.cancel,deleteTimeBlock:vi.fn(),createOwnerAppointment:vi.fn(),createTimeBlock:vi.fn(),AgendaLoadError:class extends Error{}}))
 vi.mock('../../app/src/lib/services.ts',()=>({fetchServices:api.services,ServiceLoadError:class extends Error{}}))
 vi.mock('../../app/src/lib/hours-api.ts',()=>({fetchHours:api.hours,HoursLoadError:class extends Error{}}))

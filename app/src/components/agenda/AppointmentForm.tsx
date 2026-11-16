@@ -1,12 +1,13 @@
 import { Check } from '@phosphor-icons/react'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { createOwnerAppointment } from '../../lib/agenda-api.ts'
 import type { AgendaFormErrors } from '../../lib/agenda-errors.ts'
 import { INVALID_PHONE_MESSAGE } from '../../lib/booking-errors.ts'
 import { todayInArgentina } from '../../lib/dates.ts'
 import { formatDuration } from '../../lib/duration.ts'
-import { normalizePhone } from '../../lib/phone.ts'
+import { formatPhoneForInput, normalizePhone } from '../../lib/phone.ts'
 import type { Service } from '../../lib/services.ts'
+import { fetchClientDirectory, type Client } from '../../lib/clients.ts'
 import { SelectField } from '../SelectField.tsx'
 import { TextField } from '../TextField.tsx'
 import { TimeSelect } from '../TimeSelect.tsx'
@@ -30,11 +31,25 @@ export function AppointmentForm({ businessId, services, initialDate, initialTime
   const [time, setTime] = useState(initialTime)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const [selectedClientName, setSelectedClientName] = useState<string | null>(null)
+  const [clients, setClients] = useState<Pick<Client, 'id' | 'name' | 'phone' | 'email'>[]>([])
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false)
   const [reminders, setReminders] = useState(false)
   const [errors, setErrors] = useState<AgendaFormErrors>({})
   const [busy, setBusy] = useState(false)
 
   const hasPhone = phone.trim() !== ''
+  const clientSuggestions = useMemo(() => {
+    const normalized = name.trim().toLocaleLowerCase('es-AR')
+    if (!normalized) return []
+    return clients.filter(client => [client.name, client.phone ?? '', client.email ?? ''].some(value => value.toLocaleLowerCase('es-AR').includes(normalized))).slice(0, 6)
+  }, [clients, name])
+
+  useEffect(() => {
+    let active = true
+    void fetchClientDirectory(businessId).then(value => { if (active) setClients(value) }).catch(() => { /* La búsqueda es opcional; el alta manual sigue disponible. */ })
+    return () => { active = false }
+  }, [businessId])
 
   function clear(field: keyof AgendaFormErrors) {
     setErrors(current => ({ ...current, [field]: undefined }))
@@ -115,19 +130,42 @@ export function AppointmentForm({ businessId, services, initialDate, initialTime
         ) : null}
       </div>
 
-      <TextField
-        id="appointment-name"
-        label="Nombre del cliente"
-        autoComplete="off"
-        maxLength={MAX_NAME_LENGTH}
-        value={name}
-        onChange={event => {
-          setName(event.target.value)
-          clear('name')
-        }}
-        error={errors.name}
-        required
-      />
+      <div className="relative">
+        <TextField
+          id="appointment-name"
+          label="Buscar o agregar cliente"
+          autoComplete="off"
+          placeholder="Escribí un nombre para buscar"
+          maxLength={MAX_NAME_LENGTH}
+          value={name}
+          onFocus={() => setShowClientSuggestions(true)}
+          aria-autocomplete="list"
+          aria-expanded={showClientSuggestions && clientSuggestions.length > 0}
+          onChange={event => {
+            const nextName = event.target.value
+            if (selectedClientName !== null && nextName !== selectedClientName) {
+              setSelectedClientName(null)
+              setPhone('')
+              setReminders(false)
+            }
+            setName(nextName)
+            setShowClientSuggestions(nextName.trim() !== '')
+            clear('name')
+          }}
+          error={errors.name}
+          required
+        />
+        {showClientSuggestions && clientSuggestions.length > 0 ? <div className="appointment-client-suggestions" role="listbox" aria-label="Clientes existentes">
+          {clientSuggestions.map(client => <button type="button" role="option" key={client.id} className="appointment-client-suggestion" onMouseDown={event => event.preventDefault()} onClick={() => {
+            setName(client.name)
+            setPhone(client.phone ? formatPhoneForInput(client.phone) : '')
+            setSelectedClientName(client.name)
+            setShowClientSuggestions(false)
+            clear('name'); clear('phone')
+          }}><strong>{client.name}</strong><span>{client.phone ?? client.email ?? 'Sin datos de contacto'}</span></button>)}
+        </div> : null}
+        <p className="mt-2 text-sm text-muted">{clients.length > 0 ? 'Buscá un cliente existente o escribí uno nuevo.' : 'Todavía no hay clientes guardados. Escribí el nombre para cargarlo.'}</p>
+      </div>
       <TextField
         id="appointment-phone"
         label="Celular (si lo tenés)"

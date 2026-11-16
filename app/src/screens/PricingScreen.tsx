@@ -22,7 +22,7 @@ const plans = [
     price: '$14.999',
     cadence: 'por mes',
     icon: WhatsappLogo,
-    features: ['Todo lo de Gratis', 'Profesionales ilimitados', 'Recordatorios automáticos por WhatsApp'],
+    features: ['Todo lo de Gratis', 'Profesionales ilimitados', 'Recordatorios automáticos por WhatsApp · Requiere configuración previa'],
     action: 'Elegir Pro',
     href: '/empezar?plan=pro',
     featured: true,
