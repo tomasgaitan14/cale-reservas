@@ -29,12 +29,12 @@ function contentSecurityPolicy(): Map<string, string[]> {
 }
 
 describe('rewrites: la app es de una sola página', () => {
-  const rewrite = config.rewrites[0] ?? { source: '', destination: '' }
+  const rewrite = config.rewrites.find(rule => rule.destination === '/app.html') ?? { source: '', destination: '' }
   const matches = (path: string) => new RegExp(`^${rewrite.source}$`).test(path)
 
-  it('sirve index.html', () => {
+  it('conserva el panel en su shell separado de la portada estática', () => {
     expect(config.rewrites).toHaveLength(1)
-    expect(rewrite.destination).toBe('/index.html')
+    expect(rewrite.destination).toBe('/app.html')
   })
 
   it.each(['/', '/panel', '/estetica-alba', '/peluqueria-lucero-2'])('reescribe la ruta %s', (path) => {
