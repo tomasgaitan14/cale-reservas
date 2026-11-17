@@ -216,13 +216,13 @@ p {
 .booking-confirmation-card { overflow: hidden; border: 1px solid var(--border); border-radius: 1.25rem; background: var(--surface); box-shadow: var(--shadow-soft); }
 .booking-service-line, .booking-date-line { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; }
 .booking-service-line { border-bottom: 1px solid var(--border); }
-.booking-service-icon { display: grid; width: 2.875rem; height: 2.875rem; flex: none; place-items: center; border-radius: .875rem; background: var(--tint); color: var(--link); }
+.booking-service-icon { display: grid; width: 2.875rem; height: 2.875rem; flex: none; place-items: center; border-radius: .875rem; background: var(--tint); color: var(--summary-text); }
 .booking-service-icon svg { width: 1.375rem; height: 1.375rem; }
 .booking-service-copy, .booking-date-copy { min-width: 0; }
 .booking-card-label { display: block; margin-bottom: .2rem; color: var(--muted); font-size: .8125rem; font-weight: 650; }
 .booking-service-copy h2 { overflow-wrap: anywhere; font-size: 1.1875rem; line-height: 1.35; }
 .booking-date-line { align-items: center; gap: 1rem; }
-.booking-date-badge { display: flex; width: 3.75rem; height: 4rem; flex: none; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--tint-border); border-radius: .875rem; background: var(--tint); color: var(--link); line-height: 1; }
+.booking-date-badge { display: flex; width: 3.75rem; height: 4rem; flex: none; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--tint-border); border-radius: .875rem; background: var(--tint); color: var(--summary-text); line-height: 1; }
 .booking-date-badge span { font-size: .75rem; font-weight: 750; text-transform: uppercase; }
 .booking-date-badge strong { margin-top: .2rem; font-family: var(--font-head); font-size: 1.5rem; font-weight: 800; }
 .booking-date-copy > p { overflow-wrap: anywhere; font-size: 1rem; font-weight: 650; }
