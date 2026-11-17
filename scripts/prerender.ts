@@ -11,7 +11,8 @@ try {
   const markup = renderToStaticMarkup(createElement('div', { className: 'natural-theme' }, createElement(LandingScreen)))
   const template = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8')
   if (!template.includes('<div id="root"></div>')) throw new Error('Missing prerender placeholder')
-  await writeFile(new URL('../dist/home.html', import.meta.url), template.replace('<div id="root"></div>', '<div id="root">' + markup + '</div>'))
+  await writeFile(new URL('../dist/app.html', import.meta.url), template)
+  await writeFile(new URL('../dist/index.html', import.meta.url), template.replace('<div id="root"></div>', '<div id="root">' + markup + '</div>'))
   const production = process.env.VERCEL_ENV === 'production'
   await writeFile(new URL('../dist/robots.txt', import.meta.url), production
     ? 'User-agent: *\nAllow: /\n\nSitemap: https://cale.com.ar/sitemap.xml\n'
