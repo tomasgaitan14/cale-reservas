@@ -58,11 +58,11 @@ export function LandingScreen() {
     document.title = 'Recordatorios de turnos por WhatsApp'
   }, [])
   const signedIn = session.status === 'signed-in'
-  const panelAction = () => window.location.assign(signedIn ? '/panel' : '/#precios')
+  const panelHref = signedIn ? '/panel' : '/#precios'
   const panelActionLabel = signedIn ? 'Ir a mi negocio' : 'Empezá Gratis'
-  const authError = new URLSearchParams(window.location.hash.slice(1)).has('error')
+  const authError = typeof window !== 'undefined' && new URLSearchParams(window.location.hash.slice(1)).has('error')
   return <div className="marketing-shell">
-    <header className="marketing-header"><a href="/" aria-label="Cale"><Brand /></a><nav className="natural-marketing-links" aria-label="Navegación principal"><a className="natural-how-link" href="#precios">Precios</a><button className="natural-how-link" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({behavior:'instant'})}>Cómo funciona</button><a className="natural-how-link" href="https://wa.me/5493446000000" target="_blank" rel="noreferrer">Contacto</a></nav><button className="landing-small-cta" onClick={panelAction}>{panelActionLabel}</button></header>
+    <header className="marketing-header"><Brand /><nav className="natural-marketing-links" aria-label="Navegación principal"><a className="natural-how-link" href="#precios">Precios</a><a className="natural-how-link" href="#como-funciona">Cómo funciona</a><a className="natural-how-link" href="https://wa.me/5493446000000" target="_blank" rel="noreferrer">Contacto</a></nav><a className="landing-small-cta" href={panelHref}>{panelActionLabel}</a></header>
     {authError && <p role="alert" className="rounded-xl bg-warn-bg p-4 text-warn">No pudimos completar el ingreso con Google. Tocá Empezá Gratis para volver a intentarlo.</p>}
     <main>
       <section className="landing-hero">
@@ -70,7 +70,7 @@ export function LandingScreen() {
           <p className="eyebrow">Tu negocio, con más espacio para vos</p>
           <h1>Tus reservas online, <span className="text-link">tu día en orden.</span></h1>
           <p className="max-w-lg text-lg text-muted">Tus clientes eligen su turno desde tu propio link o QR. Vos recibís las reservas y organizás tu día en una sola agenda.</p>
-          <div className="flex w-full flex-wrap gap-3"><button className={`${PRIMARY_BUTTON} sm:w-auto`} onClick={panelAction}>{panelActionLabel}<ArrowRight size={20} aria-hidden="true" /></button><button className={SECONDARY_BUTTON} onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })}>Ver cómo funciona</button></div>
+          <div className="flex w-full flex-wrap gap-3"><a className={`${PRIMARY_BUTTON} sm:w-auto`} href={panelHref}>{panelActionLabel}<ArrowRight size={20} aria-hidden="true" /></a><a className={SECONDARY_BUTTON} href="#como-funciona">Ver cómo funciona</a></div>
           <p className="flex items-center gap-2 text-sm text-muted"><CheckCircle size={19} weight="fill" className="text-ok" aria-hidden="true" />Recordatorios automáticos por WhatsApp desde el número de tu negocio.</p>
         </div>
         <BookingPreview />
@@ -85,8 +85,8 @@ export function LandingScreen() {
       <section className="natural-reminder-section"><div><p className="eyebrow">Recordatorios automáticos por WhatsApp</p><h2>Un recordatorio,<br />menos olvidos.</h2><p>Configuramos la conexión por vos. Tus clientes reciben sus recordatorios desde el número de tu negocio y vos consultás el estado de cada envío desde Cale.</p><p className="mt-4 text-sm text-muted">Disponible con Pro. Requiere configuración previa.</p></div><ReminderExample businessName="Negocio demo" /></section>
       <PricingSection />
       <section className="landing-section faq-section"><div className="section-heading"><p className="eyebrow">Preguntas que aparecen</p><h2>Lo importante,<br />sin vueltas.</h2></div><div>{FAQ.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div></section>
-      <section className="landing-closing"><p className="eyebrow">Empezá por tu negocio</p><h2>Dale un lugar a tus turnos.</h2><p className="mt-4 text-muted">Una agenda clara para vos. Una forma simple de reservar para tus clientes.</p><button className={`${PRIMARY_BUTTON} mt-6 sm:w-auto`} onClick={panelAction}>{panelActionLabel}<ArrowRight aria-hidden="true" /></button></section>
+      <section className="landing-closing"><p className="eyebrow">Empezá por tu negocio</p><h2>Dale un lugar a tus turnos.</h2><p className="mt-4 text-muted">Una agenda clara para vos. Una forma simple de reservar para tus clientes.</p><a className={`${PRIMARY_BUTTON} mt-6 sm:w-auto`} href={panelHref}>{panelActionLabel}<ArrowRight aria-hidden="true" /></a></section>
     </main>
-    <footer className="marketing-footer"><Brand /><p className="text-sm text-muted">Reservas online y agenda para tu negocio.</p><div className="flex flex-wrap gap-3">{[['Privacidad','/privacidad'],['Términos','/terminos'],['Eliminar datos','/eliminar-datos']].map(([label, path]) => <button className="footer-button" key={path} onClick={() => window.location.assign(path ?? '/')}>{label}</button>)}</div></footer>
+    <footer className="marketing-footer"><Brand /><p className="text-sm text-muted">Reservas online y agenda para tu negocio.</p><div className="flex flex-wrap gap-3">{[['Privacidad','/privacidad'],['Términos','/terminos'],['Eliminar datos','/eliminar-datos']].map(([label, path]) => <a className="footer-button" key={path} href={path}>{label}</a>)}</div></footer>
   </div>
 }

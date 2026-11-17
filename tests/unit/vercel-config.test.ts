@@ -29,11 +29,11 @@ function contentSecurityPolicy(): Map<string, string[]> {
 }
 
 describe('rewrites: la app es de una sola página', () => {
-  const rewrite = config.rewrites[0] ?? { source: '', destination: '' }
+  const rewrite = config.rewrites.find(rule => rule.destination === '/index.html') ?? { source: '', destination: '' }
   const matches = (path: string) => new RegExp(`^${rewrite.source}$`).test(path)
 
   it('sirve index.html', () => {
-    expect(config.rewrites).toHaveLength(1)
+    expect(config.rewrites[0]).toEqual({ source: '/', destination: '/home.html' })
     expect(rewrite.destination).toBe('/index.html')
   })
 
