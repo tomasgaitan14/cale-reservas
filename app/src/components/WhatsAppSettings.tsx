@@ -14,9 +14,10 @@ export function WhatsAppSettings({ businessId }: { businessId: string }) {
   const [connected, setConnected] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [setup, setSetup] = useState<{ config: SignupConfig; sdk: Awaited<ReturnType<typeof loadMetaSdk>> } | null>(null)
-  const [busy, setBusy] = useState(false)
+  const [phase, setPhase] = useState<'idle' | 'authorization' | 'verification'>('idle')
   const [notice, setNotice] = useState('')
   const attempt = useRef<AbortController | null>(null)
+  const busy = phase !== 'idle'
 
   useEffect(() => {
     let active = true
@@ -55,11 +56,12 @@ export function WhatsAppSettings({ businessId }: { businessId: string }) {
     if (!setup || attempt.current) return
     const controller = new AbortController()
     attempt.current = controller
-    setBusy(true)
-    setNotice('Elegí tu WhatsApp Business en la ventana de Meta y seleccioná Finalizar.')
+    setPhase('authorization')
+    setNotice('Elegí tu WhatsApp Business en la ventana de Meta y seleccioná Finalizar. Si la ventana no aparece, podés cancelar y volver a intentar.')
     try {
       const result = await launchWhatsAppSignup(setup.sdk, setup.config, controller.signal)
       if (controller.signal.aborted) return
+      setPhase('verification')
       setNotice('Verificando la conexión con Meta…')
       const { data, error } = await supabase.functions.invoke<{ displayPhoneNumber: string }>('whatsapp-signup', {
         body: { action: 'complete', businessId, ...result },
@@ -87,9 +89,18 @@ export function WhatsAppSettings({ businessId }: { businessId: string }) {
       }
       setNotice(messages[reason])
     } finally {
-      if (attempt.current === controller) attempt.current = null
-      if (!controller.signal.aborted) setBusy(false)
+      if (attempt.current === controller) {
+        attempt.current = null
+        if (!controller.signal.aborted) setPhase('idle')
+      }
     }
+  }
+
+  function cancelAttempt() {
+    attempt.current?.abort()
+    attempt.current = null
+    setPhase('idle')
+    setNotice('Cancelaste el intento. Si la ventana de Meta sigue abierta, cerrala antes de volver a intentar.')
   }
 
   return <section className="settings-section">
@@ -101,6 +112,7 @@ export function WhatsAppSettings({ businessId }: { businessId: string }) {
       <p>Conservás la propiedad de tu número y cuenta comercial. La compatibilidad para seguir usando la app del teléfono se verifica con Meta durante la configuración.</p>
       <p>Los envíos se habilitan después de verificar el número, las autorizaciones y las plantillas. Meta puede cobrar por los mensajes entregados.</p>
       {!connected && setup && <button type="button" className={SECONDARY_BUTTON} disabled={busy} onClick={() => void connect()}>Conectar con Meta</button>}
+      {phase === 'authorization' && <button type="button" className={`${SECONDARY_BUTTON} self-start`} onClick={cancelAttempt}>Cancelar intento</button>}
       {notice && <p role="status">{notice}</p>}
       <a className="underline" href="mailto:cale.turnos@gmail.com?subject=Configurar%20WhatsApp%20de%20mi%20negocio">{setup || connected ? 'Consultar a Cale' : 'Coordinar la configuración con Cale'}</a>
     </div>}

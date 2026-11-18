@@ -6,7 +6,7 @@ type MetaSdk = {
     config_id: string
     response_type: 'code'
     override_default_response_type: true
-    extras: { version: 'v4'; sessionInfoVersion: '3'; featureType: 'whatsapp_business_app_onboarding' }
+    extras: { version: 'v4'; setup: Record<string, never>; sessionInfoVersion: '3'; featureType: 'whatsapp_business_app_onboarding' }
   }): void
 }
 type SignupAssets = { wabaId: string; phoneNumberId?: string; metaBusinessId?: string }
@@ -61,9 +61,11 @@ export function launchWhatsAppSignup(sdk: MetaSdk, config: SignupConfig, signal:
     let code: string | undefined
     let assets: SignupAssets | undefined
     let callbackTimer: number | undefined
+    let settled = false
     const timeout = window.setTimeout(() => fail('incomplete'), 15 * 60_000)
 
     function cleanUp() {
+      settled = true
       clearTimeout(timeout)
       clearTimeout(callbackTimer)
       window.removeEventListener('message', onMessage)
@@ -101,6 +103,7 @@ export function launchWhatsAppSignup(sdk: MetaSdk, config: SignupConfig, signal:
     window.addEventListener('message', onMessage)
     try {
       sdk.login(response => {
+        if (settled) return
         code = response?.authResponse?.code
         finish()
         // Meta manda los identificadores y el código por canales separados y en cualquier orden.
@@ -109,7 +112,7 @@ export function launchWhatsAppSignup(sdk: MetaSdk, config: SignupConfig, signal:
         config_id: config.configId,
         response_type: 'code',
         override_default_response_type: true,
-        extras: { version: 'v4', sessionInfoVersion: '3', featureType: 'whatsapp_business_app_onboarding' },
+        extras: { version: 'v4', setup: {}, sessionInfoVersion: '3', featureType: 'whatsapp_business_app_onboarding' },
       })
     } catch {
       fail('failed')
