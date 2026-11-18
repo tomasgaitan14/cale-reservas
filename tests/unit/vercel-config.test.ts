@@ -57,13 +57,13 @@ describe('Content-Security-Policy', () => {
     expect(policy.get('frame-src')).toEqual(['https://challenges.cloudflare.com', 'https://www.facebook.com'])
   })
 
-  it('no admite estilos inline en hojas ni etiquetas: solo en atributos (los de React)', () => {
-    expect(policy.get('style-src')).toEqual(["'self'"])
+  it('permite la hoja de Meta por su hash sin abrir el resto de estilos inline', () => {
+    expect(policy.get('style-src')).toEqual(["'self'", "'sha256-0wFoxLWTA6T27YIInZDAw8Oiuey8EYEvoep1vDAGSdE='"])
     expect(policy.get('style-src-attr')).toEqual(["'unsafe-inline'"])
   })
 
   it('limita las conexiones a Cale, Supabase y Meta', () => {
-    expect(policy.get('connect-src')).toEqual(["'self'", 'https://*.supabase.co', 'https://www.facebook.com', 'https://graph.facebook.com'])
+    expect(policy.get('connect-src')).toEqual(["'self'", 'https://*.supabase.co', 'https://www.facebook.com', 'https://graph.facebook.com', 'https://connect.facebook.net/app_config/json/'])
   })
 
   it('no se puede embeber, no admite plugins y fija base y formularios', () => {
