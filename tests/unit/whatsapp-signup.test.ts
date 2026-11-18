@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest'
-import { launchWhatsAppSignup } from '../../app/src/lib/whatsapp-signup.ts'
+import { launchWhatsAppSignup, loadMetaSdk } from '../../app/src/lib/whatsapp-signup.ts'
 
 const config = { appId: '123', configId: '456', graphVersion: 'v25.0' }
 const validSession = JSON.stringify({
@@ -17,6 +17,30 @@ function startSignup() {
 }
 
 describe('WhatsApp coexistence signup', () => {
+  it('waits for Meta to replace its bootstrap before enabling signup', async () => {
+    const bootstrap = { init: vi.fn(), login: vi.fn() }
+    const readySdk = { init: vi.fn(), login: vi.fn() }
+    const meta = window as Window & { FB?: typeof bootstrap; fbAsyncInit?: () => void }
+    const loaded = vi.fn()
+    const sdk = loadMetaSdk(config)
+    void sdk.then(loaded)
+    const script = document.querySelector('script[src*="connect.facebook.net"]')!
+    try {
+      meta.FB = bootstrap
+      script.dispatchEvent(new Event('load'))
+      await Promise.resolve()
+      expect(bootstrap.init).not.toHaveBeenCalled()
+      expect(loaded).not.toHaveBeenCalled()
+      meta.FB = readySdk
+      meta.fbAsyncInit?.()
+      await expect(sdk).resolves.toBe(readySdk)
+      expect(readySdk.init).toHaveBeenCalledOnce()
+    } finally {
+      delete meta.FB
+      script.remove()
+    }
+  })
+
   it('ignores a lookalike origin and waits for both Meta responses', async () => {
     const { result, login } = startSignup()
     login.mock.calls[0]![0]({ authResponse: { code: 'opaque-code' } })

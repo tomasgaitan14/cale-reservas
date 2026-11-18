@@ -21,29 +21,37 @@ const metaOrigins = new Set(['https://www.facebook.com', 'https://web.facebook.c
 let sdkPromise: Promise<MetaSdk> | undefined
 
 export function loadMetaSdk(config: SignupConfig): Promise<MetaSdk> {
-  const meta = window as Window & { FB?: MetaSdk }
+  const meta = window as Window & { FB?: MetaSdk; fbAsyncInit?: () => void }
   sdkPromise ??= new Promise<MetaSdk>((resolve, reject) => {
     const script = document.createElement('script')
-    const fail = () => {
+    const previousInit = meta.fbAsyncInit
+    const cleanUp = () => {
       clearTimeout(timeout)
+      if (meta.fbAsyncInit === initialize) meta.fbAsyncInit = previousInit
+    }
+    function fail() {
+      cleanUp()
       script.remove()
       reject(new SignupError('failed'))
     }
-    const timeout = window.setTimeout(fail, 10_000)
-    script.src = 'https://connect.facebook.net/es_LA/sdk.js'
-    script.async = true
-    script.crossOrigin = 'anonymous'
-    script.onerror = fail
-    script.onload = () => {
-      if (!meta.FB) return fail()
+    function initialize() {
+      const sdk = meta.FB
+      if (!sdk) return fail()
       try {
-        meta.FB.init({ appId: config.appId, version: config.graphVersion, autoLogAppEvents: false, xfbml: false })
-        clearTimeout(timeout)
-        resolve(meta.FB)
+        sdk.init({ appId: config.appId, version: config.graphVersion, autoLogAppEvents: false, xfbml: false })
+        cleanUp()
+        resolve(sdk)
       } catch {
         fail()
       }
     }
+    const timeout = window.setTimeout(fail, 10_000)
+    // The first script exposes a placeholder FB object and loads the full SDK separately.
+    meta.fbAsyncInit = initialize
+    script.src = 'https://connect.facebook.net/es_LA/sdk.js'
+    script.async = true
+    script.crossOrigin = 'anonymous'
+    script.onerror = fail
     document.head.append(script)
   }).catch((error: unknown) => {
     sdkPromise = undefined
