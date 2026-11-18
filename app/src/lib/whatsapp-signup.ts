@@ -6,6 +6,7 @@ type MetaSdk = {
     config_id: string
     response_type: 'code'
     override_default_response_type: true
+    display: 'popup' | 'page'
     extras: { version: 'v4'; setup: Record<string, never>; sessionInfoVersion: '3'; featureType: 'whatsapp_business_app_onboarding' }
   }): void
 }
@@ -19,6 +20,10 @@ export class SignupError extends Error {
 
 const metaOrigins = new Set(['https://www.facebook.com', 'https://web.facebook.com', 'https://facebook.com'])
 let sdkPromise: Promise<MetaSdk> | undefined
+
+function signupDisplay(): 'popup' | 'page' {
+  return window.matchMedia?.('(max-width: 767px)').matches ? 'page' : 'popup'
+}
 
 export function loadMetaSdk(config: SignupConfig): Promise<MetaSdk> {
   const meta = window as Window & { FB?: MetaSdk; fbAsyncInit?: () => void }
@@ -120,6 +125,7 @@ export function launchWhatsAppSignup(sdk: MetaSdk, config: SignupConfig, signal:
         config_id: config.configId,
         response_type: 'code',
         override_default_response_type: true,
+        display: signupDisplay(),
         extras: { version: 'v4', setup: {}, sessionInfoVersion: '3', featureType: 'whatsapp_business_app_onboarding' },
       })
     } catch {

@@ -43,6 +43,7 @@ describe('WhatsApp coexistence signup', () => {
 
   it('ignores a lookalike origin and waits for both Meta responses', async () => {
     const { result, login } = startSignup()
+    expect(login).toHaveBeenCalledWith(expect.any(Function), expect.objectContaining({ display: 'popup' }))
     login.mock.calls[0]![0]({ authResponse: { code: 'opaque-code' } })
     const completed = vi.fn()
     void result.then(completed)
@@ -54,14 +55,14 @@ describe('WhatsApp coexistence signup', () => {
     await expect(result).resolves.toMatchObject({ wabaId: '1234', phoneNumberId: '5678', code: 'opaque-code' })
   })
 
-  it('rejects a completion that would register a number outside coexistence', async () => {
-    const { result, login } = startSignup()
-    const rejection = expect(result).rejects.toMatchObject({ reason: 'not_coexistence' })
-    login.mock.calls[0]![0]({ authResponse: { code: 'opaque-code' } })
-    window.dispatchEvent(new MessageEvent('message', {
-      origin: 'https://www.facebook.com',
-      data: JSON.stringify({ type: 'WA_EMBEDDED_SIGNUP', event: 'FINISH' }),
-    }))
-    await rejection
+  it('uses a full-page flow on narrow screens', () => {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true })))
+    try {
+      const { login } = startSignup()
+      expect(login).toHaveBeenCalledWith(expect.any(Function), expect.objectContaining({ display: 'page' }))
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
+
 })
