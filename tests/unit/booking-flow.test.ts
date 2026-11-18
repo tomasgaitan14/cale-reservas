@@ -49,14 +49,14 @@ describe('reserva completa desde la interfaz',()=>{
  it('envía los datos normalizados y muestra la confirmación real de la API',async()=>{
   await openDetails();await fillDetails();await submit()
   expect(api.book).toHaveBeenCalledWith({slug:'negocio-demo',serviceId:'service-demo',date:'2026-11-04',time:'13:00',name:'Cliente demo',phone:'5493445550142',consent:true,token:'test-token'})
-  expect(container.textContent).toContain('Tu turno quedó reservado')
+  expect(container.querySelector('#booking-done-title')?.textContent).toContain('ya tenés tu turno')
  })
  it('permite otra reserva, recarga la disponibilidad y limpia datos y consentimiento',async()=>{
   await openDetails();await fillDetails();await submit()
   api.slots.mockResolvedValue(['14:00'])
   await click('Reservar otro turno')
   expect(container.textContent).toContain('¿Qué turno necesitás?')
-  expect(container.textContent).not.toContain('Tu turno quedó reservado')
+  expect(container.querySelector('#booking-done-title')).toBeNull()
   expect(api.info).toHaveBeenCalledTimes(2)
   const service=[...container.querySelectorAll('button')].find(node=>node.textContent?.includes('Servicio demo'))!
   await act(async()=>service.click());await click(DAY)
@@ -114,7 +114,7 @@ describe('reserva completa desde la interfaz',()=>{
   expect(link.href).toContain('https://wa.me/540000000000?text=')
   expect(decodeURIComponent(link.href)).toContain('Servicio demo del miércoles 4 de noviembre a las 13:00')
   expect(link.rel).toContain('noopener')
-  expect(container.textContent).toContain('Abrir WhatsApp no cambia ni cancela tu reserva.')
+  expect(container.textContent).toContain('Abrir WhatsApp no modifica la reserva')
   expect(api.book).toHaveBeenCalledTimes(1)
  })
  it('un celular inválido no envía el pedido a la API',async()=>{

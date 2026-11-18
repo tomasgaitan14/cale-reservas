@@ -52,9 +52,9 @@ describe('rewrites: la app es de una sola página', () => {
 describe('Content-Security-Policy', () => {
   const policy = contentSecurityPolicy()
 
-  it('solo ejecuta scripts propios y Turnstile, sin inline ni eval', () => {
-    expect(policy.get('script-src')).toEqual(["'self'", 'https://challenges.cloudflare.com'])
-    expect(policy.get('frame-src')).toEqual(['https://challenges.cloudflare.com'])
+  it('permite Turnstile y el registro de Meta sin scripts inline ni eval', () => {
+    expect(policy.get('script-src')).toEqual(["'self'", 'https://challenges.cloudflare.com', 'https://connect.facebook.net'])
+    expect(policy.get('frame-src')).toEqual(['https://challenges.cloudflare.com', 'https://www.facebook.com'])
   })
 
   it('no admite estilos inline en hojas ni etiquetas: solo en atributos (los de React)', () => {
@@ -62,12 +62,8 @@ describe('Content-Security-Policy', () => {
     expect(policy.get('style-src-attr')).toEqual(["'unsafe-inline'"])
   })
 
-  it('solo se conecta a sí mismo y a Supabase, sin comodines', () => {
-    const connect = policy.get('connect-src') ?? []
-    expect(connect).toContain("'self'")
-    expect(connect).toContain('https://*.supabase.co')
-    expect(connect).not.toContain('*')
-    expect(connect.every((source) => source === "'self'" || source.startsWith('https://'))).toBe(true)
+  it('limita las conexiones a Cale, Supabase y Meta', () => {
+    expect(policy.get('connect-src')).toEqual(["'self'", 'https://*.supabase.co', 'https://www.facebook.com', 'https://graph.facebook.com'])
   })
 
   it('no se puede embeber, no admite plugins y fija base y formularios', () => {
