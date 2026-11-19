@@ -1,7 +1,7 @@
 import { DEFAULT_BRANDING, brandingStyle } from '../lib/branding.ts'
 import { logoUrl } from '../lib/branding-api.ts'
 import { Turnstile } from '../components/booking/Turnstile.tsx'
-import { CheckCircle } from '@phosphor-icons/react'
+import { CalendarBlank, CheckCircle, Clock } from '@phosphor-icons/react'
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { DatePicker } from '../components/booking/DatePicker.tsx'
 import { DetailsForm, type BookingDetails, type BookingDraft } from '../components/booking/DetailsForm.tsx'
@@ -18,7 +18,7 @@ import {
   type BookingInfo,
 } from '../lib/booking-api.ts'
 import type { BookingFormErrors } from '../lib/booking-errors.ts'
-import { bookableDates, formatLongDate, todayInArgentina } from '../lib/dates.ts'
+import { bookableDates, dayOfMonth, formatLongDate, monthName, todayInArgentina } from '../lib/dates.ts'
 import { formatDuration } from '../lib/duration.ts'
 
 type InfoState = { status: 'loading' } | { status: 'error' } | { status: 'not-found' } | { status: 'ready'; info: BookingInfo }
@@ -211,23 +211,46 @@ function BookingDone({ confirmation, businessName, whatsapp, onBookAgain }: { co
     ? `https://wa.me/${whatsapp}?text=${encodeURIComponent(`Hola, quiero consultar por mi turno de ${confirmation.service_name} del ${formatLongDate(confirmation.date)} a las ${confirmation.time}.`)}`
     : null
   return (
-    <div className="rise-in flex max-w-xl flex-col items-start gap-6 pt-6 md:pt-14" role="status">
-      <span className="grid size-14 place-items-center rounded-[1rem] bg-ink text-on-ink">
-        <CheckCircle weight="bold" className="size-8" aria-hidden="true" />
-      </span>
-      <h1 className="text-[1.875rem] md:text-[2.5rem]">Tu turno quedó reservado</h1>
-      <div className="flex w-full flex-col gap-1 rounded-[1.25rem] bg-tint p-5 text-fg">
-        <p className="font-head text-xl font-extrabold tracking-tight">{confirmation.service_name}</p>
-        <p className="text-base">
-          {formatLongDate(confirmation.date)} a las {confirmation.time}
-        </p>
-        <p className="text-[0.9375rem] text-muted">{businessName}</p>
+    <section className="booking-done rise-in" role="status" aria-labelledby="booking-done-title">
+      <div className="booking-done-heading">
+        <span className="booking-done-mark"><CheckCircle weight="fill" aria-hidden="true" /></span>
+        <p className="booking-done-kicker">Reserva confirmada</p>
+        <h1 id="booking-done-title">¡Listo, ya tenés tu turno!</h1>
+        <p className="booking-done-intro">Guardá estos datos para tenerlos a mano.</p>
       </div>
-      <button type="button" className={PRIMARY_BUTTON} onClick={onBookAgain}>Reservar otro turno</button>
-      <p className="text-sm text-muted">Tu turno actual sigue reservado. Podés pedir otro para este negocio.</p>
-      <p className="text-muted">Si necesitás cambiar o cancelar tu turno, contactá al negocio. Los recordatorios automáticos por WhatsApp estarán disponibles próximamente.</p>
-      {contact && <><a className={SECONDARY_BUTTON} href={contact} target="_blank" rel="noopener noreferrer">Contactar al negocio<span className="sr-only"> (abre WhatsApp)</span></a><p className="text-sm text-muted">Abrir WhatsApp no cambia ni cancela tu reserva. Coordiná el cambio con el negocio.</p></>}
-    </div>
+
+      <article className="booking-confirmation-card" aria-label="Datos de tu turno">
+        <div className="booking-service-line">
+          <div className="booking-service-icon"><CalendarBlank weight="regular" aria-hidden="true" /></div>
+          <div className="booking-service-copy">
+            <span className="booking-card-label">Servicio</span>
+            <h2>{confirmation.service_name}</h2>
+          </div>
+        </div>
+        <div className="booking-date-line">
+          <div className="booking-date-badge" aria-hidden="true">
+            <span>{monthName(confirmation.date).slice(0, 3)}</span>
+            <strong>{dayOfMonth(confirmation.date)}</strong>
+          </div>
+          <div className="booking-date-copy">
+            <span className="booking-card-label">Día y horario</span>
+            <p>{formatLongDate(confirmation.date)}</p>
+            <p className="booking-time"><Clock weight="regular" aria-hidden="true" />{confirmation.time}</p>
+          </div>
+        </div>
+        <div className="booking-business-line">
+          <span className="booking-card-label">Lugar</span>
+          <p>{businessName}</p>
+        </div>
+      </article>
+
+      <div className="booking-done-actions">
+        {contact && <a className={PRIMARY_BUTTON} href={contact} target="_blank" rel="noopener noreferrer">Contactar al negocio<span className="sr-only"> (abre WhatsApp)</span></a>}
+        <button type="button" className={`${contact ? SECONDARY_BUTTON : PRIMARY_BUTTON} booking-done-rebook`} onClick={onBookAgain}>Reservar otro turno</button>
+      </div>
+      <p className="booking-done-note">Tu turno ya está reservado. Si necesitás cambiarlo o cancelarlo, contactá al negocio.</p>
+      {contact && <p className="booking-done-note">Abrir WhatsApp no modifica la reserva; coordiná cualquier cambio directamente con el negocio.</p>}
+    </section>
   )
 }
 
@@ -237,7 +260,7 @@ function BookingFooter() {
       <h2 className="text-xl">¿Tenés un negocio con turnos?</h2>
       <p className="max-w-md text-muted">Tu agenda y tu propio link de reservas, en un mismo lugar. Empezá Gratis y usala sin vencimiento.</p>
     </div>
-    <a className={`${SECONDARY_BUTTON} shrink-0`} href="https://cale.com.ar/empezar" target="_blank" rel="noopener noreferrer">Empezá Gratis<span className="sr-only"> (abre en otra pestaña)</span></a>
+    <a className={`${SECONDARY_BUTTON} shrink-0`} href="https://cale.com.ar/empezar" target="_blank" rel="noopener noreferrer">Empezá gratis<span className="sr-only"> (abre en otra pestaña)</span></a>
   </footer>
 }
 
